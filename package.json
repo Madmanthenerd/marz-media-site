@@ -1,0 +1,10 @@
+{
+  "name": "marz-media-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Marz Media Photography — site + booking backend",
+  "dependencies": {
+    "googleapis": "^140.0.0",
+    "stripe": "^16.0.0"
+  }
+}

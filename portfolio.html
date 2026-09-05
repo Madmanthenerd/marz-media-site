@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio — Marz Media Photography</title>
+<meta name="description" content="Real estate photography, drone, and video portfolio for Marz Media Photography — Cypress and the greater Houston metro.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <nav class="nav">
+    <a href="index.html" class="logo">Marz<span>Media</span></a>
+    <div class="nav-links">
+      <a href="index.html#services">Services</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+    <div class="nav-cta">
+      <a href="booking.html" class="btn btn-gold" style="padding:11px 20px;font-size:14px;">Book a shoot</a>
+      <button class="nav-toggle" aria-label="Menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </nav>
+</header>
+
+<section class="portfolio-hero">
+  <div class="wrap">
+    <h1>Portfolio</h1>
+    <p>Listing photography, drone coverage, and video from recent shoots across Cypress, Katy, Tomball, The Woodlands, and the greater Houston metro.</p>
+
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="drone">Drone</button>
+      <button class="filter-btn" data-filter="interior">Interior</button>
+      <button class="filter-btn" data-filter="exterior">Exterior</button>
+      <button class="filter-btn" data-filter="commercial">Commercial</button>
+      <button class="filter-btn" data-filter="amenities">Amenities</button>
+      <button class="filter-btn" data-filter="interior-design">Interior Design</button>
+      <button class="filter-btn" data-filter="portraits">Portraits</button>
+    </div>
+
+    <div class="gallery-grid" id="galleryGrid">
+
+      <div class="gallery-item" data-category="drone"><span class="gallery-cat-tag">Drone</span><span class="gallery-caption">Add photo — Drone 1</span></div>
+      <div class="gallery-item" data-category="drone"><span class="gallery-cat-tag">Drone</span><span class="gallery-caption">Add photo — Drone 2</span></div>
+      <div class="gallery-item" data-category="drone"><span class="gallery-cat-tag">Drone</span><span class="gallery-caption">Add photo — Drone 3</span></div>
+
+      <div class="gallery-item" data-category="interior"><span class="gallery-cat-tag">Interior</span><span class="gallery-caption">Add photo — Interior 1</span></div>
+      <div class="gallery-item" data-category="interior"><span class="gallery-cat-tag">Interior</span><span class="gallery-caption">Add photo — Interior 2</span></div>
+      <div class="gallery-item" data-category="interior"><span class="gallery-cat-tag">Interior</span><span class="gallery-caption">Add photo — Interior 3</span></div>
+
+      <div class="gallery-item" data-category="exterior"><span class="gallery-cat-tag">Exterior</span><span class="gallery-caption">Add photo — Exterior 1</span></div>
+      <div class="gallery-item" data-category="exterior"><span class="gallery-cat-tag">Exterior</span><span class="gallery-caption">Add photo — Exterior 2</span></div>
+      <div class="gallery-item" data-category="exterior"><span class="gallery-cat-tag">Exterior</span><span class="gallery-caption">Add photo — Exterior 3</span></div>
+
+      <div class="gallery-item" data-category="commercial"><span class="gallery-cat-tag">Commercial</span><span class="gallery-caption">Add photo — Commercial 1</span></div>
+      <div class="gallery-item" data-category="commercial"><span class="gallery-cat-tag">Commercial</span><span class="gallery-caption">Add photo — Commercial 2</span></div>
+      <div class="gallery-item" data-category="commercial"><span class="gallery-cat-tag">Commercial</span><span class="gallery-caption">Add photo — Commercial 3</span></div>
+
+      <div class="gallery-item" data-category="amenities"><span class="gallery-cat-tag">Amenities</span><span class="gallery-caption">Add photo — Amenities 1</span></div>
+      <div class="gallery-item" data-category="amenities"><span class="gallery-cat-tag">Amenities</span><span class="gallery-caption">Add photo — Amenities 2</span></div>
+      <div class="gallery-item" data-category="amenities"><span class="gallery-cat-tag">Amenities</span><span class="gallery-caption">Add photo — Amenities 3</span></div>
+
+      <div class="gallery-item" data-category="interior-design"><span class="gallery-cat-tag">Interior Design</span><span class="gallery-caption">Add photo — Interior Design 1</span></div>
+      <div class="gallery-item" data-category="interior-design"><span class="gallery-cat-tag">Interior Design</span><span class="gallery-caption">Add photo — Interior Design 2</span></div>
+      <div class="gallery-item" data-category="interior-design"><span class="gallery-cat-tag">Interior Design</span><span class="gallery-caption">Add photo — Interior Design 3</span></div>
+
+      <div class="gallery-item" data-category="portraits"><span class="gallery-cat-tag">Portraits</span><span class="gallery-caption">Add photo — Portraits 1</span></div>
+      <div class="gallery-item" data-category="portraits"><span class="gallery-cat-tag">Portraits</span><span class="gallery-caption">Add photo — Portraits 2</span></div>
+      <div class="gallery-item" data-category="portraits"><span class="gallery-cat-tag">Portraits</span><span class="gallery-caption">Add photo — Portraits 3</span></div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-grid">
+    <div>© 2026 Marz Media Photography — Cypress, TX</div>
+    <div style="display:flex;gap:22px;">
+      <a href="#">Instagram</a>
+      <a href="#">Facebook</a>
+      <a href="mailto:hello@marzmediaphotography.com">hello@marzmediaphotography.com</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const buttons = document.querySelectorAll('.filter-btn');
+  const items = document.querySelectorAll('.gallery-item');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.filter;
+      items.forEach(item => {
+        const match = filter === 'all' || item.dataset.category === filter;
+        item.classList.toggle('hidden', !match);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
