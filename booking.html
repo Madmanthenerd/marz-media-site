@@ -8,6 +8,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<!-- Google Places Autocomplete for the property address field. This API key is safe to
+     be visible here — Google's security model for it is domain restriction, not secrecy,
+     unlike the Stripe/Resend/Google Calendar keys used elsewhere in this project. -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAaP8RKFizdXk4HfoGnNJIQlqZ0iNxm9no&libraries=places&callback=initAddressAutocomplete" async defer></script>
 <style>
   .path-toggle{display:flex;gap:10px;margin:30px 0 6px;}
   .path-btn{
@@ -66,13 +70,19 @@
 
         <div class="form-block">
           <label for="propertyAddress">Property address</label>
-          <input type="text" id="propertyAddress" required placeholder="123 Listing St, Cypress, TX">
+          <div id="placeAutocompleteContainer"></div>
+          <input type="hidden" id="propertyAddress">
+          <div id="manualAddressWrap" class="hidden" style="margin-top:8px;">
+            <input type="text" id="propertyAddressManual" placeholder="Type the full address">
+          </div>
+          <button type="button" id="manualAddressToggle" style="background:none;border:none;color:var(--gold-deep);font-size:12.5px;font-weight:600;cursor:pointer;padding:8px 0 0;text-align:left;">Can't find your address? Enter it manually</button>
+          <div style="font-size:12.5px;color:var(--slate);margin-top:4px;">Start typing and pick your address from the list. New construction sometimes isn't mapped yet — that's what the manual option above is for.</div>
+
         </div>
 
         <div class="form-block">
           <label for="sqft">Property size (sq ft)</label>
-          <input type="range" id="sqft" min="800" max="6000" step="100" value="2200" oninput="updateSummary()">
-          <div class="calc-sqft-val" id="sqftVal" style="font-size:22px;margin-top:8px;">2,200 sq ft</div>
+          <input type="number" id="sqft" min="100" max="20000" step="10" value="2200" placeholder="e.g. 2200" oninput="updateSummary()">
         </div>
 
         <div class="path-toggle">
@@ -96,14 +106,15 @@
             <label class="addon-row"><span><input type="checkbox" id="svc_hdr" onchange="updateSummary()"> HDR Photography</span><span class="addon-price" id="price_hdr"></span></label>
             <label class="addon-row"><span><input type="checkbox" id="svc_video" onchange="updateSummary()"> Cinematic Video</span><span class="addon-price" id="price_video"></span></label>
             <label class="addon-row"><span><input type="checkbox" id="svc_tour3d" onchange="updateSummary()"> 3D Virtual Tour</span><span class="addon-price" id="price_tour3d"></span></label>
+            <label class="addon-row"><span><input type="checkbox" id="svc_aerial" onchange="onAerialServiceToggle();updateSummary()"> Aerial Photography</span><span class="addon-price">$115</span></label>
+            <label class="addon-row hidden" id="row_aerialVideoService" style="margin-left:20px;"><span><input type="checkbox" id="svc_aerialVideo" onchange="updateSummary()"> + Aerial Video</span><span class="addon-price">+$50</span></label>
           </div>
         </div>
 
         <div class="form-block" style="margin-top:26px;">
           <label>Add-ons</label>
           <div class="addon-list">
-            <label class="addon-row"><span><input type="checkbox" id="addon_aerialPhoto" onchange="onAerialToggle();updateSummary()"> Aerial Photography</span><span class="addon-price">$115</span></label>
-            <label class="addon-row hidden" id="row_aerialVideo" style="margin-left:20px;"><span><input type="checkbox" id="addon_aerialVideo" onchange="updateSummary()"> + Aerial Video</span><span class="addon-price">+$50</span></label>
+            <label class="addon-row" id="row_droneAddon"><span><input type="checkbox" id="addon_droneAddon" onchange="updateSummary()"> Drone Add-on</span><span class="addon-price">$35</span></label>
             <label class="addon-row"><span><input type="checkbox" id="addon_floorplan" onchange="updateSummary()"> Floor Plans</span><span class="addon-price">$50</span></label>
             <label class="addon-row" id="row_twilight"><span><input type="checkbox" id="addon_twilight" onchange="updateSummary()"> Twilight Photography</span><span class="addon-price">$75</span></label>
             <label class="addon-row"><span><input type="checkbox" id="addon_sameday" onchange="updateSummary()"> Same-Day Delivery</span><span class="addon-price">from $50</span></label>
@@ -173,12 +184,13 @@
     tour3d:{ label: '3D Virtual Tour', tiers: [{max:2499,price:225},{max:3999,price:275},{max:5999,price:325}] },
   };
   const ADDONS = {
-    aerialPhoto: { label: 'Aerial Photography', price: 115 },
-    aerialVideo: { label: 'Aerial Video', price: 50 },
-    floorplan:   { label: 'Floor Plans', price: 50 },
-    twilight:    { label: 'Twilight Photography', price: 75 },
-    sameday:     { label: 'Same-Day Delivery', price: 50 },
+    droneAddon: { label: 'Drone Add-on', price: 35 },
+    floorplan:  { label: 'Floor Plans', price: 50 },
+    twilight:   { label: 'Twilight Photography', price: 75 },
+    sameday:    { label: 'Same-Day Delivery', price: 50 },
   };
+  const AERIAL_PHOTO = { label: 'Aerial Photography', price: 115 };
+  const AERIAL_VIDEO = { label: 'Aerial Video', price: 50 };
 
   let currentPath = 'package';
   let selectedPackageId = null;
@@ -225,18 +237,21 @@
     // Packages already include twilight — hide that add-on in package mode to avoid double-charging
     document.getElementById('row_twilight').classList.toggle('hidden', path === 'package');
     if (path === 'package') document.getElementById('addon_twilight').checked = false;
+    // Drone add-on is the cheap package upsell; à la carte clients book Aerial Photography as its own service instead
+    document.getElementById('row_droneAddon').classList.toggle('hidden', path !== 'package');
+    if (path !== 'package') document.getElementById('addon_droneAddon').checked = false;
     updateSummary();
   }
 
-  function onAerialToggle() {
-    const checked = document.getElementById('addon_aerialPhoto').checked;
-    document.getElementById('row_aerialVideo').classList.toggle('hidden', !checked);
-    if (!checked) document.getElementById('addon_aerialVideo').checked = false;
+  function onAerialServiceToggle() {
+    const checked = document.getElementById('svc_aerial').checked;
+    document.getElementById('row_aerialVideoService').classList.toggle('hidden', !checked);
+    if (!checked) document.getElementById('svc_aerialVideo').checked = false;
   }
 
   function updateSummary() {
-    const sqft = parseInt(document.getElementById('sqft').value, 10);
-    document.getElementById('sqftVal').textContent = sqft.toLocaleString() + ' sq ft';
+    const raw = parseInt(document.getElementById('sqft').value, 10);
+    const sqft = (isNaN(raw) || raw <= 0) ? 0 : raw;
 
     if (currentPath === 'package') renderPackageCards();
 
@@ -267,6 +282,14 @@
           total += p;
         }
       });
+      if (document.getElementById('svc_aerial').checked) {
+        lines.push({ label: AERIAL_PHOTO.label, price: AERIAL_PHOTO.price });
+        total += AERIAL_PHOTO.price;
+        if (document.getElementById('svc_aerialVideo').checked) {
+          lines.push({ label: AERIAL_VIDEO.label, price: AERIAL_VIDEO.price });
+          total += AERIAL_VIDEO.price;
+        }
+      }
     }
 
     Object.keys(ADDONS).forEach(key => {
@@ -318,6 +341,11 @@
   document.getElementById('bookingForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const statusEl = document.getElementById('bookingStatus');
+    if (!document.getElementById('propertyAddress').value.trim()) {
+      statusEl.className = 'booking-status error';
+      statusEl.textContent = 'Enter the property address first — pick one from the list, or use "Enter it manually."';
+      return;
+    }
     if (!selectedSlot) {
       statusEl.className = 'booking-status error';
       statusEl.textContent = 'Pick an available time slot first.';
@@ -330,6 +358,8 @@
       ? Object.keys(STANDALONE).filter(key => document.getElementById('svc_' + key).checked)
       : [];
     const addons = Object.keys(ADDONS).filter(key => document.getElementById('addon_' + key).checked);
+    const aerialPhoto = currentPath === 'alacarte' && document.getElementById('svc_aerial').checked;
+    const aerialVideoAddon = aerialPhoto && document.getElementById('svc_aerialVideo').checked;
 
     const payload = {
       propertyAddress: document.getElementById('propertyAddress').value,
@@ -338,6 +368,8 @@
       packageId: currentPath === 'package' ? selectedPackageId : null,
       services,
       addons,
+      aerialPhoto,
+      aerialVideoAddon,
       startISO: selectedSlot.start,
       endISO: selectedSlot.end,
       clientName: document.getElementById('clientName').value,
@@ -370,6 +402,39 @@
 
   renderPackageCards();
   updateSummary();
+
+  async function initAddressAutocomplete() {
+    try {
+      const { PlaceAutocompleteElement } = await google.maps.importLibrary('places');
+      const container = document.getElementById('placeAutocompleteContainer');
+      const hiddenInput = document.getElementById('propertyAddress');
+      if (!container || !hiddenInput) return;
+
+      const placeAutocomplete = new PlaceAutocompleteElement({
+        componentRestrictions: { country: 'us' },
+      });
+      container.appendChild(placeAutocomplete);
+
+      placeAutocomplete.addEventListener('gmp-select', async ({ placePrediction }) => {
+        const place = placePrediction.toPlace();
+        await place.fetchFields({ fields: ['formattedAddress'] });
+        hiddenInput.value = place.formattedAddress || '';
+      });
+    } catch (err) {
+      // If the widget fails to load for any reason, manual entry below still works fine —
+      // never let this block someone from completing the form.
+      console.error('Address autocomplete failed to load:', err);
+    }
+  }
+  window.initAddressAutocomplete = initAddressAutocomplete;
+
+  document.getElementById('manualAddressToggle').addEventListener('click', () => {
+    document.getElementById('manualAddressWrap').classList.toggle('hidden');
+    document.getElementById('placeAutocompleteContainer').classList.toggle('hidden');
+  });
+  document.getElementById('propertyAddressManual').addEventListener('input', (e) => {
+    document.getElementById('propertyAddress').value = e.target.value;
+  });
 </script>
 
 </body>
