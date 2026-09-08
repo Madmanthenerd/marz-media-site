@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://marzmedia.netlify.app/sitemap.xml
