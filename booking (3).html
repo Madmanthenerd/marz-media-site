@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a Shoot — Marz Media Photography</title>
+<meta name="description" content="Book real estate photography, video, and drone coverage online — no card required to book, invoice sent after. Serving Cypress and the greater Houston metro.">
+<link rel="canonical" href="https://marzmedia.netlify.app/booking.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Book a Shoot — Marz Media Photography">
+<meta property="og:description" content="Book real estate photography, video, and drone coverage online in the greater Houston metro — no card required to book.">
+<meta property="og:url" content="https://marzmedia.netlify.app/booking.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Book a Shoot — Marz Media Photography">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<!-- Google Places Autocomplete for the property address field. This API key is safe to
+     be visible here — Google's security model for it is domain restriction, not secrecy,
+     unlike the Stripe/Resend/Google Calendar keys used elsewhere in this project. -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAaP8RKFizdXk4HfoGnNJIQlqZ0iNxm9no&libraries=places" async defer></script>
+<style>
+  .path-toggle{display:flex;gap:10px;margin:30px 0 6px;}
+  .path-btn{
+    flex:1;padding:14px 18px;border:1px solid var(--line-on-paper);border-radius:2px;
+    background:var(--paper);cursor:pointer;text-align:left;font-family:'Manrope',sans-serif;
+  }
+  .path-btn strong{display:block;font-size:15px;color:var(--ink);}
+  .path-btn span{font-size:13px;color:var(--slate);}
+  .path-btn.active{border-color:var(--dusk);background:var(--paper-dim);}
+  .package-cards{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+  .package-card{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+    padding:16px 18px;border:1px solid var(--line-on-paper);border-radius:2px;cursor:pointer;
+  }
+  .package-card.recommended{border-color:var(--gold);}
+  .package-card.selected{border-color:var(--dusk);background:var(--paper-dim);}
+  .package-card h4{font-family:'Fraunces',serif;font-size:17px;margin:0 0 4px;}
+  .package-card p{font-size:13px;color:var(--slate);margin:0;max-width:38ch;}
+  .package-card .price{font-family:'Fraunces',serif;font-size:20px;white-space:nowrap;}
+  .tag-most-booked{display:inline-block;font-size:10.5px;color:var(--gold-deep);font-weight:700;margin-left:8px;}
+  .service-list{display:flex;flex-direction:column;gap:10px;margin-top:16px;}
+  .hidden{display:none !important;}
+  .retainer-note{
+    margin-top:40px;padding:20px;border:1px solid var(--line-on-paper);border-radius:2px;
+    background:var(--paper-dim);font-size:14px;color:var(--slate);
+  }
+  .retainer-note a{color:var(--gold-deep);font-weight:600;}
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav">
+    <a href="index.html" class="logo">Marz<span>Media</span></a>
+    <div class="nav-links">
+      <a href="index.html#services">Services</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+    <div class="nav-cta">
+      <a href="booking.html" class="btn btn-gold" style="padding:11px 20px;font-size:14px;">Book a shoot</a>
+      <button class="nav-toggle" aria-label="Menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </nav>
+</header>
+
+<section class="booking-hero">
+  <div class="wrap">
+    <h1>Book your shoot.</h1>
+    <p>Pick a listing package or build it à la carte, choose a date, and you'll get a calendar hold plus an emailed invoice — no card required up front.</p>
+
+    <form class="booking-form" id="bookingForm">
+      <div>
+
+        <div class="form-block">
+          <label for="propertyAddressManual">Property address</label>
+          <input type="text" id="propertyAddressManual" required placeholder="123 Listing St, Cypress, TX" autocomplete="off">
+          <input type="hidden" id="propertyAddress">
+          <div id="placeAutocompleteContainer" style="margin-top:8px;"></div>
+          <div style="font-size:12.5px;color:var(--slate);margin-top:4px;">Type the address above. If suggestions load in below, tap one to auto-fill — otherwise just typing it is all you need.</div>
+
+        </div>
+
+        <div class="form-block">
+          <label for="sqft">Property size (sq ft)</label>
+          <input type="number" id="sqft" min="100" max="20000" step="10" placeholder="e.g. 2200" oninput="updateSummary()">
+        </div>
+
+        <div class="path-toggle">
+          <button type="button" class="path-btn active" id="pathPackageBtn" onclick="setPath('package')">
+            <strong>Listing Package</strong>
+            <span>Photo + video + twilight, bundled</span>
+          </button>
+          <button type="button" class="path-btn" id="pathAlaCarteBtn" onclick="setPath('alacarte')">
+            <strong>À la Carte</strong>
+            <span>Pick exactly what you need</span>
+          </button>
+        </div>
+
+        <div id="packagePath">
+          <div class="package-cards" id="packageCards"></div>
+        </div>
+
+        <div id="alaCartePath" class="hidden">
+          <label style="display:block;font-size:14px;font-weight:600;color:var(--ink);margin:24px 0 10px;">Services</label>
+          <div class="service-list">
+            <label class="addon-row"><span><input type="checkbox" id="svc_hdr" onchange="updateSummary()"> HDR Photography</span><span class="addon-price" id="price_hdr"></span></label>
+            <label class="addon-row"><span><input type="checkbox" id="svc_video" onchange="updateSummary()"> Cinematic Video</span><span class="addon-price" id="price_video"></span></label>
+            <label class="addon-row"><span><input type="checkbox" id="svc_tour3d" onchange="updateSummary()"> 3D Virtual Tour</span><span class="addon-price" id="price_tour3d"></span></label>
+            <label class="addon-row"><span><input type="checkbox" id="svc_aerial" onchange="onAerialServiceToggle();updateSummary()"> Aerial Photography</span><span class="addon-price">$115</span></label>
+            <label class="addon-row hidden" id="row_aerialVideoService" style="margin-left:20px;"><span><input type="checkbox" id="svc_aerialVideo" onchange="updateSummary()"> + Aerial Video</span><span class="addon-price">+$50</span></label>
+          </div>
+        </div>
+
+        <div class="form-block" style="margin-top:26px;">
+          <label>Add-ons</label>
+          <div class="addon-list">
+            <label class="addon-row" id="row_droneAddon"><span><input type="checkbox" id="addon_droneAddon" onchange="updateSummary()"> Drone Add-on</span><span class="addon-price">$35</span></label>
+            <label class="addon-row"><span><input type="checkbox" id="addon_floorplan" onchange="updateSummary()"> Floor Plans</span><span class="addon-price">$50</span></label>
+            <label class="addon-row" id="row_twilight"><span><input type="checkbox" id="addon_twilight" onchange="updateSummary()"> Twilight Photography</span><span class="addon-price">$75</span></label>
+            <label class="addon-row"><span><input type="checkbox" id="addon_sameday" onchange="updateSummary()"> Same-Day Delivery</span><span class="addon-price">from $50</span></label>
+          </div>
+        </div>
+
+        <div class="form-block">
+          <label for="shootDate">Preferred date</label>
+          <input type="date" id="shootDate" required onchange="checkAvailability()">
+          <div class="slot-grid" id="slotGrid"></div>
+        </div>
+
+        <div class="form-block">
+          <label for="clientName">Your name</label>
+          <input type="text" id="clientName" required>
+        </div>
+        <div class="form-block">
+          <label for="clientEmail">Email</label>
+          <input type="email" id="clientEmail" required>
+        </div>
+        <div class="form-block">
+          <label for="clientPhone">Phone</label>
+          <input type="tel" id="clientPhone">
+        </div>
+        <div class="form-block">
+          <label for="notes">Notes (gate code, access instructions, anything we should know)</label>
+          <textarea id="notes"></textarea>
+        </div>
+
+        <div class="retainer-note">
+          Looking for ongoing monthly content instead of a single shoot? Retainers (4/6/8 videos per month) are set up separately — <a href="mailto:hello@marzmediaphotography.com?subject=Monthly%20Retainer%20Inquiry">email us</a> rather than booking here.
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div style="font-family:'Fraunces',serif;font-size:19px;">Your booking</div>
+        <div id="summaryLines"></div>
+        <div class="summary-total"><span>Total</span><span id="sumTotal">$0</span></div>
+        <button type="submit" class="btn btn-gold" style="width:100%;justify-content:center;margin-top:22px;">Request this booking</button>
+        <div class="booking-status" id="bookingStatus"></div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-grid">
+    <div>© 2026 Marz Media Photography — Cypress, TX</div>
+    <div style="display:flex;gap:22px;">
+      <a href="#">Instagram</a>
+      <a href="#">Facebook</a>
+      <a href="mailto:hello@marzmediaphotography.com">hello@marzmediaphotography.com</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ---- Pricing, mirrors netlify/functions/create-booking.js exactly ----
+  const PACKAGES = [
+    { id: 'essential', max: 2499, price: 349, label: 'Essential', desc: 'HDR photos + video or reel + 1 twilight photo' },
+    { id: 'pro', max: 3999, price: 449, label: 'Pro', desc: 'HDR photos + video or reel + 2 twilight photos', mostBooked: true },
+    { id: 'signature', max: 5999, price: 599, label: 'Signature', desc: '+2 twilights + priority scheduling' },
+  ];
+  const STANDALONE = {
+    hdr:   { label: 'HDR Photography', tiers: [{max:2499,price:165},{max:3999,price:210},{max:5999,price:260}] },
+    video: { label: 'Cinematic Video', tiers: [{max:2499,price:225},{max:3999,price:275},{max:6000,price:325}] },
+    tour3d:{ label: '3D Virtual Tour', tiers: [{max:2499,price:225},{max:3999,price:275},{max:5999,price:325}] },
+  };
+  const ADDONS = {
+    droneAddon: { label: 'Drone Add-on', price: 35 },
+    floorplan:  { label: 'Floor Plans', price: 50 },
+    twilight:   { label: 'Twilight Photography', price: 75 },
+    sameday:    { label: 'Same-Day Delivery', price: 50 },
+  };
+  const AERIAL_PHOTO = { label: 'Aerial Photography', price: 115 };
+  const AERIAL_VIDEO = { label: 'Aerial Video', price: 50 };
+
+  let currentPath = 'package';
+  let selectedPackageId = null;
+
+  function tierPrice(tiers, sqft) {
+    const t = tiers.find(t => sqft <= t.max);
+    return t ? t.price : null;
+  }
+  function recommendedPackage(sqft) {
+    return PACKAGES.find(p => sqft <= p.max) || null;
+  }
+
+  function renderPackageCards() {
+    const raw = parseInt(document.getElementById('sqft').value, 10);
+    const sqft = (isNaN(raw) || raw <= 0) ? 0 : raw;
+    if (!sqft) selectedPackageId = null; // reset so a cleared field doesn't leave a stale pick
+    const rec = sqft ? recommendedPackage(sqft) : null;
+    const container = document.getElementById('packageCards');
+    container.innerHTML = PACKAGES.map(p => {
+      const isSelected = sqft && (selectedPackageId ? selectedPackageId === p.id : rec && rec.id === p.id);
+      if (isSelected) selectedPackageId = p.id;
+      return `
+        <div class="package-card ${isSelected ? 'selected' : ''} ${sqft && rec && rec.id === p.id ? 'recommended' : ''}" onclick="selectPackage('${p.id}')">
+          <div>
+            <h4>${p.label}${p.mostBooked ? '<span class=\"tag-most-booked\">MOST BOOKED</span>' : ''}</h4>
+            <p>${p.desc}</p>
+          </div>
+          <div class="price">$${p.price}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function selectPackage(id) {
+    selectedPackageId = id;
+    renderPackageCards();
+    updateSummary();
+  }
+
+  function setPath(path) {
+    currentPath = path;
+    document.getElementById('pathPackageBtn').classList.toggle('active', path === 'package');
+    document.getElementById('pathAlaCarteBtn').classList.toggle('active', path === 'alacarte');
+    document.getElementById('packagePath').classList.toggle('hidden', path !== 'package');
+    document.getElementById('alaCartePath').classList.toggle('hidden', path !== 'alacarte');
+    // Packages already include twilight — hide that add-on in package mode to avoid double-charging
+    document.getElementById('row_twilight').classList.toggle('hidden', path === 'package');
+    if (path === 'package') document.getElementById('addon_twilight').checked = false;
+    // Drone add-on is the cheap package upsell; à la carte clients book Aerial Photography as its own service instead
+    document.getElementById('row_droneAddon').classList.toggle('hidden', path !== 'package');
+    if (path !== 'package') document.getElementById('addon_droneAddon').checked = false;
+    updateSummary();
+  }
+
+  function onAerialServiceToggle() {
+    const checked = document.getElementById('svc_aerial').checked;
+    document.getElementById('row_aerialVideoService').classList.toggle('hidden', !checked);
+    if (!checked) document.getElementById('svc_aerialVideo').checked = false;
+  }
+
+  function updateSummary() {
+    const raw = parseInt(document.getElementById('sqft').value, 10);
+    const sqft = (isNaN(raw) || raw <= 0) ? 0 : raw;
+
+    if (currentPath === 'package') renderPackageCards();
+
+    // Standalone service prices shown live in à la carte mode
+    Object.keys(STANDALONE).forEach(key => {
+      const p = sqft ? tierPrice(STANDALONE[key].tiers, sqft) : null;
+      document.getElementById('price_' + key).textContent = p ? ('$' + p) : (sqft ? 'Custom quote' : '—');
+    });
+
+    // Nothing computed or shown as a "ready" total until they've entered their own
+    // property size — showing a price before that feels presumptuous, not helpful.
+    if (!sqft) {
+      document.getElementById('summaryLines').innerHTML = '';
+      document.getElementById('sumTotal').textContent = 'Enter your property size';
+      return;
+    }
+
+    let lines = [];
+    let total = 0;
+    let customQuote = false;
+
+    if (currentPath === 'package') {
+      const pkg = PACKAGES.find(p => p.id === selectedPackageId);
+      if (pkg) {
+        if (sqft > 5999) customQuote = true;
+        lines.push({ label: pkg.label + ' Package', price: pkg.price });
+        total += pkg.price;
+      }
+    } else {
+      Object.keys(STANDALONE).forEach(key => {
+        const cb = document.getElementById('svc_' + key);
+        if (cb && cb.checked) {
+          const p = tierPrice(STANDALONE[key].tiers, sqft);
+          if (p === null) { customQuote = true; return; }
+          lines.push({ label: STANDALONE[key].label, price: p });
+          total += p;
+        }
+      });
+      if (document.getElementById('svc_aerial').checked) {
+        lines.push({ label: AERIAL_PHOTO.label, price: AERIAL_PHOTO.price });
+        total += AERIAL_PHOTO.price;
+        if (document.getElementById('svc_aerialVideo').checked) {
+          lines.push({ label: AERIAL_VIDEO.label, price: AERIAL_VIDEO.price });
+          total += AERIAL_VIDEO.price;
+        }
+      }
+    }
+
+    Object.keys(ADDONS).forEach(key => {
+      const cb = document.getElementById('addon_' + key);
+      if (cb && cb.checked) {
+        lines.push({ label: ADDONS[key].label, price: ADDONS[key].price });
+        total += ADDONS[key].price;
+      }
+    });
+
+    if (lines.length === 0) {
+      document.getElementById('summaryLines').innerHTML = '';
+      document.getElementById('sumTotal').textContent = currentPath === 'package' ? 'Choose a package' : 'Choose a service';
+      return;
+    }
+
+    document.getElementById('summaryLines').innerHTML = lines.map(l =>
+      `<div class="summary-line"><span>${l.label}</span><span>$${l.price}</span></div>`
+    ).join('');
+    document.getElementById('sumTotal').textContent = customQuote ? 'Custom quote' : ('$' + total);
+  }
+
+  let selectedSlot = null;
+
+  async function checkAvailability() {
+    const date = document.getElementById('shootDate').value;
+    const grid = document.getElementById('slotGrid');
+    grid.innerHTML = '<span style="color:var(--slate);font-size:13.5px;">Checking availability…</span>';
+    selectedSlot = null;
+    try {
+      const res = await fetch(`/.netlify/functions/check-availability?date=${date}`);
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        grid.innerHTML = `<span style="color:#B3423E;font-size:13.5px;">Calendar check failed: ${data.error || ('HTTP ' + res.status)}. This is a real error, not "fully booked" — screenshot this.</span>`;
+        return;
+      }
+      if (!data.slots || data.slots.length === 0) {
+        grid.innerHTML = '<span style="color:var(--slate);font-size:13.5px;">No open slots that day — try another date.</span>';
+        return;
+      }
+      grid.innerHTML = '';
+      data.slots.forEach(slot => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'slot-btn';
+        btn.textContent = slot.label;
+        btn.onclick = () => {
+          document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedSlot = slot;
+        };
+        grid.appendChild(btn);
+      });
+    } catch (err) {
+      grid.innerHTML = '<span style="color:#B3423E;font-size:13.5px;">Could not reach the availability check at all — network or deploy issue.</span>';
+    }
+  }
+
+  document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const statusEl = document.getElementById('bookingStatus');
+    if (!document.getElementById('propertyAddress').value.trim()) {
+      statusEl.className = 'booking-status error';
+      statusEl.textContent = 'Enter the property address first — pick one from the list, or use "Enter it manually."';
+      return;
+    }
+    if (!selectedSlot) {
+      statusEl.className = 'booking-status error';
+      statusEl.textContent = 'Pick an available time slot first.';
+      return;
+    }
+    statusEl.className = 'booking-status';
+    statusEl.textContent = 'Sending your request…';
+
+    const services = currentPath === 'alacarte'
+      ? Object.keys(STANDALONE).filter(key => document.getElementById('svc_' + key).checked)
+      : [];
+    const addons = Object.keys(ADDONS).filter(key => document.getElementById('addon_' + key).checked);
+    const aerialPhoto = currentPath === 'alacarte' && document.getElementById('svc_aerial').checked;
+    const aerialVideoAddon = aerialPhoto && document.getElementById('svc_aerialVideo').checked;
+
+    const payload = {
+      propertyAddress: document.getElementById('propertyAddress').value,
+      sqft: document.getElementById('sqft').value,
+      bookingPath: currentPath,
+      packageId: currentPath === 'package' ? selectedPackageId : null,
+      services,
+      addons,
+      aerialPhoto,
+      aerialVideoAddon,
+      startISO: selectedSlot.start,
+      endISO: selectedSlot.end,
+      clientName: document.getElementById('clientName').value,
+      clientEmail: document.getElementById('clientEmail').value,
+      clientPhone: document.getElementById('clientPhone').value,
+      notes: document.getElementById('notes').value,
+    };
+
+    try {
+      const res = await fetch('/.netlify/functions/create-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.success) {
+        statusEl.className = 'booking-status success';
+        statusEl.textContent = 'Booked! Check your email for confirmation and the invoice.';
+      } else if (data.customQuote) {
+        statusEl.className = 'booking-status';
+        statusEl.textContent = data.message;
+      } else {
+        throw new Error(data.error || 'Unknown error');
+      }
+    } catch (err) {
+      statusEl.className = 'booking-status error';
+      statusEl.textContent = 'Something went wrong. This form needs to be live on Netlify with Stripe/email/calendar configured before it can complete a real booking.';
+    }
+  });
+
+  renderPackageCards();
+  updateSummary();
+
+  document.getElementById('propertyAddressManual').addEventListener('input', (e) => {
+    document.getElementById('propertyAddress').value = e.target.value;
+  });
+
+  async function initAddressAutocomplete() {
+    try {
+      const { PlaceAutocompleteElement } = await google.maps.importLibrary('places');
+      const container = document.getElementById('placeAutocompleteContainer');
+      const manualInput = document.getElementById('propertyAddressManual');
+      const hiddenInput = document.getElementById('propertyAddress');
+      if (!container || !hiddenInput) return;
+
+      const placeAutocomplete = new PlaceAutocompleteElement({
+        componentRestrictions: { country: 'us' },
+      });
+      container.appendChild(placeAutocomplete);
+
+      placeAutocomplete.addEventListener('gmp-select', async ({ placePrediction }) => {
+        const place = placePrediction.toPlace();
+        await place.fetchFields({ fields: ['formattedAddress'] });
+        const addr = place.formattedAddress || '';
+        hiddenInput.value = addr;
+        manualInput.value = addr; // keep the visible field in sync with what was picked
+      });
+    } catch (err) {
+      // Purely optional enhancement — the manual field above already works regardless.
+      console.error('Address autocomplete widget failed to load (manual entry above is unaffected):', err);
+    }
+  }
+  function waitForGoogleMaps(retriesLeft = 50) {
+    if (window.google && window.google.maps && window.google.maps.importLibrary) {
+      initAddressAutocomplete();
+    } else if (retriesLeft > 0) {
+      setTimeout(() => waitForGoogleMaps(retriesLeft - 1), 100);
+    }
+    // No else needed — manual entry was never blocked on this succeeding.
+  }
+  waitForGoogleMaps();
+</script>
+
+</body>
+</html>
