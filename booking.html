@@ -2,440 +2,579 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Book a Shoot — Marz Media Photography</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Book a Shoot | Marz Media</title>
+<meta name="description" content="Book Houston real estate photography, cinematic video, drone and 3D tours with Marz Media. Live availability, instant pricing, pay by invoice after booking.">
+<link rel="canonical" href="https://book.marzmediaphotography.com/">
+<meta property="og:title" content="Book a Shoot | Marz Media Photography">
+<meta property="og:description" content="Live availability and instant pricing for Houston listing photos, video, drone and 3D tours.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-<!-- Google Places Autocomplete for the property address field. This API key is safe to
-     be visible here — Google's security model for it is domain restriction, not secrecy,
-     unlike the Stripe/Resend/Google Calendar keys used elsewhere in this project. -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAaP8RKFizdXk4HfoGnNJIQlqZ0iNxm9no&libraries=places&callback=initAddressAutocomplete" async defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  .path-toggle{display:flex;gap:10px;margin:30px 0 6px;}
-  .path-btn{
-    flex:1;padding:14px 18px;border:1px solid var(--line-on-paper);border-radius:2px;
-    background:var(--paper);cursor:pointer;text-align:left;font-family:'Manrope',sans-serif;
-  }
-  .path-btn strong{display:block;font-size:15px;color:var(--ink);}
-  .path-btn span{font-size:13px;color:var(--slate);}
-  .path-btn.active{border-color:var(--dusk);background:var(--paper-dim);}
-  .package-cards{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
-  .package-card{
-    display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
-    padding:16px 18px;border:1px solid var(--line-on-paper);border-radius:2px;cursor:pointer;
-  }
-  .package-card.recommended{border-color:var(--gold);}
-  .package-card.selected{border-color:var(--dusk);background:var(--paper-dim);}
-  .package-card h4{font-family:'Fraunces',serif;font-size:17px;margin:0 0 4px;}
-  .package-card p{font-size:13px;color:var(--slate);margin:0;max-width:38ch;}
-  .package-card .price{font-family:'Fraunces',serif;font-size:20px;white-space:nowrap;}
-  .tag-most-booked{display:inline-block;font-size:10.5px;color:var(--gold-deep);font-weight:700;margin-left:8px;}
-  .service-list{display:flex;flex-direction:column;gap:10px;margin-top:16px;}
-  .hidden{display:none !important;}
-  .retainer-note{
-    margin-top:40px;padding:20px;border:1px solid var(--line-on-paper);border-radius:2px;
-    background:var(--paper-dim);font-size:14px;color:var(--slate);
-  }
-  .retainer-note a{color:var(--gold-deep);font-weight:600;}
+/* Layout: one column of four numbered steps; on wide screens a sticky order summary rides alongside. */
+:root{
+  --bg:#FFFFFF; --surface:#F4F5F7; --ink:#0F1218; --muted:#5A6170; --line:#DFE2E8;
+  --navy:#1F3A6E; --navy-ink:#FFFFFF; --deep:#0E1626; --deep-ink:#E9EDF4; --soft:#E8EDF6;
+  --ok:#1E7A4F; --warn:#9A5B00; --err:#B42318;
+  --display:'Fraunces', Georgia, 'Times New Roman', serif;
+  --body:'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0B0F16; --surface:#141A24; --ink:#ECEFF4; --muted:#9AA3B2; --line:#262E3B;
+  --navy:#86A8E6; --navy-ink:#0B0F16; --deep:#05080D; --deep-ink:#E9EDF4; --soft:#1A2333;
+  --ok:#5BC48E; --warn:#E3A44A; --err:#F27C70; color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0B0F16; --surface:#141A24; --ink:#ECEFF4; --muted:#9AA3B2; --line:#262E3B;
+  --navy:#86A8E6; --navy-ink:#0B0F16; --deep:#05080D; --deep-ink:#E9EDF4; --soft:#1A2333;
+  --ok:#5BC48E; --warn:#E3A44A; --err:#F27C70; color-scheme:dark; }
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+button,input,textarea{font:inherit;color:inherit}
+a{color:var(--navy)}
+:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+
+.top{background:var(--deep);color:var(--deep-ink)}
+.top .in{max-width:1120px;margin:0 auto;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.mark{font-weight:700;letter-spacing:.2em;text-transform:uppercase;font-size:13px;text-decoration:none;color:inherit}
+.mark b{font-weight:400;opacity:.65;margin-left:.35em}
+.top a.back{color:inherit;opacity:.75;font-size:14px;text-decoration:none}
+.top a.back:hover{opacity:1}
+
+.hero{background:var(--deep);color:var(--deep-ink);padding:28px 16px 34px}
+.hero .in{max-width:1120px;margin:0 auto}
+.hero h1{font:500 clamp(34px,6vw,52px)/1.04 var(--display);margin:0 0 12px;letter-spacing:-.01em;text-wrap:balance}
+.facts{display:flex;flex-wrap:wrap;gap:8px 22px;margin:0;padding:0;list-style:none;font-size:14px;opacity:.85}
+.facts li::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5;margin-right:8px;vertical-align:middle}
+
+.demo{max-width:1120px;margin:16px auto 0;padding:10px 14px;border:1px dashed var(--warn);color:var(--warn);border-radius:var(--r);font-size:14px}
+.wrapx{padding-inline:16px}
+
+.grid{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr);gap:28px;padding-block:28px 140px}
+@media (min-width:920px){ .grid{grid-template-columns:minmax(0,1fr) 340px;padding-block:36px 60px} }
+
+.step{border-top:1px solid var(--line);padding-top:22px;margin-bottom:34px}
+.step:first-child{border-top:0;padding-top:0}
+.step-h{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+.step-n{font:500 15px var(--display);color:var(--muted);min-width:1.4em}
+.step-h h2{font:500 26px/1.15 var(--display);margin:0}
+.hint{color:var(--muted);font-size:14px;margin:4px 0 0}
+
+label.f{display:block;font-size:13px;font-weight:600;margin:0 0 6px;letter-spacing:.01em}
+.field{margin-bottom:16px;min-width:0}
+input[type=text],input[type=email],input[type=tel],input[type=number],textarea{
+  width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);font-size:16px}
+input:focus,textarea:focus{border-color:var(--navy);outline:none;box-shadow:0 0 0 3px var(--soft)}
+textarea{min-height:84px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr;gap:0 14px}
+@media (min-width:560px){ .row2{grid-template-columns:1fr 1fr} }
+.err{color:var(--err);font-size:13px;margin-top:6px}
+#addrAuto gmp-place-autocomplete{width:100%}
+.linkish{background:none;border:0;padding:0;color:var(--navy);font-size:13px;cursor:pointer;text-decoration:underline;margin-top:6px}
+
+/* sq ft ruler */
+.ruler{margin-top:14px}
+.bands{display:grid;grid-template-columns:2.5fr 1.5fr 2fr 1fr;height:30px;border-radius:var(--r);overflow:hidden;position:relative}
+.band{background:var(--surface);border-right:1px solid var(--bg);font-size:11px;font-weight:600;color:var(--muted);display:flex;align-items:center;justify-content:center;letter-spacing:.06em;text-transform:uppercase;transition:background .2s,color .2s}
+.band.on{background:var(--navy);color:var(--navy-ink)}
+.ticks{display:grid;grid-template-columns:2.5fr 1.5fr 2fr 1fr;font-size:11px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+.ticks span{text-align:left}
+.pin{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--ink);transition:left .25s}
+@media (prefers-reduced-motion:reduce){ .pin,.band{transition:none} }
+
+/* toggle */
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:var(--r);padding:4px;gap:4px;margin-bottom:18px}
+.seg button{border:0;background:transparent;border-radius:4px;padding:10px 8px;cursor:pointer;font-weight:600;font-size:14px;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+
+.pkgs{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:700px){ .pkgs{grid-template-columns:repeat(3,minmax(0,1fr))} }
+.pkg{text-align:left;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:8px;min-width:0}
+.pkg:hover:not(:disabled){border-color:var(--muted)}
+.pkg[aria-checked=true]{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy);background:var(--soft)}
+.pkg:disabled{opacity:.5;cursor:not-allowed}
+.pkg .nm{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pkg .nm strong{font:500 20px var(--display)}
+.pkg .pr{font:600 20px var(--display);font-variant-numeric:tabular-nums}
+.pkg .inc{display:flex;flex-direction:column;gap:2px;font-size:14px;color:var(--muted)}
+.pkg .inc span::before{content:"+ ";opacity:.6}
+.pkg .fit{font-size:12px;color:var(--muted)}
+.tag{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--navy)}
+
+.subh{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px}
+.opts{border:1px solid var(--line);border-radius:var(--r)}
+.opt{display:flex;align-items:center;gap:12px;padding:13px 14px;border-top:1px solid var(--line);cursor:pointer}
+.opt:first-child{border-top:0}
+.opt input{width:18px;height:18px;accent-color:var(--navy);flex:none}
+.opt .t{flex:1;min-width:0}
+.opt .t small{display:block;color:var(--muted);font-size:13px}
+.opt .p{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.opt.sub{padding-left:44px;background:var(--surface)}
+
+/* dates */
+.days{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x proximity}
+.day{flex:none;width:64px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);padding:8px 4px;text-align:center;cursor:pointer;scroll-snap-align:start}
+.day .w{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block}
+.day .d{font:500 22px/1.2 var(--display);display:block;font-variant-numeric:tabular-nums}
+.day .m{font-size:11px;color:var(--muted);display:block}
+.day[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.day[aria-pressed=true] .w,.day[aria-pressed=true] .m{color:var(--bg);opacity:.75}
+.day:disabled{opacity:.35;cursor:not-allowed}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:14px}
+.slot{border:1px solid var(--line);border-radius:var(--r);background:var(--bg);padding:11px 6px;cursor:pointer;font-weight:600;font-variant-numeric:tabular-nums}
+.slot:hover{border-color:var(--navy)}
+.slot[aria-pressed=true]{background:var(--navy);color:var(--navy-ink);border-color:var(--navy)}
+.note{background:var(--surface);border-radius:var(--r);padding:14px;font-size:14px;color:var(--muted)}
+.len{font-size:14px;color:var(--muted);margin:0 0 12px}
+.len strong{color:var(--ink)}
+
+/* summary */
+.sum{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;border:1px solid var(--line);border-radius:var(--r);padding:20px;background:var(--bg)}
+.sum h3{font:500 20px var(--display);margin:0 0 4px}
+.sum .meta{font-size:13px;color:var(--muted);margin:0 0 14px;overflow-wrap:anywhere}
+.lines{list-style:none;margin:0;padding:0;font-size:14px}
+.lines li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-variant-numeric:tabular-nums}
+.tot{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);margin-top:8px;padding-top:12px}
+.tot span{font-weight:600}
+.tot strong{font:600 28px var(--display);font-variant-numeric:tabular-nums}
+.cta{width:100%;margin-top:16px;padding:15px;border:0;border-radius:var(--r);background:var(--navy);color:var(--navy-ink);font-weight:700;font-size:16px;cursor:pointer}
+.cta:disabled{opacity:.55;cursor:not-allowed}
+.fine{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+.empty{font-size:14px;color:var(--muted);margin:0}
+.ret{margin-top:16px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+
+/* mobile bar */
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:14px;z-index:5}
+.bar .bt{flex:1;min-width:0}
+.bar .bt small{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .bt strong{font:600 22px var(--display);font-variant-numeric:tabular-nums}
+.bar .cta{width:auto;margin:0;padding:13px 20px}
+@media (min-width:920px){ .bar{display:none} }
+
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+.done{max-width:640px;margin:0 auto;padding-block:48px 80px}
+.done h2{font:500 40px/1.08 var(--display);margin:0 0 10px;text-wrap:balance}
+.done .card{border:1px solid var(--line);border-radius:var(--r);padding:20px;margin:22px 0}
+.done ul{padding-left:18px;color:var(--muted)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.foot{max-width:1120px;margin:0 auto;padding-block:0 40px;font-size:13px;color:var(--muted)}
 </style>
 </head>
 <body>
 
-<header>
-  <nav class="nav">
-    <a href="index.html" class="logo">Marz<span>Media</span></a>
-    <div class="nav-links">
-      <a href="index.html#services">Services</a>
-      <a href="index.html#pricing">Pricing</a>
-      <a href="portfolio.html">Portfolio</a>
-      <a href="index.html#about">About</a>
-      <a href="index.html#contact">Contact</a>
-    </div>
-    <div class="nav-cta">
-      <a href="booking.html" class="btn btn-gold" style="padding:11px 20px;font-size:14px;">Book a shoot</a>
-      <button class="nav-toggle" aria-label="Menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
-    </div>
-  </nav>
-</header>
+<div class="top"><div class="in">
+  <a class="mark" href="https://www.marzmediaphotography.com">Marz<b>Media</b></a>
+  <a class="back" href="https://www.marzmediaphotography.com">← Back to site</a>
+</div></div>
 
-<section class="booking-hero">
-  <div class="wrap">
-    <h1>Book your shoot.</h1>
-    <p>Pick a listing package or build it à la carte, choose a date, and you'll get a calendar hold plus an emailed invoice — no card required up front.</p>
+<header class="hero"><div class="in">
+  <h1>Book your shoot</h1>
+  <ul class="facts">
+    <li>Live availability</li>
+    <li>Photos next business day</li>
+    <li>Video in 24–72 hours</li>
+    <li>Pay by invoice, nothing due today</li>
+  </ul>
+</div></header>
 
-    <form class="booking-form" id="bookingForm">
-      <div>
+<div class="wrapx"><div class="demo" id="demo" hidden>Preview mode: times shown are samples and nothing is booked. On book.marzmediaphotography.com this connects to your live calendar, Stripe and email.</div></div>
 
-        <div class="form-block">
-          <label for="propertyAddress">Property address</label>
-          <div id="placeAutocompleteContainer"></div>
-          <input type="hidden" id="propertyAddress">
-          <div id="manualAddressWrap" class="hidden" style="margin-top:8px;">
-            <input type="text" id="propertyAddressManual" placeholder="Type the full address">
-          </div>
-          <button type="button" id="manualAddressToggle" style="background:none;border:none;color:var(--gold-deep);font-size:12.5px;font-weight:600;cursor:pointer;padding:8px 0 0;text-align:left;">Can't find your address? Enter it manually</button>
-          <div style="font-size:12.5px;color:var(--slate);margin-top:4px;">Start typing and pick your address from the list. New construction sometimes isn't mapped yet — that's what the manual option above is for.</div>
-
-        </div>
-
-        <div class="form-block">
-          <label for="sqft">Property size (sq ft)</label>
-          <input type="number" id="sqft" min="100" max="20000" step="10" value="2200" placeholder="e.g. 2200" oninput="updateSummary()">
-        </div>
-
-        <div class="path-toggle">
-          <button type="button" class="path-btn active" id="pathPackageBtn" onclick="setPath('package')">
-            <strong>Listing Package</strong>
-            <span>Photo + video + twilight, bundled</span>
-          </button>
-          <button type="button" class="path-btn" id="pathAlaCarteBtn" onclick="setPath('alacarte')">
-            <strong>À la Carte</strong>
-            <span>Pick exactly what you need</span>
-          </button>
-        </div>
-
-        <div id="packagePath">
-          <div class="package-cards" id="packageCards"></div>
-        </div>
-
-        <div id="alaCartePath" class="hidden">
-          <label style="display:block;font-size:14px;font-weight:600;color:var(--ink);margin:24px 0 10px;">Services</label>
-          <div class="service-list">
-            <label class="addon-row"><span><input type="checkbox" id="svc_hdr" onchange="updateSummary()"> HDR Photography</span><span class="addon-price" id="price_hdr"></span></label>
-            <label class="addon-row"><span><input type="checkbox" id="svc_video" onchange="updateSummary()"> Cinematic Video</span><span class="addon-price" id="price_video"></span></label>
-            <label class="addon-row"><span><input type="checkbox" id="svc_tour3d" onchange="updateSummary()"> 3D Virtual Tour</span><span class="addon-price" id="price_tour3d"></span></label>
-            <label class="addon-row"><span><input type="checkbox" id="svc_aerial" onchange="onAerialServiceToggle();updateSummary()"> Aerial Photography</span><span class="addon-price">$115</span></label>
-            <label class="addon-row hidden" id="row_aerialVideoService" style="margin-left:20px;"><span><input type="checkbox" id="svc_aerialVideo" onchange="updateSummary()"> + Aerial Video</span><span class="addon-price">+$50</span></label>
-          </div>
-        </div>
-
-        <div class="form-block" style="margin-top:26px;">
-          <label>Add-ons</label>
-          <div class="addon-list">
-            <label class="addon-row" id="row_droneAddon"><span><input type="checkbox" id="addon_droneAddon" onchange="updateSummary()"> Drone Add-on</span><span class="addon-price">$35</span></label>
-            <label class="addon-row"><span><input type="checkbox" id="addon_floorplan" onchange="updateSummary()"> Floor Plans</span><span class="addon-price">$50</span></label>
-            <label class="addon-row" id="row_twilight"><span><input type="checkbox" id="addon_twilight" onchange="updateSummary()"> Twilight Photography</span><span class="addon-price">$75</span></label>
-            <label class="addon-row"><span><input type="checkbox" id="addon_sameday" onchange="updateSummary()"> Same-Day Delivery</span><span class="addon-price">from $50</span></label>
-          </div>
-        </div>
-
-        <div class="form-block">
-          <label for="shootDate">Preferred date</label>
-          <input type="date" id="shootDate" required onchange="checkAvailability()">
-          <div class="slot-grid" id="slotGrid"></div>
-        </div>
-
-        <div class="form-block">
-          <label for="clientName">Your name</label>
-          <input type="text" id="clientName" required>
-        </div>
-        <div class="form-block">
-          <label for="clientEmail">Email</label>
-          <input type="email" id="clientEmail" required>
-        </div>
-        <div class="form-block">
-          <label for="clientPhone">Phone</label>
-          <input type="tel" id="clientPhone">
-        </div>
-        <div class="form-block">
-          <label for="notes">Notes (gate code, access instructions, anything we should know)</label>
-          <textarea id="notes"></textarea>
-        </div>
-
-        <div class="retainer-note">
-          Looking for ongoing monthly content instead of a single shoot? Retainers (4/6/8 videos per month) are set up separately — <a href="mailto:hello@marzmediaphotography.com?subject=Monthly%20Retainer%20Inquiry">email us</a> rather than booking here.
-        </div>
+<main id="app" class="wrapx">
+<form class="grid" id="form" novalidate>
+  <div>
+    <!-- 1 -->
+    <section class="step" aria-labelledby="h1">
+      <div class="step-h"><span class="step-n">1</span><div><h2 id="h1">The property</h2></div></div>
+      <div class="field">
+        <label class="f" for="address">Property address</label>
+        <div id="addrAuto" hidden></div>
+        <input type="text" id="address" autocomplete="street-address" placeholder="Start typing the address">
+        <button type="button" class="linkish" id="addrManual" hidden>Type the address manually</button>
       </div>
-
-      <div class="summary-card">
-        <div style="font-family:'Fraunces',serif;font-size:19px;">Your booking</div>
-        <div id="summaryLines"></div>
-        <div class="summary-total"><span>Total</span><span id="sumTotal">$0</span></div>
-        <button type="submit" class="btn btn-gold" style="width:100%;justify-content:center;margin-top:22px;">Request this booking</button>
-        <div class="booking-status" id="bookingStatus"></div>
+      <div class="field">
+        <label class="f" for="sqft">Heated square footage</label>
+        <input type="number" id="sqft" inputmode="numeric" min="100" step="1" placeholder="e.g. 3200">
+        <div class="ruler" aria-hidden="true">
+          <div class="bands" id="bands">
+            <div class="band">Essential</div><div class="band">Pro</div><div class="band">Signature</div><div class="band">Estate</div>
+            <div class="pin" id="pin" hidden></div>
+          </div>
+          <div class="ticks"><span>0</span><span>2,500</span><span>4,000</span><span>6,000+</span></div>
+        </div>
+        <p class="hint" id="tierHint">Pricing is set by the home's size, as listed on HAR or MLS.</p>
       </div>
-    </form>
-  </div>
-</section>
+    </section>
 
-<footer>
-  <div class="wrap footer-grid">
-    <div>© 2026 Marz Media Photography — Cypress, TX</div>
-    <div style="display:flex;gap:22px;">
-      <a href="#">Instagram</a>
-      <a href="#">Facebook</a>
-      <a href="mailto:hello@marzmediaphotography.com">hello@marzmediaphotography.com</a>
-    </div>
-  </div>
-</footer>
+    <!-- 2 -->
+    <section class="step" aria-labelledby="h2">
+      <div class="step-h"><span class="step-n">2</span><div><h2 id="h2">What you need</h2></div></div>
+      <div class="seg" role="group" aria-label="Booking type">
+        <button type="button" id="modePkg" aria-pressed="true">Listing package</button>
+        <button type="button" id="modeAla" aria-pressed="false">Build your own</button>
+      </div>
+      <div id="pkgWrap">
+        <div class="pkgs" id="pkgs" role="radiogroup" aria-label="Packages"></div>
+        <p class="subh">Add to your package</p>
+        <div class="opts" id="pkgExtras"></div>
+      </div>
+      <div id="alaWrap" hidden>
+        <p class="subh" style="margin-top:0">Services</p>
+        <div class="opts" id="alaServices"></div>
+        <p class="subh">Add-ons</p>
+        <div class="opts" id="alaAddons"></div>
+      </div>
+      <p class="err" id="svcErr" hidden></p>
+    </section>
 
+    <!-- 3 -->
+    <section class="step" aria-labelledby="h3">
+      <div class="step-h"><span class="step-n">3</span><div><h2 id="h3">Date and time</h2></div></div>
+      <p class="len" id="len" hidden></p>
+      <div id="dateGate" class="note">Add the square footage and pick your services to see open times.</div>
+      <div id="dateBox" hidden>
+        <div class="days" id="days" role="group" aria-label="Choose a day"></div>
+        <div id="slotBox"></div>
+      </div>
+      <p class="hint" id="twiNote" hidden>Twilight photos are captured around sunset the same day. Alex confirms that timing with you.</p>
+    </section>
+
+    <!-- 4 -->
+    <section class="step" aria-labelledby="h4">
+      <div class="step-h"><span class="step-n">4</span><div><h2 id="h4">Your details</h2></div></div>
+      <div class="row2">
+        <div class="field"><label class="f" for="name">Full name</label><input type="text" id="name" autocomplete="name"></div>
+        <div class="field"><label class="f" for="email">Email</label><input type="email" id="email" autocomplete="email"></div>
+        <div class="field"><label class="f" for="phone">Mobile</label><input type="tel" id="phone" autocomplete="tel"></div>
+        <div class="field"><label class="f" for="brokerage">Brokerage <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input type="text" id="brokerage" autocomplete="organization"></div>
+      </div>
+      <div class="field"><label class="f" for="access">Access</label><input type="text" id="access" placeholder="Supra lockbox, gate code, or meeting the owner"></div>
+      <div class="field"><label class="f" for="notes">Anything else <span style="font-weight:400;color:var(--muted)">(optional)</span></label><textarea id="notes" placeholder="Rooms to feature, occupied home, HOA rules for drones…"></textarea></div>
+      <div class="hp" aria-hidden="true"><label for="company">Company</label><input type="text" id="company" tabindex="-1" autocomplete="off"></div>
+    </section>
+  </div>
+
+  <aside class="sum" aria-labelledby="sumh">
+    <h3 id="sumh">Your order</h3>
+    <p class="meta" id="sumMeta">No property yet</p>
+    <ul class="lines" id="sumLines"></ul>
+    <p class="empty" id="sumEmpty">Choose a package or services to see your total.</p>
+    <div class="tot"><span>Total</span><strong id="sumTotal">$0</strong></div>
+    <button type="submit" class="cta" id="submit">Confirm booking</button>
+    <p class="err" id="formErr" hidden></p>
+    <p class="fine">No payment to book. Your invoice comes by email from Stripe after booking.</p>
+    <p class="ret">Shooting every month? Video retainers start at $799 for 4 videos. Call or text <strong>346-533-4026</strong> or email <strong>admin@marzmediaphotography.com</strong>.</p>
+  </aside>
+</form>
+</main>
+
+<div class="bar" id="bar">
+  <div class="bt"><small id="barSub">Choose your services</small><strong id="barTotal">$0</strong></div>
+  <button type="button" class="cta" id="barBtn">Continue</button>
+</div>
+
+<section class="done wrapx" id="done" hidden aria-live="polite"></section>
+
+<footer class="foot wrapx">Marz Media Photography · Cypress, TX · Serving Houston, Katy, Tomball and The Woodlands · FAA-certified drone pilot</footer>
+
+<script src="pricing.js"></script>
 <script>
-  // ---- Pricing, mirrors netlify/functions/create-booking.js exactly ----
-  const PACKAGES = [
-    { id: 'essential', max: 2499, price: 349, label: 'Essential', desc: 'HDR photos + video or reel + 1 twilight photo' },
-    { id: 'pro', max: 3999, price: 449, label: 'Pro', desc: 'HDR photos + video or reel + 2 twilight photos', mostBooked: true },
-    { id: 'signature', max: 5999, price: 599, label: 'Signature', desc: '+2 twilights + priority scheduling' },
-  ];
-  const STANDALONE = {
-    hdr:   { label: 'HDR Photography', tiers: [{max:2499,price:165},{max:3999,price:210},{max:5999,price:260}] },
-    video: { label: 'Cinematic Video', tiers: [{max:2499,price:225},{max:3999,price:275},{max:6000,price:325}] },
-    tour3d:{ label: '3D Virtual Tour', tiers: [{max:2499,price:225},{max:3999,price:275},{max:5999,price:325}] },
-  };
-  const ADDONS = {
-    droneAddon: { label: 'Drone Add-on', price: 35 },
-    floorplan:  { label: 'Floor Plans', price: 50 },
-    twilight:   { label: 'Twilight Photography', price: 75 },
-    sameday:    { label: 'Same-Day Delivery', price: 50 },
-  };
-  const AERIAL_PHOTO = { label: 'Aerial Photography', price: 115 };
-  const AERIAL_VIDEO = { label: 'Aerial Video', price: 50 };
+(function(){
+'use strict';
+// Google Maps key for address suggestions. Restrict it to book.marzmediaphotography.com in Google Cloud.
+var PLACES_KEY = 'AIzaSyAaP8RKFizdXk4HfoGnNJIQlqZ0iNxm9no';
+var API = '/api';
+var P = window.MarzPricing;
+var S = P.SCHEDULE;
+var $ = function(id){ return document.getElementById(id); };
+var money = function(n){ return '$' + Number(n).toLocaleString('en-US'); };
 
-  let currentPath = 'package';
-  let selectedPackageId = null;
+var state = { sqft:null, mode:'package', packageId:null, items:{ package:new Set(), alacarte:new Set() },
+  date:null, slot:null, avail:{}, availKey:'', demo:false, loading:false };
 
-  function tierPrice(tiers, sqft) {
-    const t = tiers.find(t => sqft <= t.max);
-    return t ? t.price : null;
+/* ---------- time helpers (Houston) ---------- */
+function hDate(d){ return new Intl.DateTimeFormat('en-CA',{timeZone:S.timezone,year:'numeric',month:'2-digit',day:'2-digit'}).format(d); }
+function addDays(s,n){ var p=s.split('-').map(Number); return new Date(Date.UTC(p[0],p[1]-1,p[2]+n)).toISOString().slice(0,10); }
+function dow(s){ var p=s.split('-').map(Number); return new Date(Date.UTC(p[0],p[1]-1,p[2])).getUTCDay(); }
+function fmtDay(s,o){ var p=s.split('-').map(Number); return new Date(Date.UTC(p[0],p[1]-1,p[2],12)).toLocaleDateString('en-US',Object.assign({timeZone:'UTC'},o)); }
+function fmtLen(m){ var h=Math.floor(m/60), r=m%60; return (h? h+' hr':'') + (h&&r?' ':'') + (r? r+' min':''); }
+
+/* ---------- services UI ---------- */
+function itemPrice(key){
+  var it=P.ITEMS[key], tier=P.tierFor(state.sqft);
+  if (it.prices){
+    if (tier<0) return 'from ' + money(it.prices[0]);
+    if (tier>=P.TIERS.length) return 'Quoted';
+    return money(it.prices[tier]);
   }
-  function recommendedPackage(sqft) {
-    return PACKAGES.find(p => sqft <= p.max) || null;
-  }
+  return (it.from?'from ':'') + (key==='aerialVideo'?'+':'') + money(it.price);
+}
+function optRow(key, mode, sub){
+  var it=P.ITEMS[key], id='opt_'+mode+'_'+key, on=state.items[mode].has(key);
+  return '<label class="opt'+(sub?' sub':'')+'" for="'+id+'"><input type="checkbox" id="'+id+'" data-k="'+key+'" data-m="'+mode+'"'+(on?' checked':'')+'>'+
+    '<span class="t">'+it.name+(it.note?'<small>'+it.note+'</small>':'')+'</span><span class="p">'+itemPrice(key)+'</span></label>';
+}
+function renderServices(){
+  var tier=P.tierFor(state.sqft);
+  $('pkgs').innerHTML = P.PACKAGES.map(function(p){
+    var fits = !(state.sqft>0) || state.sqft<=p.max;
+    return '<button type="button" class="pkg" role="radio" data-p="'+p.id+'" aria-checked="'+(state.packageId===p.id)+'"'+(fits?'':' disabled')+'>'+
+      (p.mostBooked?'<span class="tag">Most booked</span>':'<span class="tag" style="visibility:hidden">·</span>')+
+      '<span class="nm"><strong>'+p.name+'</strong><span class="pr">'+money(p.price)+'</span></span>'+
+      '<span class="inc">'+p.includes.map(function(i){return '<span>'+i+'</span>';}).join('')+'</span>'+
+      '<span class="fit">'+(fits?'Homes up to '+p.max.toLocaleString('en-US')+' sq ft':'For homes up to '+p.max.toLocaleString('en-US')+' sq ft')+'</span></button>';
+  }).join('');
+  $('pkgExtras').innerHTML = ['tour3d','droneAddon','floorplan','sameday'].map(function(k){return optRow(k,'package');}).join('');
+  var a=state.items.alacarte;
+  $('alaServices').innerHTML = optRow('hdr','alacarte')+optRow('video','alacarte')+optRow('tour3d','alacarte')+optRow('aerialPhoto','alacarte')+
+    (a.has('aerialPhoto')?optRow('aerialVideo','alacarte',true):'');
+  $('alaAddons').innerHTML = ['floorplan','twilight','sameday'].map(function(k){return optRow(k,'alacarte');}).join('');
+  $('modePkg').setAttribute('aria-pressed', state.mode==='package');
+  $('modeAla').setAttribute('aria-pressed', state.mode==='alacarte');
+  $('pkgWrap').hidden = state.mode!=='package';
+  $('alaWrap').hidden = state.mode!=='alacarte';
+  var e=$('svcErr');
+  if (state.mode==='package' && tier>=P.TIERS.length){ e.hidden=false; e.textContent='Homes over 5,999 sq ft get a custom quote. Switch to Build your own and pick what you need.'; }
+  else e.hidden=true;
+}
 
-  function renderPackageCards() {
-    const sqft = parseInt(document.getElementById('sqft').value, 10);
-    const rec = recommendedPackage(sqft);
-    const container = document.getElementById('packageCards');
-    container.innerHTML = PACKAGES.map(p => {
-      const isSelected = selectedPackageId ? selectedPackageId === p.id : rec && rec.id === p.id;
-      if (isSelected) selectedPackageId = p.id;
-      return `
-        <div class="package-card ${isSelected ? 'selected' : ''} ${rec && rec.id === p.id ? 'recommended' : ''}" onclick="selectPackage('${p.id}')">
-          <div>
-            <h4>${p.label}${p.mostBooked ? '<span class=\"tag-most-booked\">MOST BOOKED</span>' : ''}</h4>
-            <p>${p.desc}</p>
-          </div>
-          <div class="price">$${p.price}</div>
-        </div>
-      `;
+function renderRuler(){
+  var n=state.sqft, pin=$('pin'), bands=document.querySelectorAll('.band'), tier=P.tierFor(n);
+  bands.forEach(function(b,i){ b.classList.toggle('on', i===tier); });
+  if (!(n>0)){ pin.hidden=true; $('tierHint').textContent="Pricing is set by the home's size, as listed on HAR or MLS."; return; }
+  // bands are 2.5/1.5/2/1 of 7 units: 0–2500, 2500–4000, 4000–6000, 6000–7000+
+  var pos = n<=2500 ? n/2500*2.5 : n<=4000 ? 2.5+(n-2500)/1500*1.5 : n<=6000 ? 4+(n-4000)/2000*2 : Math.min(7, 6+(n-6000)/2000);
+  pin.hidden=false; pin.style.left = 'calc('+(pos/7*100)+'% - 1px)';
+  $('tierHint').textContent = tier<P.TIERS.length ? P.TIERS[tier].label+' pricing applies.' : '6,000+ sq ft: custom quote. You can still book the time now.';
+}
+
+/* ---------- quote + summary ---------- */
+function currentQuote(){
+  return P.quote({ sqft:state.sqft, mode:state.mode, packageId:state.packageId, items:Array.from(state.items[state.mode]) });
+}
+function renderSummary(){
+  var q=currentQuote(), addr=$('address').value.trim();
+  var meta=[]; if (addr) meta.push(addr); if (state.sqft>0) meta.push(state.sqft.toLocaleString('en-US')+' sq ft');
+  if (state.slot) meta.push(fmtDay(state.date,{weekday:'short',month:'short',day:'numeric'})+' · '+state.slot.label);
+  $('sumMeta').textContent = meta.length? meta.join(' · ') : 'No property yet';
+  if (!q.ok){
+    $('sumLines').innerHTML=''; $('sumEmpty').hidden=false; $('sumEmpty').textContent = state.sqft>0 ? q.error : 'Add the square footage, then choose a package or services.';
+    $('sumTotal').textContent='$0'; $('barTotal').textContent='$0'; $('barSub').textContent='Choose your services';
+  } else {
+    $('sumEmpty').hidden=true;
+    $('sumLines').innerHTML = q.lines.map(function(l){
+      return '<li><span>'+l.name+'</span><span>'+(l.amount==null?'Quoted':(l.from?'from ':'')+money(l.amount))+'</span></li>';
     }).join('');
+    var t = q.customQuote ? 'Custom quote' : money(q.total);
+    $('sumTotal').textContent=t; $('barTotal').textContent=t;
+    $('barSub').textContent = state.slot ? fmtDay(state.date,{weekday:'short',month:'short',day:'numeric'})+' · '+state.slot.label : q.lines.length+' item'+(q.lines.length>1?'s':'')+' · pick a time';
   }
+  $('barBtn').textContent = readyToBook() ? 'Confirm booking' : 'Continue';
+  return q;
+}
 
-  function selectPackage(id) {
-    selectedPackageId = id;
-    renderPackageCards();
-    updateSummary();
+/* ---------- availability ---------- */
+var availTimer=null;
+function refreshAvailability(){
+  var q=currentQuote();
+  $('twiNote').hidden = !(q.ok && q.includesTwilight);
+  if (!q.ok){ $('dateGate').hidden=false; $('dateBox').hidden=true; $('len').hidden=true; return; }
+  $('len').hidden=false; $('len').innerHTML='About <strong>'+fmtLen(q.minutes)+'</strong> on site.';
+  $('dateGate').hidden=true; $('dateBox').hidden=false;
+  var key=String(q.minutes);
+  if (key===state.availKey){ renderDays(); return; }
+  clearTimeout(availTimer);
+  availTimer=setTimeout(function(){ loadAvailability(q.minutes); }, 250);
+}
+function loadAvailability(minutes){
+  var key=String(minutes); state.availKey=key; state.loading=true; renderDays();
+  var today=hDate(new Date());
+  var reqs=[0,23].map(function(off){
+    return fetch(API+'/check-availability?from='+addDays(today,off)+'&days=23&minutes='+minutes,{headers:{Accept:'application/json'}})
+      .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); });
+  });
+  Promise.all(reqs).then(function(rs){
+    if (state.availKey!==key) return;
+    state.avail = Object.assign({}, rs[0].days, rs[1].days);
+  }).catch(function(){
+    if (state.availKey!==key) return;
+    state.demo=true; $('demo').hidden=false; state.avail = demoAvail(minutes);
+  }).then(function(){
+    if (state.availKey!==key) return;
+    state.loading=false;
+    if (state.slot && !(state.avail[state.date]||[]).some(function(s){return s.start===state.slot.start;})) state.slot=null;
+    if (!state.date || !(state.avail[state.date]||[]).length){
+      state.date = Object.keys(state.avail).sort().find(function(d){ return state.avail[d].length; }) || null;
+    }
+    renderDays(); renderSummary();
+  });
+}
+function demoAvail(minutes){
+  // Sample openings for preview only.
+  var out={}, today=hDate(new Date());
+  for (var i=1;i<=S.daysAhead;i++){
+    var d=addDays(today,i); if (S.openDays.indexOf(dow(d))<0){ out[d]=[]; continue; }
+    var list=[], seed=(i*7)%5;
+    for (var h=9; h*60+30*((h+seed)%2)+minutes<=18*60; h++){
+      if ((h+seed+i)%3===0) continue;
+      var mm=30*((h+seed)%2), hh=h, lab=((hh+11)%12+1)+':'+(mm?'30':'00')+' '+(hh<12?'AM':'PM');
+      list.push({start:d+'T'+String(hh).padStart(2,'0')+':'+(mm?'30':'00')+':00-05:00', label:lab});
+    }
+    out[d]=list;
   }
+  return out;
+}
+function renderDays(){
+  var dates=Object.keys(state.avail).sort();
+  if (state.loading && !dates.length){ $('days').innerHTML=''; $('slotBox').innerHTML='<p class="note"><span class="spin"></span>Checking the calendar…</p>'; return; }
+  $('days').innerHTML = dates.filter(function(d){ return S.openDays.indexOf(dow(d))>=0; }).map(function(d){
+    var n=(state.avail[d]||[]).length;
+    return '<button type="button" class="day" data-d="'+d+'" aria-pressed="'+(d===state.date)+'"'+(n?'':' disabled')+
+      ' aria-label="'+fmtDay(d,{weekday:'long',month:'long',day:'numeric'})+(n?', '+n+' times':', full')+'">'+
+      '<span class="w">'+fmtDay(d,{weekday:'short'})+'</span><span class="d">'+fmtDay(d,{day:'numeric'})+'</span><span class="m">'+fmtDay(d,{month:'short'})+'</span></button>';
+  }).join('');
+  var slots=state.avail[state.date]||[];
+  if (state.loading) { $('slotBox').innerHTML='<p class="note"><span class="spin"></span>Updating times for this shoot length…</p>'; return; }
+  if (!state.date){ $('slotBox').innerHTML='<p class="note">No openings in the next '+S.daysAhead+' days. Call or text 346-533-4026 and we’ll fit you in.</p>'; return; }
+  $('slotBox').innerHTML = '<p class="hint" style="margin-top:12px">'+fmtDay(state.date,{weekday:'long',month:'long',day:'numeric'})+' · arrival time</p><div class="slots">'+
+    slots.map(function(s){ return '<button type="button" class="slot" data-s="'+s.start+'" aria-pressed="'+(state.slot&&state.slot.start===s.start)+'">'+s.label+'</button>'; }).join('')+'</div>';
+  var sel=document.querySelector('.day[aria-pressed=true]'); if (sel && sel.scrollIntoView && !renderDays._did){ renderDays._did=true; sel.scrollIntoView({block:'nearest',inline:'center'}); }
+}
 
-  function setPath(path) {
-    currentPath = path;
-    document.getElementById('pathPackageBtn').classList.toggle('active', path === 'package');
-    document.getElementById('pathAlaCarteBtn').classList.toggle('active', path === 'alacarte');
-    document.getElementById('packagePath').classList.toggle('hidden', path !== 'package');
-    document.getElementById('alaCartePath').classList.toggle('hidden', path !== 'alacarte');
-    // Packages already include twilight — hide that add-on in package mode to avoid double-charging
-    document.getElementById('row_twilight').classList.toggle('hidden', path === 'package');
-    if (path === 'package') document.getElementById('addon_twilight').checked = false;
-    // Drone add-on is the cheap package upsell; à la carte clients book Aerial Photography as its own service instead
-    document.getElementById('row_droneAddon').classList.toggle('hidden', path !== 'package');
-    if (path !== 'package') document.getElementById('addon_droneAddon').checked = false;
-    updateSummary();
+/* ---------- events ---------- */
+function update(){ renderServices(); renderRuler(); renderSummary(); refreshAvailability(); }
+
+$('sqft').addEventListener('input', function(){
+  var n=parseInt(this.value,10); state.sqft = n>0 ? n : null;
+  var cur=P.PACKAGES.find(function(p){return p.id===state.packageId;});
+  if (state.sqft && (!cur || state.sqft>cur.max)){
+    var fit=P.PACKAGES.find(function(p){return state.sqft<=p.max;}); state.packageId = fit? fit.id : null;
   }
+  update();
+});
+$('address').addEventListener('input', renderSummary);
+$('modePkg').addEventListener('click', function(){ state.mode='package'; update(); });
+$('modeAla').addEventListener('click', function(){ state.mode='alacarte'; update(); });
+$('pkgs').addEventListener('click', function(e){ var b=e.target.closest('.pkg'); if(!b||b.disabled) return; state.packageId=b.dataset.p; update(); });
+document.addEventListener('change', function(e){
+  var c=e.target; if (!c.dataset || !c.dataset.k) return;
+  var set=state.items[c.dataset.m];
+  if (c.checked) set.add(c.dataset.k); else { set.delete(c.dataset.k); if (c.dataset.k==='aerialPhoto') set.delete('aerialVideo'); }
+  update();
+});
+$('days').addEventListener('click', function(e){ var b=e.target.closest('.day'); if(!b||b.disabled) return; state.date=b.dataset.d; state.slot=null; renderDays(); renderSummary(); });
+$('slotBox').addEventListener('click', function(e){ var b=e.target.closest('.slot'); if(!b) return;
+  state.slot=(state.avail[state.date]||[]).find(function(s){return s.start===b.dataset.s;}); renderDays(); renderSummary(); });
 
-  function onAerialServiceToggle() {
-    const checked = document.getElementById('svc_aerial').checked;
-    document.getElementById('row_aerialVideoService').classList.toggle('hidden', !checked);
-    if (!checked) document.getElementById('svc_aerialVideo').checked = false;
-  }
+function readyToBook(){ return currentQuote().ok && !!state.slot && $('address').value.trim() && $('name').value.trim() && /\S+@\S+\.\S+/.test($('email').value); }
+['name','email'].forEach(function(id){ $(id).addEventListener('input', renderSummary); });
 
-  function updateSummary() {
-    const raw = parseInt(document.getElementById('sqft').value, 10);
-    const sqft = (isNaN(raw) || raw <= 0) ? 0 : raw;
+function firstGap(){
+  var q=currentQuote();
+  if (!$('address').value.trim()) return ['address','Add the property address.'];
+  if (!(state.sqft>0)) return ['sqft','Add the square footage.'];
+  if (!q.ok) return ['h2', q.error];
+  if (!state.slot) return ['h3','Pick a date and arrival time.'];
+  if (!$('name').value.trim()) return ['name','Add your name.'];
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('email').value.trim())) return ['email','Add a valid email so we can send your confirmation.'];
+  if (!$('phone').value.trim()) return ['phone','Add a mobile number in case we need to reach you on shoot day.'];
+  return null;
+}
+function goTo(id){ var el=$(id); el.scrollIntoView({behavior:'smooth',block:'center'}); if (el.focus && el.tagName==='INPUT') setTimeout(function(){el.focus({preventScroll:true});},300); }
+$('barBtn').addEventListener('click', function(){
+  var g=firstGap(); if (g){ showErr(g[1]); goTo(g[0]); return; }
+  $('form').requestSubmit ? $('form').requestSubmit() : $('submit').click();
+});
+function showErr(msg){ var e=$('formErr'); e.textContent=msg||''; e.hidden=!msg; $('barSub').textContent = msg || $('barSub').textContent; }
 
-    if (currentPath === 'package') renderPackageCards();
+$('form').addEventListener('submit', function(e){
+  e.preventDefault();
+  var g=firstGap(); if (g){ showErr(g[1]); goTo(g[0]); return; }
+  showErr('');
+  var q=currentQuote();
+  var body={ address:$('address').value.trim(), sqft:state.sqft, mode:state.mode, packageId:state.packageId,
+    items:Array.from(state.items[state.mode]), start:state.slot.start, name:$('name').value.trim(), email:$('email').value.trim(),
+    phone:$('phone').value.trim(), brokerage:$('brokerage').value.trim(), access:$('access').value.trim(), notes:$('notes').value.trim(),
+    company:$('company').value };
+  var btns=[$('submit'),$('barBtn')]; btns.forEach(function(b){ b.disabled=true; b.innerHTML='<span class="spin"></span>Booking…'; });
+  var done=function(res){ showDone(body,q,res); };
+  if (state.demo){ setTimeout(function(){ done({success:true,demo:true}); }, 700); return; }
+  fetch(API+'/create-booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){ return r.json().then(function(j){ return {status:r.status,j:j}; }); })
+    .then(function(x){
+      if (x.status===200 && x.j.success) return done(x.j);
+      if (x.status===409){ state.slot=null; state.availKey=''; refreshAvailability(); goTo('h3'); }
+      throw new Error(x.j.error || 'Something went wrong.');
+    })
+    .catch(function(err){ showErr(err.message || 'Could not book right now. Call or text 346-533-4026.'); })
+    .then(function(){ btns.forEach(function(b){ b.disabled=false; }); $('submit').textContent='Confirm booking'; renderSummary(); });
+});
 
-    // Standalone service prices shown live in à la carte mode
-    Object.keys(STANDALONE).forEach(key => {
-      const p = tierPrice(STANDALONE[key].tiers, sqft);
-      document.getElementById('price_' + key).textContent = p ? ('$' + p) : 'Custom quote';
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function showDone(b,q,res){
+  $('app').hidden=true; $('bar').hidden=true;
+  var when = fmtDay(state.date,{weekday:'long',month:'long',day:'numeric'})+' at '+state.slot.label;
+  var pay = q.customQuote ? 'Alex will send your custom quote and invoice personally before the shoot.'
+    : res.demo ? 'In live mode, your Stripe invoice is emailed now. Nothing is charged automatically.'
+    : res.invoiceSent ? 'Your Stripe invoice is in your inbox. Nothing is charged automatically.'
+    : 'Your invoice will follow by email shortly. Nothing is charged automatically.';
+  $('done').innerHTML = '<p class="tag">'+(res.demo?'Preview · not booked':'Confirmed')+'</p><h2>You’re booked, '+esc(b.name.split(' ')[0])+'.</h2>'+
+    '<p class="hint" style="font-size:16px">'+esc(when)+'<br>'+esc(b.address)+'</p>'+
+    '<div class="card"><ul class="lines">'+q.lines.map(function(l){return '<li><span>'+l.name+'</span><span>'+(l.amount==null?'Quoted':(l.from?'from ':'')+money(l.amount))+'</span></li>';}).join('')+'</ul>'+
+    '<div class="tot"><span>Total</span><strong>'+(q.customQuote?'Custom quote':money(q.total))+'</strong></div><p class="fine">'+pay+'</p></div>'+
+    '<p><strong>A confirmation with a home-prep checklist is on its way to '+esc(b.email)+'.</strong> Photos arrive the next business day, video in 24–72 hours.</p>'+
+    '<p class="hint">Need to change something? Call or text 346-533-4026.</p>'+
+    (res.invoiceUrl?'<p><a href="'+esc(res.invoiceUrl)+'" target="_blank" rel="noopener">View your invoice</a></p>':'')+
+    '<p><a href="https://www.marzmediaphotography.com">Back to marzmediaphotography.com</a></p>';
+  $('done').hidden=false; window.scrollTo(0,0);
+}
+
+/* ---------- address suggestions ---------- */
+function initPlaces(){
+  if (!PLACES_KEY) return;
+  window.__marzPlaces = function(){
+    var input=$('address');
+    google.maps.importLibrary('places').then(function(lib){
+      if (!lib.PlaceAutocompleteElement) throw new Error('no element');
+      var el=new lib.PlaceAutocompleteElement({ includedRegionCodes:['us'],
+        locationBias:{ center:{lat:29.97,lng:-95.69}, radius:50000 } });
+      el.id='address-pac'; el.setAttribute('placeholder','Start typing the address');
+      $('addrAuto').appendChild(el); $('addrAuto').hidden=false; input.hidden=true; $('addrManual').hidden=false;
+      var pick=function(pp){ if(!pp) return; var place=pp.toPlace(); place.fetchFields({fields:['formattedAddress']}).then(function(){
+        input.value=place.formattedAddress||''; renderSummary(); }); };
+      el.addEventListener('gmp-select', function(e){ pick(e.placePrediction); });
+      el.addEventListener('gmp-placeselect', function(e){ if (e.place){ e.place.fetchFields({fields:['formattedAddress']}).then(function(){ input.value=e.place.formattedAddress||''; renderSummary(); }); } });
+    }).catch(function(){
+      try { var ac=new google.maps.places.Autocomplete(input,{componentRestrictions:{country:'us'},fields:['formatted_address']});
+        ac.addListener('place_changed',function(){ var p=ac.getPlace(); if(p&&p.formatted_address){ input.value=p.formatted_address; renderSummary(); } }); } catch(_){}
     });
+  };
+  var s=document.createElement('script');
+  s.src='https://maps.googleapis.com/maps/api/js?key='+PLACES_KEY+'&v=weekly&loading=async&libraries=places&callback=__marzPlaces';
+  s.async=true; s.onerror=function(){}; document.head.appendChild(s);
+}
+$('addrManual').addEventListener('click', function(){ $('addrAuto').hidden=true; $('address').hidden=false; this.hidden=true; $('address').focus(); });
 
-    let lines = [];
-    let total = 0;
-    let customQuote = false;
-
-    if (currentPath === 'package') {
-      const pkg = PACKAGES.find(p => p.id === selectedPackageId);
-      if (pkg) {
-        if (sqft > 5999) customQuote = true;
-        lines.push({ label: pkg.label + ' Package', price: pkg.price });
-        total += pkg.price;
-      }
-    } else {
-      Object.keys(STANDALONE).forEach(key => {
-        const cb = document.getElementById('svc_' + key);
-        if (cb && cb.checked) {
-          const p = tierPrice(STANDALONE[key].tiers, sqft);
-          if (p === null) { customQuote = true; return; }
-          lines.push({ label: STANDALONE[key].label, price: p });
-          total += p;
-        }
-      });
-      if (document.getElementById('svc_aerial').checked) {
-        lines.push({ label: AERIAL_PHOTO.label, price: AERIAL_PHOTO.price });
-        total += AERIAL_PHOTO.price;
-        if (document.getElementById('svc_aerialVideo').checked) {
-          lines.push({ label: AERIAL_VIDEO.label, price: AERIAL_VIDEO.price });
-          total += AERIAL_VIDEO.price;
-        }
-      }
-    }
-
-    Object.keys(ADDONS).forEach(key => {
-      const cb = document.getElementById('addon_' + key);
-      if (cb && cb.checked) {
-        lines.push({ label: ADDONS[key].label, price: ADDONS[key].price });
-        total += ADDONS[key].price;
-      }
-    });
-
-    document.getElementById('summaryLines').innerHTML = lines.map(l =>
-      `<div class="summary-line"><span>${l.label}</span><span>$${l.price}</span></div>`
-    ).join('');
-    document.getElementById('sumTotal').textContent = customQuote ? 'Custom quote' : ('$' + total);
-  }
-
-  let selectedSlot = null;
-
-  async function checkAvailability() {
-    const date = document.getElementById('shootDate').value;
-    const grid = document.getElementById('slotGrid');
-    grid.innerHTML = '<span style="color:var(--slate);font-size:13.5px;">Checking availability…</span>';
-    selectedSlot = null;
-    try {
-      const res = await fetch(`/.netlify/functions/check-availability?date=${date}`);
-      const data = await res.json();
-      if (!data.slots || data.slots.length === 0) {
-        grid.innerHTML = '<span style="color:var(--slate);font-size:13.5px;">No open slots that day — try another date.</span>';
-        return;
-      }
-      grid.innerHTML = '';
-      data.slots.forEach(slot => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'slot-btn';
-        btn.textContent = slot.label;
-        btn.onclick = () => {
-          document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
-          btn.classList.add('selected');
-          selectedSlot = slot;
-        };
-        grid.appendChild(btn);
-      });
-    } catch (err) {
-      grid.innerHTML = '<span style="color:#B3423E;font-size:13.5px;">Could not load availability. This page needs to be live on Netlify with calendar access configured first.</span>';
-    }
-  }
-
-  document.getElementById('bookingForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const statusEl = document.getElementById('bookingStatus');
-    if (!document.getElementById('propertyAddress').value.trim()) {
-      statusEl.className = 'booking-status error';
-      statusEl.textContent = 'Enter the property address first — pick one from the list, or use "Enter it manually."';
-      return;
-    }
-    if (!selectedSlot) {
-      statusEl.className = 'booking-status error';
-      statusEl.textContent = 'Pick an available time slot first.';
-      return;
-    }
-    statusEl.className = 'booking-status';
-    statusEl.textContent = 'Sending your request…';
-
-    const services = currentPath === 'alacarte'
-      ? Object.keys(STANDALONE).filter(key => document.getElementById('svc_' + key).checked)
-      : [];
-    const addons = Object.keys(ADDONS).filter(key => document.getElementById('addon_' + key).checked);
-    const aerialPhoto = currentPath === 'alacarte' && document.getElementById('svc_aerial').checked;
-    const aerialVideoAddon = aerialPhoto && document.getElementById('svc_aerialVideo').checked;
-
-    const payload = {
-      propertyAddress: document.getElementById('propertyAddress').value,
-      sqft: document.getElementById('sqft').value,
-      bookingPath: currentPath,
-      packageId: currentPath === 'package' ? selectedPackageId : null,
-      services,
-      addons,
-      aerialPhoto,
-      aerialVideoAddon,
-      startISO: selectedSlot.start,
-      endISO: selectedSlot.end,
-      clientName: document.getElementById('clientName').value,
-      clientEmail: document.getElementById('clientEmail').value,
-      clientPhone: document.getElementById('clientPhone').value,
-      notes: document.getElementById('notes').value,
-    };
-
-    try {
-      const res = await fetch('/.netlify/functions/create-booking', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (data.success) {
-        statusEl.className = 'booking-status success';
-        statusEl.textContent = 'Booked! Check your email for confirmation and the invoice.';
-      } else if (data.customQuote) {
-        statusEl.className = 'booking-status';
-        statusEl.textContent = data.message;
-      } else {
-        throw new Error(data.error || 'Unknown error');
-      }
-    } catch (err) {
-      statusEl.className = 'booking-status error';
-      statusEl.textContent = 'Something went wrong. This form needs to be live on Netlify with Stripe/email/calendar configured before it can complete a real booking.';
-    }
-  });
-
-  renderPackageCards();
-  updateSummary();
-
-  async function initAddressAutocomplete() {
-    try {
-      const { PlaceAutocompleteElement } = await google.maps.importLibrary('places');
-      const container = document.getElementById('placeAutocompleteContainer');
-      const hiddenInput = document.getElementById('propertyAddress');
-      if (!container || !hiddenInput) return;
-
-      const placeAutocomplete = new PlaceAutocompleteElement({
-        componentRestrictions: { country: 'us' },
-      });
-      container.appendChild(placeAutocomplete);
-
-      placeAutocomplete.addEventListener('gmp-select', async ({ placePrediction }) => {
-        const place = placePrediction.toPlace();
-        await place.fetchFields({ fields: ['formattedAddress'] });
-        hiddenInput.value = place.formattedAddress || '';
-      });
-    } catch (err) {
-      // If the widget fails to load for any reason, manual entry below still works fine —
-      // never let this block someone from completing the form.
-      console.error('Address autocomplete failed to load:', err);
-    }
-  }
-  window.initAddressAutocomplete = initAddressAutocomplete;
-
-  document.getElementById('manualAddressToggle').addEventListener('click', () => {
-    document.getElementById('manualAddressWrap').classList.toggle('hidden');
-    document.getElementById('placeAutocompleteContainer').classList.toggle('hidden');
-  });
-  document.getElementById('propertyAddressManual').addEventListener('input', (e) => {
-    document.getElementById('propertyAddress').value = e.target.value;
-  });
+/* ---------- start ---------- */
+// Deep links from the Wix site: ?package=pro or ?sqft=3200
+var qs=new URLSearchParams(location.search);
+if (qs.get('package') && P.PACKAGES.some(function(p){return p.id===qs.get('package');})) state.packageId=qs.get('package');
+if (/^\d+$/.test(qs.get('sqft')||'')){ $('sqft').value=qs.get('sqft'); state.sqft=parseInt(qs.get('sqft'),10); }
+if (qs.get('mode')==='alacarte') state.mode='alacarte';
+var isPreview = !/marzmediaphotography\.com$|netlify\.app$|localhost$/.test(location.hostname);
+if (isPreview && !state.sqft){
+  // Preview only: show a filled-in example so the page can be judged at a glance.
+  $('address').value='12345 Example Ridge Dr, Cypress, TX 77433'; $('sqft').value='3200'; state.sqft=3200; state.packageId='pro';
+  state.items.package.add('droneAddon');
+}
+update();
+initPlaces();
+})();
 </script>
-
 </body>
 </html>

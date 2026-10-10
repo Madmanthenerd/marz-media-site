@@ -5,7 +5,20 @@
 [functions]
   node_bundler = "esbuild"
 
+# The booking page is the home page of book.marzmediaphotography.com
+[[redirects]]
+  from = "/"
+  to = "/booking.html"
+  status = 200
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
