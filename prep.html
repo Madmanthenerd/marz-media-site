@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Preparing for Your Shoot | Marz Media</title>
+<meta name="description" content="How to prepare a home for real estate photography and video with Marz Media: a room-by-room decluttering checklist for Houston agents and homeowners.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: a single reading column. A navy title band, a progress bar, then rooms as checklists. */
+:root{
+  --bg:#FFFFFF; --surface:#F4F5F7; --ink:#0F1218; --muted:#59606D; --line:#E0E3E9;
+  --navy:#1F3A6E; --navy-ink:#FFFFFF; --deep:#0E1626; --deep-ink:#E9EDF4; --done:#1E7A4F;
+  --display:'Fraunces', Georgia, 'Times New Roman', serif;
+  --body:'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0B0F16; --surface:#141A24; --ink:#ECEFF4; --muted:#9AA3B2; --line:#262E3B;
+  --navy:#86A8E6; --navy-ink:#0B0F16; --deep:#05080D; --deep-ink:#E9EDF4; --done:#5BC48E; color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0B0F16; --surface:#141A24; --ink:#ECEFF4; --muted:#9AA3B2; --line:#262E3B;
+  --navy:#86A8E6; --navy-ink:#0B0F16; --deep:#05080D; --deep-ink:#E9EDF4; --done:#5BC48E; color-scheme:dark; }
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.65 var(--body);-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+a{color:var(--navy)}
+:focus-visible{outline:2px solid var(--navy);outline-offset:3px}
+
+.band{background:var(--deep);color:var(--deep-ink);padding-inline:16px}
+.band .in{max-width:720px;margin:0 auto;padding-block:18px 44px}
+.mark{display:block;font-weight:700;letter-spacing:.2em;text-transform:uppercase;font-size:12px;color:inherit;text-decoration:none;opacity:.85;margin-bottom:40px}
+.mark b{font-weight:400;opacity:.65;margin-left:.35em}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;opacity:.7;margin:0 0 10px}
+h1{font:400 clamp(36px,7vw,56px)/1.04 var(--display);margin:0 0 16px;letter-spacing:-.01em;text-wrap:balance}
+.lede{max-width:56ch;margin:0;opacity:.85;font-size:17px}
+
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px}
+.prog{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--line);z-index:2;padding-inline:16px}
+.prog .in{max-width:720px;margin:0 auto;padding-block:12px;display:flex;align-items:center;gap:14px}
+.track{flex:1;height:4px;background:var(--surface);border-radius:2px;overflow:hidden}
+.fill{height:100%;width:0;background:var(--navy);transition:width .35s ease}
+.count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.reset{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline;padding:0}
+
+.intro{padding-block:36px 8px}
+.intro p{max-width:62ch;margin:0 0 14px}
+.why{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:22px 0 4px}
+.why div{background:var(--surface);border-radius:6px;padding:16px}
+.why strong{display:block;font:500 17px var(--display);margin-bottom:4px}
+.why span{font-size:14px;color:var(--muted)}
+
+section.room{padding-block:34px 4px;border-top:1px solid var(--line);margin-top:30px}
+.room-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:6px}
+.room-h h2{font:400 28px/1.15 var(--display);margin:0}
+.room-h .rc{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.when{font-size:13px;color:var(--muted);margin:0 0 14px;letter-spacing:.02em}
+ul.check{list-style:none;margin:0;padding:0}
+ul.check li{border-bottom:1px solid var(--line)}
+ul.check li:last-child{border-bottom:0}
+ul.check label{display:flex;gap:14px;align-items:flex-start;padding:13px 2px;cursor:pointer}
+ul.check input{appearance:none;-webkit-appearance:none;flex:none;width:20px;height:20px;margin-top:2px;border:1.5px solid var(--muted);border-radius:4px;display:grid;place-items:center;cursor:pointer;transition:background .2s,border-color .2s}
+ul.check input::after{content:"";width:10px;height:5px;border:2px solid var(--navy-ink);border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px);opacity:0}
+ul.check input:checked{background:var(--navy);border-color:var(--navy)}
+ul.check input:checked::after{opacity:1}
+ul.check input:checked + span{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+ul.check span{min-width:0}
+ul.check small{display:block;color:var(--muted);font-size:14px;text-decoration:none}
+
+.note{background:var(--surface);border-left:3px solid var(--navy);border-radius:0 6px 6px 0;padding:16px 18px;margin:18px 0 0;font-size:15px}
+.note strong{font-weight:600}
+
+.close{padding-block:44px 64px;border-top:1px solid var(--line);margin-top:34px}
+.close h2{font:400 30px/1.15 var(--display);margin:0 0 10px}
+.close p{max-width:60ch;margin:0 0 12px}
+.contact{display:flex;flex-wrap:wrap;gap:8px 24px;font-weight:600;margin-top:18px}
+.cta{display:inline-block;margin-top:22px;background:var(--navy);color:var(--navy-ink);text-decoration:none;font-weight:700;padding:14px 22px;border-radius:6px}
+.sig{margin-top:28px;font:italic 400 18px var(--display)}
+.done-msg{color:var(--done);font-weight:600}
+@media (prefers-reduced-motion:reduce){ .fill,ul.check input{transition:none} }
+</style>
+</head>
+<body>
+
+<header class="band"><div class="in">
+  <a class="mark" href="https://www.marzmediaphotography.com">Marz<b>Media</b></a>
+  <p class="eyebrow">Client guide</p>
+  <h1>Preparing your home for photography</h1>
+  <p class="lede">The camera records everything in the frame. A short hour of preparation before we arrive is the single greatest factor in how the finished listing looks.</p>
+</div></header>
+
+<div class="prog" aria-live="polite"><div class="in">
+  <div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div>
+  <span class="count" id="count">0 of 0 complete</span>
+  <button class="reset" id="reset" type="button">Reset</button>
+</div></div>
+
+<main class="wrap">
+  <div class="intro">
+    <p>We photograph with wide-angle lenses and high-dynamic-range exposures, which reveal far more of a room than the eye notices in person. Small items on counters, cords, and personal effects become prominent in the final images. Please use this checklist as a guide, and tick off each item as you go. Your progress is saved on this device.</p>
+    <div class="why">
+      <div><strong>Clear surfaces</strong><span>Buyers should see space, not belongings.</span></div>
+      <div><strong>Every light on</strong><span>Warm, even light reads as welcoming.</span></div>
+      <div><strong>Nothing personal</strong><span>Buyers should picture themselves living there.</span></div>
+    </div>
+  </div>
+
+  <section class="room" data-room>
+    <div class="room-h"><h2>Throughout the home</h2><span class="rc"></span></div>
+    <p class="when">The day before</p>
+    <ul class="check">
+      <li><label><input type="checkbox" id="all-1"><span>Remove family photos, diplomas, and personal mementos<small>Including items on the refrigerator door.</small></span></label></li>
+      <li><label><input type="checkbox" id="all-2"><span>Replace any burned-out bulbs, and use one bulb color throughout</span></label></li>
+      <li><label><input type="checkbox" id="all-3"><span>Hide cords, chargers, remotes, and small electronics</span></label></li>
+      <li><label><input type="checkbox" id="all-4"><span>Put away shoes, coats, bags, and mail from entryways</span></label></li>
+      <li><label><input type="checkbox" id="all-5"><span>Clean mirrors, glass doors, and windows facing the camera</span></label></li>
+      <li><label><input type="checkbox" id="all-6"><span>Store pet beds, bowls, toys, and litter boxes out of sight</span></label></li>
+    </ul>
+  </section>
+
+  <section class="room" data-room>
+    <div class="room-h"><h2>Kitchen</h2><span class="rc"></span></div>
+    <p class="when">The day before</p>
+    <ul class="check">
+      <li><label><input type="checkbox" id="kit-1"><span>Clear the countertops completely<small>A single bowl of fruit or a plant is the most we recommend leaving out.</small></span></label></li>
+      <li><label><input type="checkbox" id="kit-2"><span>Remove dish soap, sponges, towels, and drying racks from the sink area</span></label></li>
+      <li><label><input type="checkbox" id="kit-3"><span>Empty the sink and run the dishwasher</span></label></li>
+      <li><label><input type="checkbox" id="kit-4"><span>Remove magnets, papers, and calendars from the refrigerator</span></label></li>
+      <li><label><input type="checkbox" id="kit-5"><span>Place trash and recycling bins in the garage</span></label></li>
+    </ul>
+  </section>
+
+  <section class="room" data-room>
+    <div class="room-h"><h2>Living and dining areas</h2><span class="rc"></span></div>
+    <p class="when">The day before</p>
+    <ul class="check">
+      <li><label><input type="checkbox" id="liv-1"><span>Straighten and fluff pillows and throws</span></label></li>
+      <li><label><input type="checkbox" id="liv-2"><span>Clear coffee tables and side tables to a few intentional pieces</span></label></li>
+      <li><label><input type="checkbox" id="liv-3"><span>Set the dining table simply, or clear it entirely</span></label></li>
+      <li><label><input type="checkbox" id="liv-4"><span>Turn televisions off and remove gaming equipment</span></label></li>
+      <li><label><input type="checkbox" id="liv-5"><span>Vacuum rugs and remove visible clutter from floors</span></label></li>
+    </ul>
+  </section>
+
+  <section class="room" data-room>
+    <div class="room-h"><h2>Bedrooms</h2><span class="rc"></span></div>
+    <p class="when">The morning of</p>
+    <ul class="check">
+      <li><label><input type="checkbox" id="bed-1"><span>Make every bed with smooth, neutral bedding</span></label></li>
+      <li><label><input type="checkbox" id="bed-2"><span>Clear nightstands except for a lamp</span></label></li>
+      <li><label><input type="checkbox" id="bed-3"><span>Close closet doors and put away laundry and hampers</span></label></li>
+      <li><label><input type="checkbox" id="bed-4"><span>Remove items stored under beds where they are visible</span></label></li>
+    </ul>
+  </section>
+
+  <section class="room" data-room>
+    <div class="room-h"><h2>Bathrooms</h2><span class="rc"></span></div>
+    <p class="when">The morning of</p>
+    <ul class="check">
+      <li><label><input type="checkbox" id="bath-1"><span>Clear vanities of toiletries, toothbrushes, and appliances</span></label></li>
+      <li><label><input type="checkbox" id="bath-2"><span>Remove products from the shower and tub</span></label></li>
+      <li><label><input type="checkbox" id="bath-3"><span>Hang one set of fresh, matching towels, or none</span></label></li>
+      <li><label><input type="checkbox" id="bath-4"><span>Close toilet lids and remove bath mats and trash cans</span></label></li>
+    </ul>
+  </section>
+
+  <section class="room" data-room>
+    <div class="room-h"><h2>Exterior and yard</h2><span class="rc"></span></div>
+    <p class="when">The day before</p>
+    <ul class="check">
+      <li><label><input type="checkbox" id="ext-1"><span>Mow, edge, and clear leaves from the lawn and walkways</span></label></li>
+      <li><label><input type="checkbox" id="ext-2"><span>Store hoses, tools, toys, and trash bins out of view</span></label></li>
+      <li><label><input type="checkbox" id="ext-3"><span>Arrange patio furniture neatly and remove covers</span></label></li>
+      <li><label><input type="checkbox" id="ext-4"><span>Clean and uncover the pool or spa, and remove cleaning equipment</span></label></li>
+      <li><label><input type="checkbox" id="ext-5"><span>Close the garage door</span></label></li>
+    </ul>
+  </section>
+
+  <section class="room" data-room>
+    <div class="room-h"><h2>Shortly before we arrive</h2><span class="rc"></span></div>
+    <p class="when">The final hour</p>
+    <ul class="check">
+      <li><label><input type="checkbox" id="day-1"><span>Turn on every light in the home, including lamps and under-cabinet lights</span></label></li>
+      <li><label><input type="checkbox" id="day-2"><span>Open all blinds and curtains fully</span></label></li>
+      <li><label><input type="checkbox" id="day-3"><span>Turn off ceiling fans</span></label></li>
+      <li><label><input type="checkbox" id="day-4"><span>Move vehicles out of the driveway and away from the front of the home</span></label></li>
+      <li><label><input type="checkbox" id="day-5"><span>Secure pets in a crate, a car, or away from the property</span></label></li>
+      <li><label><input type="checkbox" id="day-6"><span>Confirm the lockbox code, gate code, or that someone will be present</span></label></li>
+    </ul>
+    <p class="note"><strong>Twilight and aerial shoots.</strong> If your order includes twilight photography, please leave every interior and exterior light on through sunset. For drone coverage, we will confirm local airspace and any HOA restrictions in advance.</p>
+  </section>
+
+  <div class="close">
+    <h2>We take it from there</h2>
+    <p>On arrival, Alex will walk the property, make small adjustments for the camera, and work efficiently so the home is returned to you as it was found. Photographs are delivered the next business day, and video within 24 to 72 hours.</p>
+    <p>If there is anything you would like featured or avoided, please let us know before the shoot.</p>
+    <div class="contact"><span>346-533-4026</span><span>admin@marzmediaphotography.com</span></div>
+    <a class="cta" href="https://www.marzmediaphotography.com/book-online">Book a shoot</a>
+    <p class="sig">Alex Marzette, Marz Media Photography</p>
+  </div>
+</main>
+
+<script>
+(function(){
+  var KEY='marz-prep-v1', saved={};
+  try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){}
+  var boxes=[].slice.call(document.querySelectorAll('ul.check input'));
+  boxes.forEach(function(b){ b.checked=!!saved[b.id]; });
+  function update(){
+    var done=boxes.filter(function(b){return b.checked;}).length;
+    document.getElementById('fill').style.width=(boxes.length? done/boxes.length*100:0)+'%';
+    var c=document.getElementById('count');
+    c.textContent= done===boxes.length ? 'All set for your shoot' : done+' of '+boxes.length+' complete';
+    c.className='count'+(done===boxes.length?' done-msg':'');
+    document.querySelectorAll('[data-room]').forEach(function(r){
+      var bs=r.querySelectorAll('input'), d=r.querySelectorAll('input:checked').length;
+      r.querySelector('.rc').textContent=d+'/'+bs.length;
+    });
+  }
+  document.addEventListener('change',function(e){
+    if(!e.target.matches('ul.check input')) return;
+    saved[e.target.id]=e.target.checked;
+    try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(err){}
+    update();
+  });
+  document.getElementById('reset').addEventListener('click',function(){
+    boxes.forEach(function(b){b.checked=false;}); saved={};
+    try{ localStorage.removeItem(KEY); }catch(err){}
+    update();
+  });
+  update();
+})();
+</script>
+</body>
+</html>
