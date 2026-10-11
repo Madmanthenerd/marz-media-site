@@ -74,7 +74,7 @@ function renderContent() {
     ? `<div class="opt" style="cursor:default"><span class="t">${P.CONTENT.drone.name}<small>Included on every reel in your plan</small></span><span class="p">Included</span></div>`
     : `<label class="opt" for="cDrone"><input type="checkbox" id="cDrone"${st.content.drone ? ' checked' : ''}><span class="t">${P.CONTENT.drone.name}<small>${P.CONTENT.drone.note}</small></span><span class="p">+${money(P.CONTENT.drone.price)}</span></label>`;
   $('planNote').textContent = monthly
-    ? 'Book your first shoot now. Alex confirms your plan, schedules the rest of the month with you, and sends a monthly invoice. Nothing is charged today.'
+    ? 'Book your first shoot now. Alex will confirm your plan and schedule the rest of the month with you.'
     : 'Need it every month? A monthly plan lowers the price per reel and includes drone.';
 }
 function renderKind() {
@@ -312,7 +312,7 @@ function showDone(q) {
     `<p class="lede">${esc(when)}<br>${esc($('address').value.trim() || (isContent() ? 'Location to be confirmed with Alex' : ''))}</p>` +
     `<div class="card"><ul class="lines">${q.lines.map((l) => `<li><span>${l.name}</span><span>${l.amount == null ? 'Quoted' : (l.from ? 'from ' : '') + money(l.amount)}</span></li>`).join('')}</ul>` +
     `<div class="tot"><span>Total</span><strong>${q.customQuote ? 'Custom quote' : money(q.total) + (q.monthly ? '/mo' : '')}</strong></div>` +
-    `<p class="fine">${q.customQuote ? 'Alex will send your custom quote and invoice before the shoot.' : q.monthly ? 'Alex will confirm your plan and send your monthly invoice. Nothing is charged today.' : 'Your invoice arrives by email. Nothing is charged today.'}</p></div>` +
+    (q.customQuote ? '<p class="fine">Alex will send your custom quote before the shoot.</p>' : q.monthly ? '<p class="fine">Alex will confirm your plan and schedule the rest of your month.</p>' : '') + '</div>' +
     (isContent()
       ? `<p>A confirmation is on its way to <strong>${esc($('email').value.trim())}</strong>. Alex will reach out before the shoot to plan your content. Reels arrive within 3 business days.</p>`
       : `<p>A confirmation is on its way to <strong>${esc($('email').value.trim())}</strong>. Photos arrive the next business day; video within 24–72 hours.</p>` +
