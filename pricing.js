@@ -27,11 +27,14 @@
     tour3d:      { name: '3D Virtual Tour',     prices: [225, 275, 325], minutes: [45, 60, 75, 90],    primary: true, modes: ['alacarte', 'package'] },
     aerialPhoto: { name: 'Aerial Photography',  price: 115, minutes: 20, primary: true, modes: ['alacarte'] },
     aerialVideo: { name: 'Aerial Video',        price: 50,  minutes: 15, requires: 'aerialPhoto', modes: ['alacarte'], note: 'Add-on to aerial photography' },
-    droneAddon:  { name: 'Drone Coverage',      price: 35,  minutes: 20, modes: ['package'], note: 'Aerial photos added to your package' },
+    droneAddon:  { name: 'Drone Coverage',      prices: [35, 50, 50], minutes: 20, modes: ['package'], note: 'Aerial photos added to your package' },
     floorplan:   { name: 'Floor Plans',         price: 50,  minutes: 15, modes: ['alacarte', 'package'] },
     twilight:    { name: 'Twilight Photography', price: 75, minutes: 0,  modes: ['alacarte'], note: 'Captured at sunset' },
-    sameday:     { name: 'Same-Day Delivery',   price: 50,  minutes: 0,  from: true, modes: ['alacarte', 'package'] },
+    sameday:     { name: 'Same-Day Delivery',   price: 75,  minutes: 0,  modes: ['alacarte', 'package'], note: 'Requires an 8–9 AM start' },
   };
+
+  const TAX_RATE = 0.05; // added to every order total
+  const SAMEDAY_LATEST = '09:00'; // same-day delivery shoots must start by this time
 
   const PACKAGE_MINUTES = (tier) => ITEMS.hdr.minutes[tier] + ITEMS.video.minutes[tier];
 
@@ -94,11 +97,14 @@
     minutes = Math.max(60, Math.ceil(minutes / 15) * 15);
     const priced = lines.filter((l) => l.amount !== null);
     const customQuote = custom || priced.length !== lines.length;
-    const total = customQuote ? null : priced.reduce((s, l) => s + l.amount, 0);
-    return { ok: true, tier, mode, lines, total, customQuote, minutes, includesTwilight };
+    const subtotal = customQuote ? null : priced.reduce((s, l) => s + l.amount, 0);
+    const tax = customQuote ? null : Math.round(subtotal * TAX_RATE * 100) / 100;
+    if (!customQuote && tax > 0) lines.push({ key: 'tax', name: `Tax (${+(TAX_RATE * 100).toFixed(2)}%)`, amount: tax, from: false });
+    const total = customQuote ? null : Math.round((subtotal + tax) * 100) / 100;
+    return { ok: true, tier, mode, lines, subtotal, tax, total, customQuote, minutes, includesTwilight };
   }
 
-  const api = { TIERS, PACKAGES, ITEMS, SCHEDULE, tierFor, quote };
+  const api = { TIERS, PACKAGES, ITEMS, SCHEDULE, TAX_RATE, SAMEDAY_LATEST, tierFor, quote };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MarzPricing = api;
 })(typeof window !== 'undefined' ? window : globalThis);

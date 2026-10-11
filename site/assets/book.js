@@ -11,7 +11,7 @@ import {
 
 const P = window.MarzPricing;
 const $ = (id) => document.getElementById(id);
-const money = (n) => '$' + Number(n).toLocaleString('en-US');
+const money = (n) => '$' + Number(n).toLocaleString('en-US', Number(n) % 1 ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {});
 const TIER_CHOICES = ['0–2,499 sq ft', '2,500–3,999 sq ft', '4,000–5,999 sq ft'];
 const VARIANT_OPTION = {
   'hdr-photography': '9a111111-1111-4111-8111-111111111111',
@@ -36,6 +36,13 @@ function primarySlug() {
   const hit = ALA_PRIMARY.find(([k]) => set.has(k));
   return hit ? hit[1] : null;
 }
+const sameDay = () => st.items[st.mode].has('sameday');
+function okSlot(s) {
+  if (!sameDay()) return true;
+  const t = s.startLocal.slice(11, 16); // HH:MM, Houston time
+  return t >= '08:00' && t <= P.SAMEDAY_LATEST;
+}
+const daySlots = (k) => ((st.days && st.days[k]) || []).filter(okSlot);
 function tierIndex() { const t = P.tierFor(st.sqft); return Math.max(0, Math.min(t, 2)); }
 
 /* ---------- services UI ---------- */
@@ -122,7 +129,7 @@ async function refreshAvailability(force) {
     page.slots.filter((s) => s.bookable).forEach((s) => { (by[s.dayKey] = by[s.dayKey] || []).push(s); });
     st.days = by; st.err = '';
     if (st.slot && !(by[st.slot.dayKey] || []).some((s) => s.key === st.slot.key)) st.slot = null;
-    if (!st.date || !by[st.date]) st.date = Object.keys(by).sort()[0] || null;
+    st.date = st.date && daySlots(st.date).length ? st.date : null;
   } catch (e) {
     if (seq !== loadSeq) return;
     st.days = {}; st.err = 'We could not load open times. Please call or text 346-533-4026 and we will book you directly.';
@@ -136,18 +143,21 @@ function renderDays() {
   const keys = [];
   for (let i = 0; i < 14; i++) { const d = addDays(st.from, i); keys.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`); }
   $('days').innerHTML = keys.filter((k) => new Date(k + 'T12:00').getDay() !== 0).map((k) => {
-    const n = (st.days[k] || []).length;
+    const n = daySlots(k).length;
     return `<button type="button" class="day" data-d="${k}" aria-pressed="${k === st.date}"${n ? '' : ' disabled'} aria-label="${dayLabel(k, { weekday: 'long', month: 'long', day: 'numeric' })}${n ? '' : ', unavailable'}">` +
       `<span class="w">${dayLabel(k, { weekday: 'short' })}</span><span class="dn">${dayLabel(k, { day: 'numeric' })}</span><span class="m">${dayLabel(k, { month: 'short' })}</span></button>`;
   }).join('');
   $('prevWk').disabled = st.from <= startOfToday();
   if (st.err) { box.innerHTML = `<p class="note err">${st.err}</p>`; return; }
-  if (!st.date) { box.innerHTML = '<p class="note">No openings in these two weeks. Use the arrows to look further ahead, or call or text 346-533-4026.</p>'; return; }
-  const slots = st.days[st.date] || [];
+  if (!st.date || !daySlots(st.date).length) st.date = keys.find((k) => daySlots(k).length) || null;
+  $('days').querySelectorAll('.day').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.d === st.date)));
+  if (!st.date) { box.innerHTML = (sameDay() ? '<p class="note">No 8–9 AM openings in these two weeks for same-day delivery. Use the arrows to look further ahead, or remove same-day delivery to see all times.</p>' : '<p class="note">No openings in these two weeks. Use the arrows to look further ahead, or call or text 346-533-4026.</p>'); return; }
+  const slots = daySlots(st.date);
   const part = (h) => (h < 12 ? 'Morning' : h < 15 ? 'Midday' : 'Afternoon');
   const groups = {};
   slots.forEach((s) => { const g = part(Number(s.startLocal.slice(11, 13))); (groups[g] = groups[g] || []).push(s); });
-  box.innerHTML = `<p class="hint">${dayLabel(st.date, { weekday: 'long', month: 'long', day: 'numeric' })} · arrival times, Houston time</p>` +
+  box.innerHTML = (sameDay() ? '<p class="note">Same-day delivery needs an 8–9 AM start, so only those arrival times are shown.</p>' : '') +
+    `<p class="hint">${dayLabel(st.date, { weekday: 'long', month: 'long', day: 'numeric' })} · arrival times, Houston time</p>` +
     Object.entries(groups).map(([g, list]) => `<p class="slot-h">${g}</p><div class="slots">${list.map((s) => `<button type="button" class="slot" data-s="${s.key}" aria-pressed="${!!st.slot && st.slot.key === s.key}">${s.label}</button>`).join('')}</div>`).join('');
 }
 
@@ -155,7 +165,6 @@ function renderDays() {
 function gap() {
   const q = quote();
   if (!$('address').value.trim()) return ['address', 'Add the property address.'];
-  if (!parsedAddress()) return ['address', 'Enter the full property address with city, state and ZIP, e.g. 14531 Julie Meadows Ln, Cypress, TX 77433.'];
   if (!(st.sqft > 0)) return ['sqft', 'Add the square footage.'];
   if (!q.ok) return ['h2', q.error];
   if (!st.slot) return ['h3', 'Pick a date and arrival time.'];
@@ -212,8 +221,12 @@ async function createBooking() {
     occupancy: $('occupancy').value, access_method: $('access').value, access_notes: $('accessNotes').value.trim(),
   };
   if ($('golive').value) form.listing_go_live_date = $('golive').value;
+  // Full parts when we can read them (picked from Google or typed with city/state/ZIP); otherwise just
+  // the street line as typed, which Alex's booking form accepts.
   const ad = parsedAddress();
-  form.address = { country: 'US', subdivision: 'US-' + ad.state, city: ad.city, postalCode: ad.zip, addressLine: `${ad.number} ${ad.street}`, streetNumber: ad.number, streetName: ad.street };
+  form.address = ad
+    ? { country: 'US', subdivision: 'US-' + ad.state, city: ad.city, postalCode: ad.zip, addressLine: `${ad.number} ${ad.street}`, streetNumber: ad.number, streetName: ad.street }
+    : { country: 'US', subdivision: 'US-TX', addressLine: $('address').value.trim() };
   Object.keys(form).forEach((k) => (form[k] === '' || form[k] == null) && delete form[k]);
   return wixRequest('/bookings/v2/bookings', { body: { booking: req, ...bookingOptions(form) } });
 }
@@ -248,7 +261,7 @@ function showDone(q) {
 }
 
 /* ---------- events ---------- */
-function update(forceSlots) { renderServices(); renderRuler(); renderSummary(); refreshAvailability(forceSlots); }
+function update(forceSlots) { if (st.slot && !okSlot(st.slot)) st.slot = null; renderServices(); renderRuler(); renderSummary(); refreshAvailability(forceSlots); if (st.days) renderDays(); }
 $('sqft').addEventListener('input', (e) => {
   const n = parseInt(e.target.value, 10); st.sqft = n > 0 ? n : null;
   const cur = P.PACKAGES.find((p) => p.id === st.packageId);
@@ -264,7 +277,7 @@ window.gm_authFailure = function () {
   const fresh = document.createElement('input');
   fresh.type = 'text'; fresh.id = 'address'; fresh.autocomplete = 'street-address';
   fresh.placeholder = 'Type the full property address'; fresh.value = (old.value || '').replace(/^Oops.*$/, '');
-  old.replaceWith(fresh); fresh.addEventListener('input', onAddressInput); places = null;
+  old.replaceWith(fresh); fresh.addEventListener('input', onAddressInput); places = null; placesStatus('key rejected (check website list on the key)');
 };
 $('modePkg').addEventListener('click', () => { st.mode = 'package'; update(); });
 $('modeAla').addEventListener('click', () => { st.mode = 'alacarte'; update(); });
@@ -357,7 +370,7 @@ async function suggest() {
     const r = await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({ input: q, includedRegionCodes: ['us'], sessionToken, locationBias: { center: { lat: 29.76, lng: -95.37 }, radius: 50000 } });
     if (my !== seqA) return;
     sugg = (r.suggestions || []).filter((x) => x.placePrediction).slice(0, 5); active = -1; renderList();
-  } catch (_) { sugg = []; closeList(); }
+  } catch (e) { sugg = []; closeList(); placesStatus('suggestions failed: ' + (e && e.message)); }
 }
 function wireAddress(input) {
   input.addEventListener('input', () => { clearTimeout(tmr); tmr = setTimeout(suggest, 180); });
@@ -374,13 +387,22 @@ document.addEventListener('mousedown', (e) => { const li = e.target.closest && e
 $('address').placeholder = 'Street, city, state and ZIP';
 addrList(); // build the dropdown wrapper up front, so the field is never moved while focused
 wireAddress($('address'));
+const DEBUG = new URLSearchParams(location.search).has('debug');
+function placesStatus(msg) {
+  if (!DEBUG) return;
+  let el = document.getElementById('placesStatus');
+  if (!el) { el = document.createElement('p'); el.id = 'placesStatus'; el.className = 'hint'; $('address').closest('.field').appendChild(el); }
+  el.textContent = 'Google: ' + msg;
+}
+placesStatus('loading…');
 window.__marzPlaces = async function () {
-  try { places = await google.maps.importLibrary('places'); } catch (_) { places = null; }
+  try { places = await google.maps.importLibrary('places'); placesStatus('ready'); }
+  catch (e) { places = null; placesStatus('library failed: ' + (e && e.message)); }
 };
 (function loadPlaces() {
   const s = document.createElement('script');
   s.src = `https://maps.googleapis.com/maps/api/js?key=${PLACES_KEY}&loading=async&libraries=places&callback=__marzPlaces`;
-  s.async = true; s.onerror = () => {}; document.head.appendChild(s);
+  s.async = true; s.onerror = () => placesStatus('script blocked from loading'); document.head.appendChild(s);
 })();
 
 /* deep links: book.html?package=pro&sqft=3200 */
