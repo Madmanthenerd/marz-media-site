@@ -1,9 +1,6 @@
 # Netlify runs only the Stripe invoice webhook. The website itself lives on Wix.
 [build]
   publish = "netlify/public"
-  # Only rebuild when the invoice code or prices change; website-only pushes are skipped so they
-  # don't use Netlify credits.
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- netlify/ netlify.toml pricing.js package.json"
   functions = "netlify/functions"
 
 [functions]
