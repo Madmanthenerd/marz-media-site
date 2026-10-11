@@ -1,11 +1,14 @@
-// POST /api/wix-booking?key=YOUR_WIX_WEBHOOK_KEY
-// Receives the "Send a webhook" action from a Wix Automation (trigger: a client books a session)
-// and emails the client a Stripe invoice. Nothing is charged automatically.
+// POST /api/wix-booking?key=YOUR_WIX_WEBHOOK_KEY[&action=cancel|reschedule]
+// Receives the "Send a webhook" action from a Wix Automation and prepares a Stripe invoice.
+// Timing: the invoice is created at booking as a scheduled draft; Stripe emails it at 7:00 AM
+// (Houston time) on the shoot day, due by the end of that day. Nothing is charged automatically.
+//   action=cancel      (Wix trigger: booking canceled)    deletes the draft, or voids a sent invoice
+//   action=reschedule  (Wix trigger: booking rescheduled) moves the send time and due date
 //
 // Netlify environment variables:
 //   STRIPE_SECRET_KEY        your Stripe secret key
 //   WIX_WEBHOOK_KEY          any long random string; the same value goes at the end of the webhook URL in Wix
-//   INVOICE_DAYS_UNTIL_DUE   optional, default 7
+//   INVOICE_SEND_HOUR        optional, hour of the shoot day the invoice is emailed (Houston time), default 7
 //
 // In the Wix automation's webhook step, include at least: contact email, contact first and
 // last name, service name, price, start date, location, and booking ID.
@@ -69,6 +72,30 @@ function priceFromService(name) {
   return null;
 }
 
+// Unix seconds for a wall-clock time in Houston (handles daylight saving).
+function houstonUnix(y, m, d, h, mi) {
+  for (const off of [5, 6]) {
+    const t = Date.UTC(y, m - 1, d, h + off, mi);
+    const hh = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', hour: 'numeric', hourCycle: 'h23' }).format(t);
+    if (Number(hh) === h) return Math.floor(t / 1000);
+  }
+  return Math.floor(Date.UTC(y, m - 1, d, h + 6, mi) / 1000);
+}
+// When to email the invoice and when it is due, from the shoot start time.
+function invoiceTiming(start, now = Date.now()) {
+  const t = Date.parse(start);
+  const nowS = Math.floor(now / 1000);
+  if (!Number.isFinite(t)) return { sendAt: null, dueAt: nowS + 86400 };
+  const [y, m, d] = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit' }).format(t).split('-').map(Number);
+  const sendAt = houstonUnix(y, m, d, parseInt(process.env.INVOICE_SEND_HOUR || '7', 10), 0);
+  const dueAt = Math.max(houstonUnix(y, m, d, 23, 59), nowS + 3600);
+  return { sendAt: sendAt > nowS + 3600 ? sendAt : null, dueAt }; // null = send now
+}
+async function findInvoice(stripe, bookingId) {
+  const r = await stripe.invoices.search({ query: `metadata['wix_booking_id']:'${bookingId.replace(/'/g, '')}'`, limit: 1 });
+  return r.data[0] || null;
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return json(405, { error: 'Use POST.' });
   const key = (event.queryStringParameters || {}).key || '';
@@ -90,6 +117,33 @@ exports.handler = async (event) => {
   const location = pick(f, 'location', 'locationmainlanguage', 'address');
   const bookingId = pick(f, 'bookingid', 'orderid', 'id') || crypto.createHash('sha256').update(email + start + service).digest('hex').slice(0, 24);
   const addOns = pick(f, 'addongroups0addongroupdetails', 'addongroupdetails');
+  const action = ((event.queryStringParameters || {}).action || '').toLowerCase();
+  if (action === 'cancel' || action === 'reschedule') {
+    try {
+      const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+      const inv = await findInvoice(stripe, bookingId);
+      if (!inv) return json(200, { ok: true, note: 'No invoice for this booking.' });
+      if (action === 'cancel') {
+        if (inv.status === 'draft') await stripe.invoices.del(inv.id);
+        else if (inv.status === 'open') await stripe.invoices.voidInvoice(inv.id);
+        return json(200, { ok: true, canceled: inv.id, was: inv.status });
+      }
+      if (inv.status !== 'draft') return json(200, { ok: true, note: 'Invoice already sent; due date left as is.', invoice: inv.id });
+      const { sendAt, dueAt } = invoiceTiming(start);
+      if (sendAt) {
+        await stripe.invoices.update(inv.id, { automatically_finalizes_at: sendAt, due_date: dueAt });
+        return json(200, { ok: true, rescheduled: inv.id, sendAt });
+      }
+      await stripe.invoices.update(inv.id, { due_date: dueAt });
+      const fin = await stripe.invoices.finalizeInvoice(inv.id, { auto_advance: false });
+      await stripe.invoices.sendInvoice(fin.id);
+      return json(200, { ok: true, sent: fin.id });
+    } catch (err) {
+      console.error('wix-booking: ' + action + ' failed', err);
+      return json(500, { error: action + ' failed.' });
+    }
+  }
+
   const order = orderFromMessage(f);
   if (order && order.customQuote) {
     console.log('wix-booking: custom quote, no automatic invoice', bookingId);
@@ -113,12 +167,16 @@ exports.handler = async (event) => {
     const found = await stripe.customers.list({ email, limit: 1 });
     const customer = found.data[0] || await stripe.customers.create({ name, email, phone: phone || undefined }, { idempotencyKey: `${idem}-cust` });
 
+    const existing = await findInvoice(stripe, bookingId).catch(() => null);
+    if (existing) return json(200, { ok: true, duplicate: true, invoice: existing.id });
+    const { sendAt, dueAt } = invoiceTiming(start);
     const description = [service, start, location].filter(Boolean).join(' · ').slice(0, 500);
     const invoice = await stripe.invoices.create({
       customer: customer.id,
       collection_method: 'send_invoice',
-      days_until_due: parseInt(process.env.INVOICE_DAYS_UNTIL_DUE || '7', 10),
-      auto_advance: false,
+      due_date: dueAt,
+      auto_advance: !!sendAt,
+      ...(sendAt ? { automatically_finalizes_at: sendAt } : {}),
       pending_invoice_items_behavior: 'exclude',
       description,
       footer: 'Thank you for choosing Marz Media Photography. Questions: 346-533-4026 · admin@marzmediaphotography.com',
@@ -142,7 +200,8 @@ exports.handler = async (event) => {
       }, { idempotencyKey: `${idem}-item-${i}` });
     }
 
-    const finalized = await stripe.invoices.finalizeInvoice(invoice.id);
+    if (sendAt) return json(200, { ok: true, invoice: invoice.id, scheduled: new Date(sendAt * 1000).toISOString() });
+    const finalized = await stripe.invoices.finalizeInvoice(invoice.id, { auto_advance: false });
     await stripe.invoices.sendInvoice(finalized.id);
     return json(200, { ok: true, invoice: finalized.id, url: finalized.hosted_invoice_url });
   } catch (err) {
