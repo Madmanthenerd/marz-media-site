@@ -41,6 +41,25 @@ const money = (s) => {
   return Number.isFinite(n) && n > 0 ? n : null;
 };
 
+// Orders from the website booking page carry the full order in the booking message:
+// "ORDER: Pro Package ($449) + 3D Virtual Tour ($275) | Total $724 | 3,200 sq ft | Address: …"
+function orderFromMessage(f) {
+  const text = Object.values(f).find((v) => /ORDER:/.test(v) && /\|\s*Total\s/.test(v));
+  if (!text) return null;
+  const order = text.slice(text.indexOf('ORDER:') + 6);
+  const parts = order.split('|').map((x) => x.trim());
+  const totalPart = parts.find((x) => /^Total\s/.test(x)) || '';
+  if (/CUSTOM QUOTE/i.test(totalPart)) return { customQuote: true };
+  const lines = parts[0].split(' + ').map((l) => {
+    const m = l.match(/^(.+?)\s*\((?:from\s*)?\$([\d,]+(?:\.\d+)?)\)$/);
+    return m ? { name: m[1].trim(), amount: parseFloat(m[2].replace(/,/g, '')) } : null;
+  });
+  const total = money(totalPart);
+  if (!total || lines.some((l) => !l)) return total ? { total, lines: null } : null;
+  const sum = lines.reduce((a, l) => a + l.amount, 0);
+  return { total, lines: Math.abs(sum - total) < 0.01 ? lines : null, sqft: (parts.find((x) => /sq ft$/.test(x)) || '') };
+}
+
 // Fallback when Wix sends no price: fixed package prices from pricing.js.
 function priceFromService(name) {
   const n = name.toLowerCase();
@@ -71,7 +90,12 @@ exports.handler = async (event) => {
   const location = pick(f, 'location', 'locationmainlanguage', 'address');
   const bookingId = pick(f, 'bookingid', 'orderid', 'id') || crypto.createHash('sha256').update(email + start + service).digest('hex').slice(0, 24);
   const addOns = pick(f, 'addongroups0addongroupdetails', 'addongroupdetails');
-  const amount = money(pick(f, 'price', 'customprice', 'total', 'amount')) || priceFromService(service);
+  const order = orderFromMessage(f);
+  if (order && order.customQuote) {
+    console.log('wix-booking: custom quote, no automatic invoice', bookingId);
+    return json(200, { ok: true, skipped: 'custom quote — send this invoice by hand' });
+  }
+  const amount = (order && order.total) || money(pick(f, 'price', 'customprice', 'total', 'amount')) || priceFromService(service);
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     console.error('wix-booking: no client email in payload', Object.keys(f));
@@ -105,13 +129,18 @@ exports.handler = async (event) => {
       return json(200, { ok: true, duplicate: true, invoice: invoice.id }); // already sent for this booking
     }
 
-    await stripe.invoiceItems.create({
-      customer: customer.id,
-      invoice: invoice.id,
-      amount: Math.round(amount * 100),
-      currency: 'usd',
-      description: addOns ? `${service} (includes: ${addOns})`.slice(0, 500) : service,
-    }, { idempotencyKey: `${idem}-item` });
+    const items = order && order.lines
+      ? order.lines.map((l) => ({ amount: l.amount, description: l.name }))
+      : [{ amount, description: addOns ? `${service} (includes: ${addOns})` : service }];
+    for (const [i, it] of items.entries()) {
+      await stripe.invoiceItems.create({
+        customer: customer.id,
+        invoice: invoice.id,
+        amount: Math.round(it.amount * 100),
+        currency: 'usd',
+        description: it.description.slice(0, 500),
+      }, { idempotencyKey: `${idem}-item-${i}` });
+    }
 
     const finalized = await stripe.invoices.finalizeInvoice(invoice.id);
     await stripe.invoices.sendInvoice(finalized.id);
