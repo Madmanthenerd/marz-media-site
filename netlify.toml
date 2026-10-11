@@ -1,15 +1,10 @@
+# Netlify runs only the Stripe invoice webhook. The website itself lives on Wix.
 [build]
-  publish = "."
+  publish = "netlify/public"
   functions = "netlify/functions"
 
 [functions]
   node_bundler = "esbuild"
-
-# The booking page is the home page of book.marzmediaphotography.com
-[[redirects]]
-  from = "/"
-  to = "/booking.html"
-  status = 200
 
 [[redirects]]
   from = "/api/*"
@@ -19,6 +14,5 @@
 [[headers]]
   for = "/*"
   [headers.values]
+    X-Robots-Tag = "noindex"
     X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    X-Frame-Options = "SAMEORIGIN"
