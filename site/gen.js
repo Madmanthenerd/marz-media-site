@@ -83,7 +83,7 @@ const footer = (scripts = '') => `<footer class="site-foot"><div class="wrap top
 <div><h4>Services</h4><ul><li><a href="services.html#packages">Listing packages</a></li><li><a href="services.html#a-la-carte">HDR photography</a></li><li><a href="services.html#a-la-carte">Cinematic video</a></li><li><a href="services.html#a-la-carte">Drone & aerial</a></li><li><a href="services.html#a-la-carte">3D virtual tours</a></li><li><a href="services.html#content">Social media reels</a></li><li><a href="services.html#content">Monthly content plans</a></li></ul></div>
 <div><h4>Areas</h4><ul>${AREAS.slice(0, 6).map((a) => `<li><a href="${a.slug}.html">${a.name}</a></li>`).join('')}<li><a href="houston.html">All of Houston</a></li></ul></div>
 <div><h4>Contact</h4><ul><li><a href="tel:${TEL}">${PHONE}</a></li><li><a href="mailto:${EMAIL}">${EMAIL}</a></li><li><a href="${IG}" rel="noopener">Instagram</a></li><li>Based in Cypress, TX</li><li><a href="prep.html">Prepare your home</a></li></ul></div></div>
-<div class="wrap base"><span>© <span id="year">2026</span> Marz Media Photography · Houston, Texas</span><span>Luxury real estate photography & video</span></div></footer>
+<div class="wrap base"><span>© <span id="year">2026</span> Marz Media Photography · Houston, Texas · <a href="privacy.html">Privacy</a> · <a href="accessibility.html">Accessibility</a></span><span>Luxury real estate photography & video</span></div></footer>
 <script src="${CDN}/site/assets/site.js" defer></script>${scripts}</body></html>`;
 
 function hero(r, { eyebrow, h1, lede, actions = '', facts = '', short = false, crumbs = '' }) {
@@ -284,6 +284,28 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
       `<section class="section tight"><div class="wrap"><span class="eyebrow rv">Packages</span>${tiers()}<p style="margin-top:36px;color:var(--muted)">Also serving ${others.map((o) => `<a class="link" href="${o.slug}.html">${o.name}</a>`).join(', ')}.</p></div></section>` +
       cta(byKey(AREAS[(n + 3) % AREAS.length].img), `Booking in ${a.name}?`) + `</main>` + footer();
   });
+}
+
+// PRIVACY + ACCESSIBILITY
+{
+  const H = byKey('3ee3861a');
+  const page = (file, title, desc, h1, body) => {
+    pages[file] = head({ file, title, desc, image: src(H, 1600) }) + header('') + `<main id="main">` +
+      hero(H, { short: true, eyebrow: 'Marz Media Photography', h1 }) +
+      `<section class="section"><div class="wrap"><div class="prose">${body}</div></div></section></main>` + footer();
+  };
+  page('privacy.html', 'Privacy Policy | Marz Media Photography', 'How Marz Media Photography collects, uses and protects the information you share when you book.', 'Privacy policy.',
+    `<p><em>Last updated October 2026</em></p>
+<p>Marz Media Photography (“Marz Media,” “we,” “us”) is a real estate photography and video business based in Cypress, Texas. This policy explains what information we collect through this website and how we use it.</p>
+<h2>What we collect</h2><ul><li><strong>Booking details you provide:</strong> your name, email, phone number, brokerage or business name, the property or shoot address, square footage, access instructions and any notes.</li><li><strong>Basic site usage:</strong> standard technical information such as browser type and pages visited, collected by our hosting and booking providers to keep the site secure and working.</li></ul>
+<h2>How we use it</h2><ul><li>To schedule, confirm and deliver your shoot, and to contact you about it.</li><li>To send your invoice and keep business records.</li><li>To respond to questions you send us.</li></ul><p>We do not sell your information, and we do not use it for third-party advertising.</p>
+<h2>Who helps us</h2><p>We use trusted service providers to run the business: Wix (online booking and scheduling), Google (calendar and address suggestions), Stripe (invoices and payments) and Netlify (website hosting). They process your information only to provide their services to us. Card payments are handled by Stripe; we never see or store your full card number.</p>
+<h2>How long we keep it</h2><p>We keep booking and invoice records for as long as needed to serve you and to meet tax and accounting requirements.</p>
+<h2>Your choices</h2><p>You can ask us to access, correct or delete your information at any time by emailing <a href="mailto:${EMAIL}">${EMAIL}</a>. We will respond within a reasonable time.</p>
+<h2>Contact</h2><p>Marz Media Photography · Cypress, Texas · <a href="mailto:${EMAIL}">${EMAIL}</a> · <a href="tel:${TEL}">${PHONE}</a></p>`);
+  page('accessibility.html', 'Accessibility Statement | Marz Media Photography', 'Our commitment to making the Marz Media Photography website usable for everyone.', 'Accessibility.',
+    `<p>Marz Media Photography wants everyone to be able to browse our work and book a shoot. This website is built with accessibility in mind, including descriptive text on images, keyboard-friendly navigation, readable color contrast and layouts that work on phones, tablets and computers.</p>
+<p>If anything on the site is hard to use, or you would prefer to book by phone, call or text <a href="tel:${TEL}">${PHONE}</a> or email <a href="mailto:${EMAIL}">${EMAIL}</a> and we will take care of you directly.</p>`);
 }
 
 // 404

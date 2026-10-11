@@ -1,6 +1,8 @@
-# Netlify runs only the Stripe invoice webhook. The website itself lives on Wix.
+# Netlify hosts the public website (built from site/build.mjs) and the Stripe invoice webhook.
+# Bookings, the calendar and the dashboard stay on Alex's Wix site, which the booking page talks to.
 [build]
-  publish = "netlify/public"
+  command = "node site/build.mjs \"$COMMIT_REF\" --live --local"
+  publish = "site/dist"
   functions = "netlify/functions"
 
 # The Google Maps browser key is public by design (it ships to every visitor and is locked to
@@ -16,8 +18,70 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+# Old Wix page addresses -> their new pages (keeps Google rankings and old links working).
+[[redirects]]
+  from = "/about-me"
+  to = "/about.html"
+  status = 301
+[[redirects]]
+  from = "/about"
+  to = "/about.html"
+  status = 301
+[[redirects]]
+  from = "/faq"
+  to = "/services.html"
+  status = 301
+[[redirects]]
+  from = "/retainers"
+  to = "/services.html"
+  status = 301
+[[redirects]]
+  from = "/listings"
+  to = "/portfolio.html"
+  status = 301
+[[redirects]]
+  from = "/book-online"
+  to = "/book.html"
+  status = 301
+[[redirects]]
+  from = "/payment-request-page"
+  to = "/book.html"
+  status = 301
+[[redirects]]
+  from = "/service-page/social-media-reel"
+  to = "/book.html?type=content"
+  status = 301
+[[redirects]]
+  from = "/service-page/*"
+  to = "/book.html"
+  status = 301
+[[redirects]]
+  from = "/pricing-plans/*"
+  to = "/services.html"
+  status = 301
+[[redirects]]
+  from = "/privacy-policy"
+  to = "/privacy.html"
+  status = 301
+[[redirects]]
+  from = "/accessibility-statement"
+  to = "/accessibility.html"
+  status = 301
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Until marzmediaphotography.com points here, keep the netlify.app address out of Google.
+# Remove this block on launch day.
 [[headers]]
   for = "/*"
   [headers.values]
     X-Robots-Tag = "noindex"
-    X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/site/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
