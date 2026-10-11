@@ -98,7 +98,7 @@ async function findInvoice(stripe, bookingId) {
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return json(405, { error: 'Use POST.' });
-  const key = (event.queryStringParameters || {}).key || '';
+  const key = (event.queryStringParameters || {}).key || String(event.path || '').split('/').filter(Boolean).pop() || '';
   const expected = process.env.WIX_WEBHOOK_KEY || '';
   if (!expected || key.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(key), Buffer.from(expected))) {
     return json(401, { error: 'Bad key.' });
