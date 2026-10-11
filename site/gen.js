@@ -1,6 +1,6 @@
 async () => {
 const SITE_ID = 'abf9c33c-d881-4f10-a57a-eea55ef3c089';
-const COMMIT = 'afeadca2562cc09f28a6ac35d5d53047e539843f';
+const COMMIT = 'f891af9858920fa5fc10cdfb0af9f9642342cc79';
 const LIVE = false;
 const CDN = `https://cdn.jsdelivr.net/gh/Madmanthenerd/marz-media-site@${COMMIT}`;
 const ORIGIN = 'https://www.marzmediaphotography.com';
