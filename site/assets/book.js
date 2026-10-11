@@ -26,6 +26,7 @@ const st = {
   services: {}, slug: null, from: startOfToday(), days: null, date: null, slot: null, loading: false, err: '',
   address: { line: '', city: '', state: '', zip: '' }, busy: false,
   kind: 'listing', content: { planId: 'reel1', drone: false },
+  view: 'week', month: null, missed: null,
 };
 const isContent = () => st.kind === 'content';
 
@@ -159,7 +160,7 @@ async function refreshAvailability(force) {
   try {
     const svc = await service(slug);
     if (!svc) throw new Error('This service is not available online right now.');
-    const page = await fetchSlots(svc, { from: st.from, days: 14 });
+    const page = await fetchSlots(svc, rangeOf());
     if (seq !== loadSeq) return;
     const by = {};
     page.slots.filter((s) => s.bookable).forEach((s) => { (by[s.dayKey] = by[s.dayKey] || []).push(s); });
@@ -173,26 +174,56 @@ async function refreshAvailability(force) {
   }
   st.loading = false; renderDays(); renderSummary();
 }
+const keyOf = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const monthStart = (d) => new Date(d.getFullYear(), d.getMonth(), 1);
+// What to load: the 14-day strip, or the whole visible month (from today if it is the current month).
+function rangeOf() {
+  if (st.view !== 'month') return { from: st.from, days: 14 };
+  const m = st.month, today = startOfToday(), start = m < today ? today : m;
+  const end = new Date(m.getFullYear(), m.getMonth() + 1, 1);
+  return { from: start, days: Math.max(1, Math.round((end - start) / 864e5)) };
+}
+function renderMonth() {
+  const m = st.month, y = m.getFullYear(), mo = m.getMonth(), n = new Date(y, mo + 1, 0).getDate(), first = new Date(y, mo, 1).getDay();
+  const today = keyOf(startOfToday()), keys = [];
+  let cells = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((w) => `<span class="dow" aria-hidden="true">${w}</span>`).join('') + '<span></span>'.repeat(first);
+  for (let d = 1; d <= n; d++) {
+    const k = keyOf(new Date(y, mo, d)), c = st.loading ? 0 : daySlots(k).length; keys.push(k);
+    cells += `<button type="button" class="mday${k === today ? ' today' : ''}" data-d="${k}" aria-pressed="${k === st.date}"${c ? '' : ' disabled'} aria-label="${dayLabel(k, { weekday: 'long', month: 'long', day: 'numeric' })}${c ? '' : ', unavailable'}">${d}</button>`;
+  }
+  $('month').innerHTML = `<div class="mhead"><button type="button" class="wk-btn" data-mnav="-1" aria-label="Previous month"${m <= monthStart(startOfToday()) ? ' disabled' : ''}>‹</button>` +
+    `<strong>${m.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</strong><button type="button" class="wk-btn" data-mnav="1" aria-label="Next month">›</button></div><div class="mgrid">${cells}</div>`;
+  return keys;
+}
+function renderView() {
+  const month = st.view === 'month';
+  $('viewWeek').setAttribute('aria-pressed', String(!month)); $('viewMonth').setAttribute('aria-pressed', String(month));
+  $('wkWrap').hidden = month; $('month').hidden = !month;
+}
 function renderDays() {
   const box = $('slotBox');
-  if (st.loading) { $('days').innerHTML = ''; box.innerHTML = '<p class="note"><span class="spin"></span>Checking Alex’s calendar…</p>'; return; }
+  renderView();
+  if (st.loading) { $('days').innerHTML = ''; if (st.view === 'month') renderMonth(); box.innerHTML = '<p class="note"><span class="spin"></span>Checking Alex’s calendar…</p>'; return; }
   const keys = [];
-  for (let i = 0; i < 14; i++) { const d = addDays(st.from, i); keys.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`); }
-  $('days').innerHTML = keys.filter((k) => new Date(k + 'T12:00').getDay() !== 0).map((k) => {
+  if (st.view === 'month') keys.push(...renderMonth());
+  else for (let i = 0; i < 14; i++) keys.push(keyOf(addDays(st.from, i)));
+  $('days').innerHTML = st.view === 'month' ? '' : keys.filter((k) => new Date(k + 'T12:00').getDay() !== 0).map((k) => {
     const n = daySlots(k).length;
     return `<button type="button" class="day" data-d="${k}" aria-pressed="${k === st.date}"${n ? '' : ' disabled'} aria-label="${dayLabel(k, { weekday: 'long', month: 'long', day: 'numeric' })}${n ? '' : ', unavailable'}">` +
       `<span class="w">${dayLabel(k, { weekday: 'short' })}</span><span class="dn">${dayLabel(k, { day: 'numeric' })}</span><span class="m">${dayLabel(k, { month: 'short' })}</span></button>`;
   }).join('');
   $('prevWk').disabled = st.from <= startOfToday();
   if (st.err) { box.innerHTML = `<p class="note err">${st.err}</p>`; return; }
-  if (!st.date || !daySlots(st.date).length) st.date = keys.find((k) => daySlots(k).length) || null;
-  $('days').querySelectorAll('.day').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.d === st.date)));
-  if (!st.date) { box.innerHTML = (sameDay() ? '<p class="note">No 8–9 AM openings in these two weeks for same-day delivery. Use the arrows to look further ahead, or remove same-day delivery to see all times.</p>' : '<p class="note">No openings in these two weeks. Use the arrows to look further ahead, or call or text 346-533-4026.</p>'); return; }
+  if (!st.date || !daySlots(st.date).length) st.date = keys.find((k) => daySlots(k).length && (!st.missed || k >= st.missed)) || keys.find((k) => daySlots(k).length) || null;
+  document.querySelectorAll('#days .day, #month .mday').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.d === st.date)));
+  const span = st.view === 'month' ? 'this month' : 'these two weeks';
+  const missNote = st.missed && !daySlots(st.missed).length ? `<p class="note">No open times on ${dayLabel(st.missed, { weekday: 'long', month: 'long', day: 'numeric' })}.${st.date ? ' Here’s the next available day.' : ''}</p>` : '';
+  if (!st.date) { box.innerHTML = missNote + (sameDay() ? `<p class="note">No 8–9 AM openings ${span} for same-day delivery. Use the arrows to look further ahead, or remove same-day delivery to see all times.</p>` : `<p class="note">No openings ${span}. Use the arrows to look further ahead, or call or text 346-533-4026.</p>`); return; }
   const slots = daySlots(st.date);
   const part = (h) => (h < 12 ? 'Morning' : h < 15 ? 'Midday' : 'Afternoon');
   const groups = {};
   slots.forEach((s) => { const g = part(Number(s.startLocal.slice(11, 13))); (groups[g] = groups[g] || []).push(s); });
-  box.innerHTML = (sameDay() ? '<p class="note">Same-day delivery needs an 8–9 AM start, so only those arrival times are shown.</p>' : '') +
+  box.innerHTML = missNote + (sameDay() ? '<p class="note">Same-day delivery needs an 8–9 AM start, so only those arrival times are shown.</p>' : '') +
     `<p class="hint">${dayLabel(st.date, { weekday: 'long', month: 'long', day: 'numeric' })} · arrival times, Houston time</p>` +
     Object.entries(groups).map(([g, list]) => `<p class="slot-h">${g}</p><div class="slots">${list.map((s) => `<button type="button" class="slot" data-s="${s.key}" aria-pressed="${!!st.slot && st.slot.key === s.key}">${s.label}</button>`).join('')}</div>`).join('');
 }
@@ -355,13 +386,34 @@ document.addEventListener('change', (e) => {
   if (c.checked) set.add(c.dataset.k); else { set.delete(c.dataset.k); if (c.dataset.k === 'aerialPhoto') set.delete('aerialVideo'); }
   update();
 });
-$('days').addEventListener('click', (e) => { const b = e.target.closest('.day'); if (!b || b.disabled) return; st.date = b.dataset.d; renderDays(); });
+$('days').addEventListener('click', (e) => { const b = e.target.closest('.day'); if (!b || b.disabled) return; st.date = b.dataset.d; st.missed = null; renderDays(); });
+$('month').addEventListener('click', (e) => {
+  const nav = e.target.closest('[data-mnav]');
+  if (nav && !nav.disabled) { st.month = new Date(st.month.getFullYear(), st.month.getMonth() + Number(nav.dataset.mnav), 1); st.date = null; st.missed = null; refreshAvailability(true); return; }
+  const b = e.target.closest('.mday'); if (!b || b.disabled) return; st.date = b.dataset.d; st.missed = null; renderDays();
+});
+function setView(v) {
+  if (st.view === v) return;
+  if (v === 'month') st.month = monthStart(st.date ? new Date(st.date + 'T12:00') : st.from);
+  else st.from = st.date && new Date(st.date + 'T12:00') >= startOfToday() ? new Date(st.date + 'T00:00') : st.from;
+  st.view = v; refreshAvailability(true);
+}
+$('viewWeek').addEventListener('click', () => setView('week'));
+$('viewMonth').addEventListener('click', () => setView('month'));
+$('jumpDate').min = keyOf(startOfToday());
+$('jumpDate').addEventListener('change', (e) => {
+  const v = e.target.value; if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return;
+  const d = new Date(v + 'T00:00'); if (d < startOfToday()) return;
+  st.date = v; st.missed = v;
+  if (st.view === 'month') st.month = monthStart(d); else st.from = d;
+  refreshAvailability(true);
+});
 $('slotBox').addEventListener('click', (e) => {
   const b = e.target.closest('.slot'); if (!b) return;
   st.slot = (st.days[st.date] || []).find((s) => s.key === b.dataset.s) || null; renderDays(); renderSummary();
 });
-$('prevWk').addEventListener('click', () => { const p = addDays(st.from, -14); st.from = p < startOfToday() ? startOfToday() : p; st.date = null; refreshAvailability(true); });
-$('nextWk').addEventListener('click', () => { st.from = addDays(st.from, 14); st.date = null; refreshAvailability(true); });
+$('prevWk').addEventListener('click', () => { const p = addDays(st.from, -14); st.from = p < startOfToday() ? startOfToday() : p; st.date = null; st.missed = null; refreshAvailability(true); });
+$('nextWk').addEventListener('click', () => { st.from = addDays(st.from, 14); st.date = null; st.missed = null; refreshAvailability(true); });
 ['fname', 'lname', 'email', 'phone'].forEach((id) => $(id).addEventListener('input', renderSummary));
 $('barBtn').addEventListener('click', () => { const g = gap(); if (g) { showErr(g[1]); goTo(g[0]); return; } $('form').requestSubmit(); });
 $('form').addEventListener('submit', async (e) => {

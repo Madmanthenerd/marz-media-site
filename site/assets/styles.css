@@ -359,3 +359,20 @@ html.no-js .rv,html.reduce .rv{opacity:1;transform:none}
 .seg.kind button{padding:15px 10px;font-size:15px}
 @media (min-width:720px){.pkgs.two{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .pkg .per{font-size:13px;color:var(--muted)}
+
+/* booking: 2-week strip or month calendar, plus jump-to-date */
+.cal-tools{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.seg.sm{display:inline-grid;margin:0;padding:3px;min-width:200px}
+.seg.sm button{padding:9px 14px;font-size:13px}
+.jump{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:600}
+.jump input{width:auto;padding:8px 10px;font-size:14px;min-height:0}
+.cal{max-width:460px}
+.mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mhead strong{font:400 20px var(--display)}
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.mgrid .dow{text-align:center;font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--muted);padding:4px 0}
+.mday{aspect-ratio:1;border:1px solid var(--line);border-radius:var(--r);background:var(--white);font:400 16px var(--body);color:var(--ink);cursor:pointer;font-variant-numeric:tabular-nums;transition:all .2s}
+.mday:hover:not(:disabled){border-color:var(--ink-2)}
+.mday:disabled{border-color:transparent;background:transparent;color:var(--muted);opacity:.45;cursor:not-allowed}
+.mday.today{box-shadow:inset 0 0 0 1px var(--navy)}
+.mday[aria-pressed=true]{background:var(--ink);color:var(--white);border-color:var(--ink)}
