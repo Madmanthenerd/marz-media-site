@@ -33,6 +33,22 @@
     sameday:     { name: 'Same-Day Delivery',   price: 75,  minutes: 0,  modes: ['alacarte', 'package'], note: 'Requires an 8–9 AM start' },
   };
 
+  // Social media content (no listing, no square footage). Monthly plans include drone on every reel
+  // and are confirmed by Alex (no automatic invoice); single and double reels invoice like listings.
+  const CONTENT = {
+    slug: 'social-media-reel',
+    plans: [
+      { id: 'reel1', name: 'Single Reel', price: 165, reels: 1, desc: 'One 30–60 second vertical reel' },
+      { id: 'reel2', name: 'Double Reel', price: 279, reels: 2, desc: 'Two different reels from one shoot' },
+      { id: 'monthly4', name: 'Monthly 4', price: 599, reels: 4, monthly: true, desc: '4 reels a month, drone included' },
+      { id: 'monthly6', name: 'Monthly 6', price: 849, reels: 6, monthly: true, mostBooked: true, desc: '6 reels a month, drone included' },
+      { id: 'monthly8', name: 'Monthly 8', price: 1049, reels: 8, monthly: true, desc: '8 reels a month, drone included' },
+    ],
+    drone: { name: 'Drone Footage', price: 35, note: 'One flight covers every reel from the shoot' },
+    minMonths: 3,
+    purposes: ['Agent or personal brand', 'Business or product', 'Restaurant or venue', 'Event', 'Other'],
+  };
+
   const TAX_RATE = 0.05; // added to every order total
   const SAMEDAY_LATEST = '09:00'; // same-day delivery shoots must start by this time
 
@@ -62,7 +78,26 @@
    * selection = { sqft, mode: 'package'|'alacarte', packageId, items: [keys] }
    * returns { ok, error, lines:[{key,name,amount}], total, customQuote, minutes, includesTwilight }
    */
+  function withTax(lines) {
+    const subtotal = lines.reduce((s, l) => s + l.amount, 0);
+    const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
+    if (tax > 0) lines.push({ key: 'tax', name: `Tax (${+(TAX_RATE * 100).toFixed(2)}%)`, amount: tax, from: false });
+    return { subtotal, tax, total: Math.round((subtotal + tax) * 100) / 100 };
+  }
+
+  /** selection = { mode: 'content', planId, drone } */
+  function quoteContent(selection) {
+    const plan = CONTENT.plans.find((p) => p.id === selection.planId);
+    if (!plan) return { ok: false, error: 'Choose a reel option.' };
+    const lines = [{ key: plan.id, name: plan.monthly ? `${plan.name} Content Plan (${plan.reels} reels/mo, drone included)` : plan.name, amount: plan.price, from: false }];
+    const drone = !plan.monthly && !!selection.drone;
+    if (drone) lines.push({ key: 'drone', name: CONTENT.drone.name, amount: CONTENT.drone.price, from: false });
+    const t = withTax(lines);
+    return { ok: true, mode: 'content', plan, drone, monthly: !!plan.monthly, lines, ...t, customQuote: false, minutes: 60, includesTwilight: false };
+  }
+
   function quote(selection) {
+    if (selection && selection.mode === 'content') return quoteContent(selection);
     const sqft = Number(selection && selection.sqft);
     const tier = tierFor(sqft);
     if (tier < 0) return { ok: false, error: 'Enter the home’s square footage.' };
@@ -104,7 +139,7 @@
     return { ok: true, tier, mode, lines, subtotal, tax, total, customQuote, minutes, includesTwilight };
   }
 
-  const api = { TIERS, PACKAGES, ITEMS, SCHEDULE, TAX_RATE, SAMEDAY_LATEST, tierFor, quote };
+  const api = { TIERS, PACKAGES, ITEMS, CONTENT, SCHEDULE, TAX_RATE, SAMEDAY_LATEST, tierFor, quote };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MarzPricing = api;
 })(typeof window !== 'undefined' ? window : globalThis);

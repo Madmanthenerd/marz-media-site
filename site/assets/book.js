@@ -25,18 +25,21 @@ const st = {
   sqft: null, mode: 'package', packageId: null, items: { package: new Set(), alacarte: new Set() },
   services: {}, slug: null, from: startOfToday(), days: null, date: null, slot: null, loading: false, err: '',
   address: { line: '', city: '', state: '', zip: '' }, busy: false,
+  kind: 'listing', content: { planId: 'reel1', drone: false },
 };
+const isContent = () => st.kind === 'content';
 
 function startOfToday() { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
 function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
-function quote() { return P.quote({ sqft: st.sqft, mode: st.mode, packageId: st.packageId, items: Array.from(st.items[st.mode]) }); }
+function quote() { if (isContent()) return P.quote({ mode: 'content', planId: st.content.planId, drone: st.content.drone }); return P.quote({ sqft: st.sqft, mode: st.mode, packageId: st.packageId, items: Array.from(st.items[st.mode]) }); }
 function primarySlug() {
+  if (isContent()) return P.CONTENT.slug;
   if (st.mode === 'package') return st.packageId || null;
   const set = st.items.alacarte;
   const hit = ALA_PRIMARY.find(([k]) => set.has(k));
   return hit ? hit[1] : null;
 }
-const sameDay = () => st.items[st.mode].has('sameday');
+const sameDay = () => !isContent() && st.items[st.mode].has('sameday');
 function okSlot(s) {
   if (!sameDay()) return true;
   const t = s.startLocal.slice(11, 16); // HH:MM, Houston time
@@ -56,7 +59,39 @@ function optRow(key, mode, sub) {
   return `<label class="opt${sub ? ' sub' : ''}" for="${id}"><input type="checkbox" id="${id}" data-k="${key}" data-m="${mode}"${on ? ' checked' : ''}>` +
     `<span class="t">${it.name}${it.note ? `<small>${it.note}</small>` : ''}</span><span class="p">${itemPrice(key)}</span></label>`;
 }
+function planCard(p) {
+  const per = p.reels > 1 ? `<span class="per">${money(Math.round(p.price / p.reels))} per reel${p.monthly ? ` · ${P.CONTENT.minMonths}-month minimum` : ''}</span>` : '<span class="per">Up to 1 hour on location</span>';
+  return `<button type="button" class="pkg" role="radio" data-plan="${p.id}" aria-checked="${st.content.planId === p.id}">` +
+    `<span class="tag">${p.mostBooked ? 'Most popular' : p.monthly ? 'Monthly' : '&nbsp;'}</span><span class="nm"><strong>${p.monthly ? p.reels + ' reels' : p.name}</strong><span class="pr">${money(p.price)}${p.monthly ? '<small style="font-size:14px">/mo</small>' : ''}</span></span>` +
+    `<span class="inc"><span>${p.desc}</span></span>${per}</button>`;
+}
+function renderContent() {
+  $('plansOne').innerHTML = P.CONTENT.plans.filter((p) => !p.monthly).map(planCard).join('');
+  $('plansMonthly').innerHTML = P.CONTENT.plans.filter((p) => p.monthly).map(planCard).join('');
+  const plan = P.CONTENT.plans.find((p) => p.id === st.content.planId);
+  const monthly = plan && plan.monthly;
+  $('contentExtras').innerHTML = monthly
+    ? `<div class="opt" style="cursor:default"><span class="t">${P.CONTENT.drone.name}<small>Included on every reel in your plan</small></span><span class="p">Included</span></div>`
+    : `<label class="opt" for="cDrone"><input type="checkbox" id="cDrone"${st.content.drone ? ' checked' : ''}><span class="t">${P.CONTENT.drone.name}<small>${P.CONTENT.drone.note}</small></span><span class="p">+${money(P.CONTENT.drone.price)}</span></label>`;
+  $('planNote').textContent = monthly
+    ? 'Book your first shoot now. Alex confirms your plan, schedules the rest of the month with you, and sends a monthly invoice. Nothing is charged today.'
+    : 'Need it every month? A monthly plan lowers the price per reel and includes drone.';
+}
+function renderKind() {
+  const c = isContent();
+  $('kindListing').setAttribute('aria-pressed', String(!c)); $('kindContent').setAttribute('aria-pressed', String(c));
+  $('h1s').textContent = c ? 'The shoot' : 'The property';
+  $('addrLabel').innerHTML = c ? 'Shoot location <span class="opt-hint">(optional, if you know it)</span>' : 'Property address';
+  $('sqftField').hidden = c; $('purposeField').hidden = !c;
+  $('contentNeeds').hidden = !c; $('listNeeds').hidden = c;
+  document.querySelectorAll('.lst-only').forEach((el) => { el.hidden = c; });
+  $('brkLabel').textContent = c ? 'Business or brokerage' : 'Brokerage';
+  $('notes').placeholder = c ? 'Your handle, the vibe you want, reference reels, anything to feature…' : 'Rooms to feature, HOA rules for drones…';
+  $('dateGate').textContent = c ? 'Choose a reel option to see open times.' : 'Add the square footage and choose your services to see open times.';
+}
 function renderServices() {
+  renderKind();
+  if (isContent()) { renderContent(); $('svcErr').hidden = true; return; }
   $('pkgs').innerHTML = P.PACKAGES.map((p) => {
     const fits = !(st.sqft > 0) || st.sqft <= p.max;
     return `<button type="button" class="pkg" role="radio" data-p="${p.id}" aria-checked="${st.packageId === p.id}"${fits ? '' : ' disabled'}>` +
@@ -89,9 +124,10 @@ function renderRuler() {
 function dayLabel(dayKey, opts) { const [y, m, d] = dayKey.split('-').map(Number); return new Date(y, m - 1, d, 12).toLocaleDateString('en-US', opts); }
 function renderSummary() {
   const q = quote(), addr = $('address').value.trim(), meta = [];
-  if (addr) meta.push(addr); if (st.sqft > 0) meta.push(st.sqft.toLocaleString('en-US') + ' sq ft');
+  if (isContent()) meta.push($('purpose').value);
+  if (addr) meta.push(addr); if (!isContent() && st.sqft > 0) meta.push(st.sqft.toLocaleString('en-US') + ' sq ft');
   if (st.slot) meta.push(dayLabel(st.slot.dayKey, { weekday: 'short', month: 'short', day: 'numeric' }) + ' · ' + st.slot.label);
-  $('sumMeta').textContent = meta.length ? meta.join(' · ') : 'Add the property to begin';
+  $('sumMeta').textContent = meta.length ? meta.join(' · ') : (isContent() ? 'Choose your reels' : 'Add the property to begin');
   if (!q.ok) {
     $('sumLines').innerHTML = ''; $('sumEmpty').hidden = false;
     $('sumEmpty').textContent = st.sqft > 0 ? q.error : 'Add the square footage, then choose a package or services.';
@@ -99,7 +135,7 @@ function renderSummary() {
   } else {
     $('sumEmpty').hidden = true;
     $('sumLines').innerHTML = q.lines.map((l) => `<li><span>${l.name}</span><span>${l.amount == null ? 'Quoted' : (l.from ? 'from ' : '') + money(l.amount)}</span></li>`).join('');
-    const t = q.customQuote ? 'Custom quote' : money(q.total);
+    const t = q.customQuote ? 'Custom quote' : money(q.total) + (q.monthly ? '/mo' : '');
     $('sumTotal').textContent = t; $('barTotal').textContent = t;
     $('barSub').textContent = st.slot ? dayLabel(st.slot.dayKey, { weekday: 'short', month: 'short', day: 'numeric' }) + ' · ' + st.slot.label : 'Next: pick a time';
   }
@@ -164,10 +200,18 @@ function renderDays() {
 /* ---------- validation + booking ---------- */
 function gap() {
   const q = quote();
+  if (isContent()) {
+    if (!q.ok) return ['h2', q.error];
+    if (!st.slot) return ['h3', 'Pick a date and start time.'];
+    return contactGap();
+  }
   if (!$('address').value.trim()) return ['address', 'Add the property address.'];
   if (!(st.sqft > 0)) return ['sqft', 'Add the square footage.'];
   if (!q.ok) return ['h2', q.error];
   if (!st.slot) return ['h3', 'Pick a date and arrival time.'];
+  return contactGap();
+}
+function contactGap() {
   if (!$('fname').value.trim() || !$('lname').value.trim()) return ['fname', 'Add your first and last name.'];
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('email').value.trim())) return ['email', 'Add a valid email for your confirmation.'];
   if (!e164($('phone').value)) return ['phone', 'Add a 10-digit US mobile number in case we need you on shoot day.'];
@@ -204,6 +248,12 @@ function goTo(id) { const el = $(id); el.scrollIntoView({ behavior: 'smooth', bl
 function showErr(m) { $('formErr').textContent = m || ''; $('formErr').hidden = !m; }
 
 function orderSummary(q) {
+  const notes0 = $('notes').value.trim();
+  if (isContent()) {
+    const items = q.lines.map((l) => `${l.name} (${money(l.amount)})`).join(' + ');
+    const total = q.monthly ? `CUSTOM QUOTE: MONTHLY PLAN ${money(q.total)}/mo incl. tax, ${P.CONTENT.minMonths}-month minimum` : money(q.total);
+    return `ORDER: ${items} | Total ${total} | Social content: ${$('purpose').value} | Location: ${$('address').value.trim() || 'TBD'}${notes0 ? ' | Notes: ' + notes0 : ''}`.slice(0, 2000);
+  }
   const lines = q.lines.map((l) => `${l.name} (${l.amount == null ? 'quoted' : (l.from ? 'from ' : '') + money(l.amount)})`).join(' + ');
   const total = q.customQuote ? 'CUSTOM QUOTE' : money(q.total);
   const notes = $('notes').value.trim();
@@ -220,6 +270,13 @@ async function createBooking() {
     add_your_message: orderSummary(q), brokerage: $('brokerage').value.trim() || 'Not provided', square_footage: String(st.sqft),
     occupancy: $('occupancy').value, access_method: $('access').value, access_notes: $('accessNotes').value.trim(),
   };
+  if (isContent()) {
+    // Same Wix booking form as listings; fill the listing-only required fields with plain labels.
+    Object.assign(form, { square_footage: 'N/A (social content)', occupancy: 'Occupied', access_method: 'Other', access_notes: 'Social content: ' + $('purpose').value });
+    form.address = { country: 'US', addressLine: $('address').value.trim() || 'Location TBD' };
+    Object.keys(form).forEach((k) => (form[k] === '' || form[k] == null) && delete form[k]);
+    return wixRequest('/bookings/v2/bookings', { body: { booking: req, ...bookingOptions(form) } });
+  }
   if ($('golive').value) form.listing_go_live_date = $('golive').value;
   // Full parts when we can read them (picked from Google or typed with city/state/ZIP); otherwise just
   // the street line as typed, which Alex's booking form accepts.
@@ -252,12 +309,14 @@ function showDone(q) {
   $('app').hidden = true; $('bar').hidden = true;
   const when = dayLabel(st.slot.dayKey, { weekday: 'long', month: 'long', day: 'numeric' }) + ' at ' + st.slot.label;
   $('done').innerHTML = `<p class="eyebrow">Confirmed</p><h2>You’re booked, ${esc($('fname').value.trim())}.</h2>` +
-    `<p class="lede">${esc(when)}<br>${esc($('address').value.trim())}</p>` +
+    `<p class="lede">${esc(when)}<br>${esc($('address').value.trim() || (isContent() ? 'Location to be confirmed with Alex' : ''))}</p>` +
     `<div class="card"><ul class="lines">${q.lines.map((l) => `<li><span>${l.name}</span><span>${l.amount == null ? 'Quoted' : (l.from ? 'from ' : '') + money(l.amount)}</span></li>`).join('')}</ul>` +
-    `<div class="tot"><span>Total</span><strong>${q.customQuote ? 'Custom quote' : money(q.total)}</strong></div>` +
-    `<p class="fine">${q.customQuote ? 'Alex will send your custom quote and invoice before the shoot.' : 'Your invoice arrives by email. Nothing is charged today.'}</p></div>` +
-    `<p>A confirmation is on its way to <strong>${esc($('email').value.trim())}</strong>. Photos arrive the next business day; video within 24–72 hours.</p>` +
-    `<p><a class="btn btn-primary" href="prep.html">Prepare the home <span class="arr">→</span></a></p>`;
+    `<div class="tot"><span>Total</span><strong>${q.customQuote ? 'Custom quote' : money(q.total) + (q.monthly ? '/mo' : '')}</strong></div>` +
+    `<p class="fine">${q.customQuote ? 'Alex will send your custom quote and invoice before the shoot.' : q.monthly ? 'Alex will confirm your plan and send your monthly invoice. Nothing is charged today.' : 'Your invoice arrives by email. Nothing is charged today.'}</p></div>` +
+    (isContent()
+      ? `<p>A confirmation is on its way to <strong>${esc($('email').value.trim())}</strong>. Alex will reach out before the shoot to plan your content. Reels arrive within 3 business days.</p>`
+      : `<p>A confirmation is on its way to <strong>${esc($('email').value.trim())}</strong>. Photos arrive the next business day; video within 24–72 hours.</p>` +
+        `<p><a class="btn btn-primary" href="prep.html">Prepare the home <span class="arr">→</span></a></p>`);
   $('done').hidden = false; window.scrollTo(0, 0);
 }
 
@@ -280,11 +339,18 @@ window.gm_authFailure = function () {
   fresh.placeholder = 'Type the full property address'; fresh.value = (old.value || '').replace(/^Oops.*$/, '');
   old.replaceWith(fresh); fresh.addEventListener('input', onAddressInput); places = null; placesStatus('key rejected (check website list on the key)');
 };
+function setKind(k) { if (st.kind === k) return; st.kind = k; st.slot = null; st.date = null; update(); }
+$('kindListing').addEventListener('click', () => setKind('listing'));
+$('kindContent').addEventListener('click', () => setKind('content'));
+['plansOne', 'plansMonthly'].forEach((id) => $(id).addEventListener('click', (e) => { const b = e.target.closest('.pkg'); if (!b) return; st.content.planId = b.dataset.plan; update(); }));
+$('purpose').addEventListener('change', renderSummary);
 $('modePkg').addEventListener('click', () => { st.mode = 'package'; update(); });
 $('modeAla').addEventListener('click', () => { st.mode = 'alacarte'; update(); });
 $('pkgs').addEventListener('click', (e) => { const b = e.target.closest('.pkg'); if (!b || b.disabled) return; st.packageId = b.dataset.p; update(); });
 document.addEventListener('change', (e) => {
-  const c = e.target; if (!c.dataset || !c.dataset.k) return;
+  const c = e.target;
+  if (c.id === 'cDrone') { st.content.drone = c.checked; update(); return; }
+  if (!c.dataset || !c.dataset.k) return;
   const set = st.items[c.dataset.m];
   if (c.checked) set.add(c.dataset.k); else { set.delete(c.dataset.k); if (c.dataset.k === 'aerialPhoto') set.delete('aerialVideo'); }
   update();
@@ -410,5 +476,9 @@ window.__marzPlaces = async function () {
 const qs = new URLSearchParams(location.search);
 if (P.PACKAGES.some((p) => p.id === qs.get('package'))) st.packageId = qs.get('package');
 if (/^\d+$/.test(qs.get('sqft') || '')) { $('sqft').value = qs.get('sqft'); st.sqft = parseInt(qs.get('sqft'), 10); }
+if (qs.get('type') === 'content' || P.CONTENT.plans.some((p) => p.id === qs.get('plan'))) {
+  st.kind = 'content';
+  if (P.CONTENT.plans.some((p) => p.id === qs.get('plan'))) st.content.planId = qs.get('plan');
+}
 if (qs.get('service')) { st.mode = 'alacarte'; const k = qs.get('service'); if (P.ITEMS[k]) st.items.alacarte.add(k); }
 update();

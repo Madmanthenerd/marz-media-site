@@ -352,3 +352,8 @@ html.no-js .rv,html.reduce .rv{opacity:1;transform:none}
 .crumbs{font-size:13px;color:rgba(238,241,246,.75);margin:0 0 18px}
 .crumbs a{text-decoration:none}
 .crumbs a:hover{text-decoration:underline}
+/* booking: listing vs social content */
+.seg.kind{margin:28px 0 0;max-width:520px}
+.seg.kind button{padding:15px 10px;font-size:15px}
+@media (min-width:720px){.pkgs.two{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pkg .per{font-size:13px;color:var(--muted)}
