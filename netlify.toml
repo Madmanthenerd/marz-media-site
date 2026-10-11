@@ -74,13 +74,6 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
-# Until marzmediaphotography.com points here, keep the netlify.app address out of Google.
-# Remove this block on launch day.
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Robots-Tag = "noindex"
-
 [[headers]]
   for = "/site/*"
   [headers.values]
