@@ -155,12 +155,40 @@ function renderDays() {
 function gap() {
   const q = quote();
   if (!$('address').value.trim()) return ['address', 'Add the property address.'];
+  if (!parsedAddress()) return ['address', 'Enter the full property address with city, state and ZIP, e.g. 14531 Julie Meadows Ln, Cypress, TX 77433.'];
   if (!(st.sqft > 0)) return ['sqft', 'Add the square footage.'];
   if (!q.ok) return ['h2', q.error];
   if (!st.slot) return ['h3', 'Pick a date and arrival time.'];
   if (!$('fname').value.trim() || !$('lname').value.trim()) return ['fname', 'Add your first and last name.'];
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('email').value.trim())) return ['email', 'Add a valid email for your confirmation.'];
-  if (!$('phone').value.trim()) return ['phone', 'Add a mobile number in case we need you on shoot day.'];
+  if (!e164($('phone').value)) return ['phone', 'Add a 10-digit US mobile number in case we need you on shoot day.'];
+  return null;
+}
+const STATES = 'AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY DC'.split(' ');
+// The address exactly as Wix's booking form requires it: street number + name, city, state, ZIP.
+function parsedAddress() {
+  const text = $('address').value.trim();
+  const a = st.address || {};
+  if (a.picked === text && a.number && a.street && a.city && a.state && a.zip) return a;
+  const m = text.replace(/,?\s*(USA|United States)\.?$/i, '').match(/^(\d+[A-Za-z]?)\s+([^,]+?)\s*,\s*([^,]+?)\s*,?\s+([A-Za-z]{2})\.?\s*,?\s*(\d{5})(?:-\d{4})?$/);
+  if (m && STATES.includes(m[4].toUpperCase())) return tidy({ number: m[1], street: m[2], city: m[3], state: m[4], zip: m[5] });
+  // No commas ("14531 julie meadows ln cypress tx 77433"): split street from city at the street-type word.
+  const n = text.replace(/,/g, ' ').replace(/\s+(USA|United States)\.?$/i, '').match(/^(\d+[A-Za-z]?)\s+(.+?)\s+([A-Za-z]{2})\.?\s+(\d{5})(?:-\d{4})?$/);
+  if (!n || !STATES.includes(n[3].toUpperCase())) return null;
+  const words = n[2].split(/\s+/);
+  const SUF = /^(ln|lane|dr|drive|st|street|rd|road|ave|avenue|blvd|boulevard|ct|court|cir|circle|way|trl|trail|pl|place|pkwy|parkway|ter|terrace|loop|cv|cove|xing|crossing|hwy|highway|pass|run|path|sq|square|bnd|bend|holw|hollow|vw|view|pt|point|park|row|glen|grv|grove|hl|hill|hts|heights|mdw|mdws|meadow|meadows|spgs|springs|ridge|rdg|walk|vis|vista|crk|creek|est|estates|landing|lndg|oaks?)\.?$/i;
+  let cut = -1; for (let i = words.length - 2; i >= 0; i--) if (SUF.test(words[i])) { cut = i; break; }
+  if (cut < 0) return null;
+  return tidy({ number: n[1], street: words.slice(0, cut + 1).join(' '), city: words.slice(cut + 1).join(' '), state: n[3], zip: n[4] });
+}
+function tidy(a) {
+  const cap = (x) => x.trim().toLowerCase().replace(/\b([a-z])/g, (c) => c.toUpperCase());
+  return { number: a.number.toUpperCase(), street: cap(a.street), city: cap(a.city), state: a.state.toUpperCase(), zip: a.zip };
+}
+function e164(raw) {
+  const d = String(raw || '').replace(/\D/g, '');
+  if (d.length === 10) return '+1' + d;
+  if (d.length === 11 && d[0] === '1') return '+' + d;
   return null;
 }
 function goTo(id) { const el = $(id); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); if (el.focus && /INPUT|SELECT/.test(el.tagName)) setTimeout(() => el.focus({ preventScroll: true }), 300); }
@@ -173,26 +201,24 @@ function orderSummary(q) {
   return `ORDER: ${lines} | Total ${total} | ${st.sqft.toLocaleString('en-US')} sq ft | Address: ${$('address').value.trim()}${notes ? ' | Notes: ' + notes : ''}`.slice(0, 2000);
 }
 
-async function createBooking(withAddress) {
+async function createBooking() {
   const svc = await service(st.slug), q = quote();
   const req = bookingRequest(svc, st.slot, {});
   const opt = VARIANT_OPTION[st.slug];
   if (opt) { delete req.totalParticipants; req.participantsChoices = { serviceChoices: [{ numberOfParticipants: 1, choices: [{ optionId: opt, custom: TIER_CHOICES[tierIndex()] }] }] }; }
   const form = {
-    first_name: $('fname').value.trim(), last_name: $('lname').value.trim(), email: $('email').value.trim(), phone: $('phone').value.trim(),
+    first_name: $('fname').value.trim(), last_name: $('lname').value.trim(), email: $('email').value.trim(), phone: e164($('phone').value),
     add_your_message: orderSummary(q), brokerage: $('brokerage').value.trim(), square_footage: String(st.sqft),
     occupancy: $('occupancy').value, access_method: $('access').value, access_notes: $('accessNotes').value.trim(),
   };
   if ($('golive').value) form.listing_go_live_date = $('golive').value;
-  if (withAddress) form.address = { country: 'US', subdivision: st.address.state ? 'US-' + st.address.state : 'US-TX', city: st.address.city || undefined, postalCode: st.address.zip || undefined, addressLine: st.address.line || $('address').value.trim() };
+  const ad = parsedAddress();
+  form.address = { country: 'US', subdivision: 'US-' + ad.state, city: ad.city, postalCode: ad.zip, addressLine: `${ad.number} ${ad.street}`, streetNumber: ad.number, streetName: ad.street };
   Object.keys(form).forEach((k) => (form[k] === '' || form[k] == null) && delete form[k]);
   return wixRequest('/bookings/v2/bookings', { body: { booking: req, ...bookingOptions(form) } });
 }
 async function book() {
-  let created;
-  try { created = await createBooking(true); } catch (e) {
-    if (e && e.status === 400) created = await createBooking(false); else throw e;
-  }
+  const created = await createBooking();
   const bookingId = bookingIdOf(created);
   if (!bookingId) throw new Error('That time was just taken. Please pick another.');
   const cart = await wixRequest('/ecom/v2/carts', { body: bookingCartRequest([bookingId], contactOf(created), null) });
@@ -317,7 +343,7 @@ async function pick(i) {
     const comp = place.addressComponents || [];
     const get = (t, short) => { const c = comp.find((y) => (y.types || []).includes(t)); return c ? (short ? c.shortText : c.longText) : ''; };
     if (place.formattedAddress) input.value = place.formattedAddress.replace(/, USA$/, '');
-    st.address = { line: [get('street_number'), get('route')].filter(Boolean).join(' ') || input.value, city: get('locality') || get('sublocality') || get('postal_town'), state: get('administrative_area_level_1', true), zip: get('postal_code') };
+    st.address = { line: [get('street_number'), get('route')].filter(Boolean).join(' ') || input.value, number: get('street_number'), street: get('route'), city: get('locality') || get('sublocality') || get('postal_town'), state: get('administrative_area_level_1', true), zip: get('postal_code'), picked: input.value };
     renderSummary();
   } catch (_) { /* keep the typed text */ }
   sessionToken = null;
@@ -345,6 +371,7 @@ function wireAddress(input) {
   input.addEventListener('blur', () => setTimeout(closeList, 150));
 }
 document.addEventListener('mousedown', (e) => { const li = e.target.closest && e.target.closest('#addrList li[data-i]'); if (li) { e.preventDefault(); pick(Number(li.dataset.i)); } });
+$('address').placeholder = 'Street, city, state and ZIP';
 addrList(); // build the dropdown wrapper up front, so the field is never moved while focused
 wireAddress($('address'));
 window.__marzPlaces = async function () {
