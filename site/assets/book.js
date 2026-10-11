@@ -229,7 +229,17 @@ $('sqft').addEventListener('input', (e) => {
   if (st.sqft && (!cur || st.sqft > cur.max)) { const fit = P.PACKAGES.find((p) => st.sqft <= p.max); st.packageId = fit ? fit.id : null; }
   update();
 });
-$('address').addEventListener('input', () => { st.address = { line: $('address').value.trim(), city: '', state: '', zip: '' }; renderSummary(); });
+function onAddressInput() { st.address = { line: $('address').value.trim(), city: '', state: '', zip: '' }; renderSummary(); }
+$('address').addEventListener('input', onAddressInput);
+// If Google rejects the key (e.g. this web address is not on the key's allowed list), Google disables the
+// field and fills it with warning icons. Swap in a clean field so clients can always type the address.
+window.gm_authFailure = function () {
+  const old = $('address'); if (!old) return;
+  const fresh = document.createElement('input');
+  fresh.type = 'text'; fresh.id = 'address'; fresh.autocomplete = 'street-address';
+  fresh.placeholder = 'Type the full property address'; fresh.value = (old.value || '').replace(/^Oops.*$/, '');
+  old.replaceWith(fresh); fresh.addEventListener('input', onAddressInput);
+};
 $('modePkg').addEventListener('click', () => { st.mode = 'package'; update(); });
 $('modeAla').addEventListener('click', () => { st.mode = 'alacarte'; update(); });
 $('pkgs').addEventListener('click', (e) => { const b = e.target.closest('.pkg'); if (!b || b.disabled) return; st.packageId = b.dataset.p; update(); });
