@@ -3,6 +3,11 @@
   publish = "netlify/public"
   functions = "netlify/functions"
 
+# The Google Maps browser key is public by design (it ships to every visitor and is locked to
+# Alex's websites), so the secrets scanner should not block deploys over it.
+[build.environment]
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyAaP8RKFizdXk4HfoGnNJIQlqZ0iNxm9no"
+
 [functions]
   node_bundler = "esbuild"
 
