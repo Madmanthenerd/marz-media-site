@@ -78,7 +78,9 @@ p{margin:0 0 1em}
   .nav a[aria-current=page]::after{display:none}
   .nav .btn{font:600 16px/1 var(--body);margin-top:10px;background:var(--navy)!important;color:var(--white)!important;padding:16px 22px}
   .menu-open .nav{opacity:1;transform:none;pointer-events:auto}
-  .menu-open .site-head{background:var(--white);color:var(--ink)}
+  .menu-open .site-head{background:var(--white);color:var(--ink);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .nav{height:calc(100dvh - 76px - env(safe-area-inset-top,0px));overflow-y:auto}
+  .menu-open{overflow:hidden}
 }
 
 /* hero */
