@@ -238,7 +238,7 @@ window.gm_authFailure = function () {
   const fresh = document.createElement('input');
   fresh.type = 'text'; fresh.id = 'address'; fresh.autocomplete = 'street-address';
   fresh.placeholder = 'Type the full property address'; fresh.value = (old.value || '').replace(/^Oops.*$/, '');
-  old.replaceWith(fresh); fresh.addEventListener('input', onAddressInput);
+  old.replaceWith(fresh); fresh.addEventListener('input', onAddressInput); places = null;
 };
 $('modePkg').addEventListener('click', () => { st.mode = 'package'; update(); });
 $('modeAla').addEventListener('click', () => { st.mode = 'alacarte'; update(); });
@@ -274,23 +274,85 @@ $('form').addEventListener('submit', async (e) => {
   } finally { btns.forEach((b) => { b.disabled = false; }); $('submit').textContent = 'Confirm booking'; renderSummary(); }
 });
 
-/* ---------- address suggestions (Google Places; plain typing always works) ---------- */
-window.__marzPlaces = async function () {
-  try {
+/* ---------- address suggestions (Google Places API (New); plain typing always works) ---------- */
+// Our own dropdown under the address field, fed by AutocompleteSuggestion. The field stays a normal
+// input, so whatever the client types is always kept even if Google is unavailable.
+(function placesStyles() {
+  const css = '.addr-wrap{position:relative}.addr-list{position:absolute;left:0;right:0;top:100%;z-index:30;margin:4px 0 0;padding:6px 0;list-style:none;background:#fff;border:1px solid var(--line,#E2E5EA);border-radius:4px;box-shadow:0 18px 40px -20px rgba(14,16,21,.35)}' +
+    '.addr-list li{padding:11px 14px;cursor:pointer;font-size:15px;line-height:1.35}.addr-list li small{display:block;color:var(--muted,#5E6573);font-size:13px}.addr-list li[aria-selected=true],.addr-list li:hover{background:var(--paper,#F5F6F8)}' +
+    '.addr-list .gl{padding:6px 14px 2px;font-size:11px;color:var(--muted,#5E6573);cursor:default;background:none}';
+  const el = document.createElement('style'); el.textContent = css; document.head.appendChild(el);
+})();
+let places = null, sessionToken = null, sugg = [], active = -1, seqA = 0, tmr = null;
+function addrList() {
+  let ul = document.getElementById('addrList');
+  if (!ul) {
     const input = $('address');
-    const ac = new google.maps.places.Autocomplete(input, { componentRestrictions: { country: 'us' }, fields: ['formatted_address', 'address_components'] });
-    ac.addListener('place_changed', () => {
-      const p = ac.getPlace(); if (!p || !p.formatted_address) return;
-      const get = (t, s) => { const c = (p.address_components || []).find((x) => x.types.includes(t)); return c ? (s ? c.short_name : c.long_name) : ''; };
-      input.value = p.formatted_address;
-      st.address = { line: [get('street_number'), get('route')].filter(Boolean).join(' ') || p.formatted_address, city: get('locality') || get('sublocality'), state: get('administrative_area_level_1', true), zip: get('postal_code') };
-      renderSummary();
-    });
-  } catch (_) { /* typing still works */ }
+    const wrap = document.createElement('div'); wrap.className = 'addr-wrap';
+    input.parentNode.insertBefore(wrap, input); wrap.appendChild(input);
+    ul = document.createElement('ul'); ul.id = 'addrList'; ul.className = 'addr-list'; ul.setAttribute('role', 'listbox'); ul.hidden = true;
+    wrap.appendChild(ul);
+    input.setAttribute('role', 'combobox'); input.setAttribute('aria-autocomplete', 'list'); input.setAttribute('aria-controls', 'addrList');
+  }
+  return ul;
+}
+function closeList() { const ul = document.getElementById('addrList'); if (ul) ul.hidden = true; active = -1; }
+function renderList() {
+  const ul = addrList();
+  if (!sugg.length) { ul.hidden = true; return; }
+  ul.innerHTML = sugg.map((x, i) => {
+    const p = x.placePrediction, main = p.mainText ? p.mainText.toString() : p.text.toString(), sec = p.secondaryText ? p.secondaryText.toString() : '';
+    return `<li role="option" data-i="${i}" aria-selected="${i === active}">${esc(main)}${sec ? `<small>${esc(sec)}</small>` : ''}</li>`;
+  }).join('') + '<li class="gl" aria-hidden="true">Suggestions by Google</li>';
+  ul.hidden = false;
+}
+async function pick(i) {
+  const x = sugg[i]; if (!x) return;
+  const input = $('address');
+  input.value = x.placePrediction.text.toString(); closeList();
+  st.address = { line: input.value, city: '', state: '', zip: '' }; renderSummary();
+  try {
+    const place = x.placePrediction.toPlace();
+    await place.fetchFields({ fields: ['formattedAddress', 'addressComponents'] });
+    const comp = place.addressComponents || [];
+    const get = (t, short) => { const c = comp.find((y) => (y.types || []).includes(t)); return c ? (short ? c.shortText : c.longText) : ''; };
+    if (place.formattedAddress) input.value = place.formattedAddress.replace(/, USA$/, '');
+    st.address = { line: [get('street_number'), get('route')].filter(Boolean).join(' ') || input.value, city: get('locality') || get('sublocality') || get('postal_town'), state: get('administrative_area_level_1', true), zip: get('postal_code') };
+    renderSummary();
+  } catch (_) { /* keep the typed text */ }
+  sessionToken = null;
+}
+async function suggest() {
+  const q = $('address').value.trim();
+  if (!places || q.length < 3) { sugg = []; closeList(); return; }
+  const my = ++seqA;
+  try {
+    if (!sessionToken) sessionToken = new places.AutocompleteSessionToken();
+    const r = await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({ input: q, includedRegionCodes: ['us'], sessionToken, locationBias: { center: { lat: 29.76, lng: -95.37 }, radius: 50000 } });
+    if (my !== seqA) return;
+    sugg = (r.suggestions || []).filter((x) => x.placePrediction).slice(0, 5); active = -1; renderList();
+  } catch (_) { sugg = []; closeList(); }
+}
+function wireAddress(input) {
+  input.addEventListener('input', () => { clearTimeout(tmr); tmr = setTimeout(suggest, 180); });
+  input.addEventListener('keydown', (e) => {
+    const ul = document.getElementById('addrList'); if (!ul || ul.hidden) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, sugg.length - 1); renderList(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); renderList(); }
+    else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); pick(active); }
+    else if (e.key === 'Escape') closeList();
+  });
+  input.addEventListener('blur', () => setTimeout(closeList, 150));
+}
+document.addEventListener('mousedown', (e) => { const li = e.target.closest && e.target.closest('#addrList li[data-i]'); if (li) { e.preventDefault(); pick(Number(li.dataset.i)); } });
+addrList(); // build the dropdown wrapper up front, so the field is never moved while focused
+wireAddress($('address'));
+window.__marzPlaces = async function () {
+  try { places = await google.maps.importLibrary('places'); } catch (_) { places = null; }
 };
 (function loadPlaces() {
   const s = document.createElement('script');
-  s.src = `https://maps.googleapis.com/maps/api/js?key=${PLACES_KEY}&libraries=places&callback=__marzPlaces`;
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${PLACES_KEY}&loading=async&libraries=places&callback=__marzPlaces`;
   s.async = true; s.onerror = () => {}; document.head.appendChild(s);
 })();
 
