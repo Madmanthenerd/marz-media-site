@@ -98,7 +98,12 @@ async function findInvoice(stripe, bookingId) {
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return json(405, { error: 'Use POST.' });
-  const key = (event.queryStringParameters || {}).key || String(event.path || '').split('/').filter(Boolean).pop() || '';
+  // URL forms: /api/wix-booking/KEY[/cancel|/reschedule]  or  /api/wix-booking?key=KEY[&action=…]
+  const seg = String(event.path || '').split('/').filter(Boolean);
+  const at = seg.findIndex((x) => x === 'wix-booking');
+  const tail = at >= 0 ? seg.slice(at + 1) : [];
+  const key = (event.queryStringParameters || {}).key || tail[0] || '';
+  const pathAction = tail[1] || '';
   const expected = process.env.WIX_WEBHOOK_KEY || '';
   if (!expected || key.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(key), Buffer.from(expected))) {
     return json(401, { error: 'Bad key.' });
@@ -117,7 +122,7 @@ exports.handler = async (event) => {
   const location = pick(f, 'location', 'locationmainlanguage', 'address');
   const bookingId = pick(f, 'bookingid', 'orderid', 'id') || crypto.createHash('sha256').update(email + start + service).digest('hex').slice(0, 24);
   const addOns = pick(f, 'addongroups0addongroupdetails', 'addongroupdetails');
-  const action = ((event.queryStringParameters || {}).action || '').toLowerCase();
+  const action = ((event.queryStringParameters || {}).action || pathAction || '').toLowerCase();
   if (action === 'cancel' || action === 'reschedule') {
     try {
       const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
