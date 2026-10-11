@@ -217,16 +217,17 @@ async function createBooking() {
   if (opt) { delete req.totalParticipants; req.participantsChoices = { serviceChoices: [{ numberOfParticipants: 1, choices: [{ optionId: opt, custom: TIER_CHOICES[tierIndex()] }] }] }; }
   const form = {
     first_name: $('fname').value.trim(), last_name: $('lname').value.trim(), email: $('email').value.trim(), phone: e164($('phone').value),
-    add_your_message: orderSummary(q), brokerage: $('brokerage').value.trim(), square_footage: String(st.sqft),
+    add_your_message: orderSummary(q), brokerage: $('brokerage').value.trim() || 'Not provided', square_footage: String(st.sqft),
     occupancy: $('occupancy').value, access_method: $('access').value, access_notes: $('accessNotes').value.trim(),
   };
   if ($('golive').value) form.listing_go_live_date = $('golive').value;
   // Full parts when we can read them (picked from Google or typed with city/state/ZIP); otherwise just
   // the street line as typed, which Alex's booking form accepts.
   const ad = parsedAddress();
+  // Format verified against Alex's live booking form (Oct 11): country + addressLine, city/ZIP when known.
   form.address = ad
-    ? { country: 'US', subdivision: 'US-' + ad.state, city: ad.city, postalCode: ad.zip, addressLine: `${ad.number} ${ad.street}`, streetNumber: ad.number, streetName: ad.street }
-    : { country: 'US', subdivision: 'US-TX', addressLine: $('address').value.trim() };
+    ? { country: 'US', addressLine: `${ad.number} ${ad.street}`, city: ad.city, postalCode: ad.zip }
+    : { country: 'US', addressLine: $('address').value.trim() };
   Object.keys(form).forEach((k) => (form[k] === '' || form[k] == null) && delete form[k]);
   return wixRequest('/bookings/v2/bookings', { body: { booking: req, ...bookingOptions(form) } });
 }
