@@ -15,7 +15,7 @@
 
 const crypto = require('crypto');
 const Stripe = require('stripe');
-const { PACKAGES, ITEMS } = require('../../pricing.js');
+const { PACKAGES, ITEMS, TAX_RATE } = require('../../pricing.js');
 
 const json = (code, body) => ({ statusCode: code, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
@@ -72,6 +72,41 @@ function priceFromService(name) {
   return null;
 }
 
+// Bookings made or edited in the Wix dashboard carry no website ORDER line, so build the invoice from
+// what Wix sends: the service price plus each add-on, e.g.
+// "Drone / Aerial Coverage ($35.00), Floor Plans ($50.00), Virtual Staging (per photo) x3 ($15.00)".
+function addOnLines(text) {
+  const out = [];
+  const re = /([^,]+?)\s*(?:x\s*(\d+)\s*)?\(\$([\d,]+(?:\.\d+)?)\)/g;
+  let m;
+  while ((m = re.exec(String(text || '')))) {
+    const name = m[1].replace(/^[\s,]+/, '').trim();
+    const qty = m[2] ? parseInt(m[2], 10) : 1;
+    const unit = parseFloat(m[3].replace(/,/g, ''));
+    if (name && unit > 0) out.push({ name: qty > 1 ? `${name} x${qty}` : name, amount: Math.round(unit * qty * 100) / 100 });
+  }
+  return out;
+}
+function withTax(lines) {
+  const sub = lines.reduce((a, l) => a + l.amount, 0);
+  const tax = Math.round(sub * TAX_RATE * 100) / 100;
+  return tax > 0 ? lines.concat({ name: `Tax (${+(TAX_RATE * 100).toFixed(2)}%)`, amount: tax }) : lines;
+}
+// The invoice lines for this booking: the website's ORDER line when present, otherwise Wix's own data.
+function desiredLines(f, service, order) {
+  const extras = addOnLines(pick(f, 'addongroups0addongroupdetails', 'addongroupdetails'));
+  if (order && order.lines) {
+    // Website order; add-ons Alex attached later in Wix are added on top, with tax recalculated.
+    if (!extras.length) return order.lines;
+    return withTax(order.lines.filter((l) => !/^Tax \(/.test(l.name)).concat(extras));
+  }
+  if (order && order.total) return [{ name: service, amount: order.total }];
+  const base = money(pick(f, 'price', 'customprice')) || priceFromService(service);
+  if (!base) return null;
+  return withTax([{ name: service, amount: base }].concat(extras));
+}
+const cents = (lines) => lines.reduce((a, l) => a + Math.round(l.amount * 100), 0);
+
 // Unix seconds for a wall-clock time in Houston (handles daylight saving).
 function houstonUnix(y, m, d, h, mi) {
   for (const off of [5, 6]) {
@@ -121,61 +156,19 @@ exports.handler = async (event) => {
   const start = pick(f, 'startdate', 'starttime');
   const location = pick(f, 'location', 'locationmainlanguage', 'address');
   const bookingId = pick(f, 'bookingid', 'orderid', 'id') || crypto.createHash('sha256').update(email + start + service).digest('hex').slice(0, 24);
-  const addOns = pick(f, 'addongroups0addongroupdetails', 'addongroupdetails');
   const action = ((event.queryStringParameters || {}).action || pathAction || '').toLowerCase();
-  if (action === 'cancel' || action === 'reschedule') {
-    try {
-      const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-      const inv = await findInvoice(stripe, bookingId);
-      if (!inv) return json(200, { ok: true, note: 'No invoice for this booking.' });
-      if (action === 'cancel') {
-        if (inv.status === 'draft') await stripe.invoices.del(inv.id);
-        else if (inv.status === 'open') await stripe.invoices.voidInvoice(inv.id);
-        return json(200, { ok: true, canceled: inv.id, was: inv.status });
-      }
-      if (inv.status !== 'draft') return json(200, { ok: true, note: 'Invoice already sent; due date left as is.', invoice: inv.id });
-      const { sendAt, dueAt } = invoiceTiming(start);
-      if (sendAt) {
-        await stripe.invoices.update(inv.id, { automatically_finalizes_at: sendAt, due_date: dueAt });
-        return json(200, { ok: true, rescheduled: inv.id, sendAt });
-      }
-      await stripe.invoices.update(inv.id, { due_date: dueAt });
-      const fin = await stripe.invoices.finalizeInvoice(inv.id, { auto_advance: false });
-      await stripe.invoices.sendInvoice(fin.id);
-      return json(200, { ok: true, sent: fin.id });
-    } catch (err) {
-      console.error('wix-booking: ' + action + ' failed', err);
-      return json(500, { error: action + ' failed.' });
-    }
-  }
-
   const order = orderFromMessage(f);
-  if (order && order.customQuote) {
-    console.log('wix-booking: custom quote, no automatic invoice', bookingId);
-    return json(200, { ok: true, skipped: 'custom quote — send this invoice by hand' });
-  }
-  const amount = (order && order.total) || money(pick(f, 'price', 'customprice', 'total', 'amount')) || priceFromService(service);
+  const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+  const idem = `wix-${bookingId}`;
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    console.error('wix-booking: no client email in payload', Object.keys(f));
-    return json(400, { error: 'No client email in the webhook. Add the contact email field in the Wix automation.' });
-  }
-  if (!amount) {
-    console.error('wix-booking: no price for', service, Object.keys(f));
-    return json(400, { error: `No price for "${service}". Add the price field in the Wix automation.` });
-  }
-
-  try {
-    const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-    const idem = `wix-${bookingId}`;
+  // Create (and, for same-day shoots, send) an itemized invoice for this booking.
+  async function createInvoice(lines, keyTag) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw Object.assign(new Error('No client email in the webhook.'), { code: 400 });
+    const key = `${idem}${keyTag || ''}`;
     const name = [first, last].filter(Boolean).join(' ') || email;
     const found = await stripe.customers.list({ email, limit: 1 });
     const customer = found.data[0] || await stripe.customers.create({ name, email, phone: phone || undefined }, { idempotencyKey: `${idem}-cust` });
-
-    const existing = await findInvoice(stripe, bookingId).catch(() => null);
-    if (existing) return json(200, { ok: true, duplicate: true, invoice: existing.id });
     const { sendAt, dueAt } = invoiceTiming(start);
-    const description = [service, start, location].filter(Boolean).join(' · ').slice(0, 500);
     const invoice = await stripe.invoices.create({
       customer: customer.id,
       collection_method: 'send_invoice',
@@ -183,34 +176,85 @@ exports.handler = async (event) => {
       auto_advance: !!sendAt,
       ...(sendAt ? { automatically_finalizes_at: sendAt } : {}),
       pending_invoice_items_behavior: 'exclude',
-      description,
+      description: [service, start, location].filter(Boolean).join(' · ').slice(0, 500),
       footer: 'Thank you for choosing Marz Media Photography. Questions: 346-533-4026 · admin@marzmediaphotography.com',
       metadata: { wix_booking_id: bookingId, source: 'wix-bookings' },
-    }, { idempotencyKey: `${idem}-inv` });
-
-    if (invoice.status !== 'draft') {
-      return json(200, { ok: true, duplicate: true, invoice: invoice.id }); // already sent for this booking
-    }
-
-    const items = order && order.lines
-      ? order.lines.map((l) => ({ amount: l.amount, description: l.name }))
-      : [{ amount, description: addOns ? `${service} (includes: ${addOns})` : service }];
-    for (const [i, it] of items.entries()) {
-      await stripe.invoiceItems.create({
-        customer: customer.id,
-        invoice: invoice.id,
-        amount: Math.round(it.amount * 100),
-        currency: 'usd',
-        description: it.description.slice(0, 500),
-      }, { idempotencyKey: `${idem}-item-${i}` });
-    }
-
-    if (sendAt) return json(200, { ok: true, invoice: invoice.id, scheduled: new Date(sendAt * 1000).toISOString() });
+    }, { idempotencyKey: `${key}-inv` });
+    if (invoice.status !== 'draft') return { invoice: invoice.id, duplicate: true };
+    await addItems(invoice, lines, key);
+    if (sendAt) return { invoice: invoice.id, scheduled: new Date(sendAt * 1000).toISOString() };
     const finalized = await stripe.invoices.finalizeInvoice(invoice.id, { auto_advance: false });
     await stripe.invoices.sendInvoice(finalized.id);
-    return json(200, { ok: true, invoice: finalized.id, url: finalized.hosted_invoice_url });
+    return { invoice: finalized.id, sent: true };
+  }
+  async function addItems(invoice, lines, key) {
+    for (const [i, l] of lines.entries()) {
+      await stripe.invoiceItems.create({
+        customer: invoice.customer, invoice: invoice.id, currency: 'usd',
+        amount: Math.round(l.amount * 100), description: String(l.name).slice(0, 500),
+      }, { idempotencyKey: `${key}-item-${i}` });
+    }
+  }
+
+  if (order && order.customQuote) {
+    if (action === 'cancel') { /* fall through to cancel below */ } else {
+      console.log('wix-booking: custom quote, no automatic invoice', bookingId);
+      return json(200, { ok: true, skipped: 'custom quote — send this invoice by hand' });
+    }
+  }
+
+  try {
+    if (action === 'cancel') {
+      const inv = await findInvoice(stripe, bookingId);
+      if (!inv) return json(200, { ok: true, note: 'No invoice for this booking.' });
+      if (inv.status === 'draft') await stripe.invoices.del(inv.id);
+      else if (inv.status === 'open') await stripe.invoices.voidInvoice(inv.id);
+      return json(200, { ok: true, canceled: inv.id, was: inv.status });
+    }
+
+    const lines = desiredLines(f, service, order);
+
+    if (action === 'reschedule') {
+      // Booking edited in Wix: new time, and/or added or removed services. Keep the invoice in step.
+      const inv = await findInvoice(stripe, bookingId);
+      if (!inv) {
+        if (!lines) return json(200, { ok: true, note: 'No invoice and no price for this booking.' });
+        return json(200, { ok: true, created: await createInvoice(lines, `-c${cents(lines)}`) });
+      }
+      if (inv.status === 'paid' || inv.status === 'void' || inv.status === 'uncollectible') return json(200, { ok: true, note: `Invoice is ${inv.status}; left as is.` });
+      const changed = lines && cents(lines) !== inv.total;
+      if (inv.status === 'open') {
+        if (!changed) return json(200, { ok: true, note: 'Invoice already sent and unchanged.', invoice: inv.id });
+        await stripe.invoices.voidInvoice(inv.id);
+        return json(200, { ok: true, replaced: inv.id, with: await createInvoice(lines, `-r${cents(lines)}`) });
+      }
+      // Draft: replace its lines if the order changed, then move the send time and due date.
+      if (changed) {
+        const old = await stripe.invoiceItems.list({ invoice: inv.id, limit: 100 });
+        for (const it of old.data) await stripe.invoiceItems.del(it.id);
+        await addItems(inv, lines, `${idem}-u${cents(lines)}`);
+      }
+      const { sendAt, dueAt } = invoiceTiming(start);
+      if (sendAt) {
+        await stripe.invoices.update(inv.id, { automatically_finalizes_at: sendAt, due_date: dueAt });
+        return json(200, { ok: true, updated: inv.id, itemsChanged: !!changed, sendAt });
+      }
+      await stripe.invoices.update(inv.id, { due_date: dueAt });
+      const fin = await stripe.invoices.finalizeInvoice(inv.id, { auto_advance: false });
+      await stripe.invoices.sendInvoice(fin.id);
+      return json(200, { ok: true, sent: fin.id, itemsChanged: !!changed });
+    }
+
+    // New booking.
+    if (!lines) {
+      console.error('wix-booking: no price for', service, Object.keys(f));
+      return json(400, { error: `No price for "${service}". Add the price field in the Wix automation.` });
+    }
+    const existing = await findInvoice(stripe, bookingId).catch(() => null);
+    if (existing) return json(200, { ok: true, duplicate: true, invoice: existing.id });
+    return json(200, { ok: true, ...(await createInvoice(lines)) });
   } catch (err) {
-    console.error('wix-booking: Stripe failed', err);
-    return json(500, { error: 'Stripe invoice failed.' });
+    console.error('wix-booking: ' + (action || 'create') + ' failed', err);
+    return json(err.code === 400 ? 400 : 500, { error: err.message || 'Stripe invoice failed.' });
   }
 };
