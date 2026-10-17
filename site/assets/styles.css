@@ -376,3 +376,11 @@ html.no-js .rv,html.reduce .rv{opacity:1;transform:none}
 .mday:disabled{border-color:transparent;background:transparent;color:var(--muted);opacity:.45;cursor:not-allowed}
 .mday.today{box-shadow:inset 0 0 0 1px var(--navy)}
 .mday[aria-pressed=true]{background:var(--ink);color:var(--white);border-color:var(--ink)}
+
+/* per-photo add-on quantity (virtual staging) */
+.qty-row{cursor:default;flex-wrap:wrap}
+.qty-row:hover{background:var(--paper)}
+.qty{display:flex;align-items:center;gap:12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.qty button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--white);font:500 18px/1 var(--body);color:var(--ink);cursor:pointer}
+.qty button:disabled{opacity:.35;cursor:not-allowed}
+.qty-row .t{flex:1 1 240px}

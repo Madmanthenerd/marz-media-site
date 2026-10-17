@@ -31,6 +31,7 @@
     floorplan:   { name: 'Floor Plans',         price: 50,  minutes: 15, modes: ['alacarte', 'package'] },
     twilight:    { name: 'Twilight Photography', price: 75, minutes: 0,  modes: ['alacarte'], note: 'Captured at sunset' },
     sameday:     { name: 'Same-Day Delivery',   price: 75,  minutes: 0,  modes: ['alacarte', 'package'], note: 'Requires an 8–9 AM start' },
+    staging:     { name: 'Virtual Staging',     price: 15,  minutes: 0,  modes: ['alacarte', 'package'], perPhoto: true, qty: { def: 3, min: 1, max: 25 }, note: 'Priced per photo' },
   };
 
   // Social media content (no listing, no square footage). Monthly plans include drone on every reel
@@ -75,7 +76,7 @@
   function pick(v, tier) { return Array.isArray(v) ? v[Math.min(tier, v.length - 1)] : v; }
 
   /**
-   * selection = { sqft, mode: 'package'|'alacarte', packageId, items: [keys] }
+   * selection = { sqft, mode: 'package'|'alacarte', packageId, items: [keys], qty: { staging: n } }
    * returns { ok, error, lines:[{key,name,amount}], total, customQuote, minutes, includesTwilight }
    */
   function withTax(lines) {
@@ -123,8 +124,13 @@
     for (const k of keys) {
       const it = ITEMS[k];
       if (it.requires && !keys.includes(it.requires)) continue;
-      const price = it.prices ? (custom ? null : pick(it.prices, tier)) : it.price;
-      lines.push({ key: k, name: it.name, amount: price, from: !!it.from });
+      let price = it.prices ? (custom ? null : pick(it.prices, tier)) : it.price;
+      let name = it.name;
+      if (it.perPhoto) {
+        const n = Math.max(it.qty.min, Math.min(it.qty.max, Math.round(Number((selection.qty || {})[k]) || it.qty.def)));
+        price = price * n; name = `${it.name} – ${n} photo${n === 1 ? '' : 's'}`;
+      }
+      lines.push({ key: k, name, amount: price, from: !!it.from });
       minutes += pick(it.minutes, tier);
       if (k === 'twilight') includesTwilight = true;
     }

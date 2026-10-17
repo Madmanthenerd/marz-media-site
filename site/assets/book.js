@@ -26,13 +26,13 @@ const st = {
   services: {}, slug: null, from: startOfToday(), days: null, date: null, slot: null, loading: false, err: '',
   address: { line: '', city: '', state: '', zip: '' }, busy: false,
   kind: 'listing', content: { planId: 'reel1', drone: false },
-  view: 'week', month: null, missed: null,
+  view: 'week', month: null, missed: null, qty: { staging: 3 },
 };
 const isContent = () => st.kind === 'content';
 
 function startOfToday() { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
 function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
-function quote() { if (isContent()) return P.quote({ mode: 'content', planId: st.content.planId, drone: st.content.drone }); return P.quote({ sqft: st.sqft, mode: st.mode, packageId: st.packageId, items: Array.from(st.items[st.mode]) }); }
+function quote() { if (isContent()) return P.quote({ mode: 'content', planId: st.content.planId, drone: st.content.drone }); return P.quote({ sqft: st.sqft, mode: st.mode, packageId: st.packageId, items: Array.from(st.items[st.mode]), qty: st.qty }); }
 function primarySlug() {
   if (isContent()) return P.CONTENT.slug;
   if (st.mode === 'package') return st.packageId || null;
@@ -53,12 +53,22 @@ function tierIndex() { const t = P.tierFor(st.sqft); return Math.max(0, Math.min
 function itemPrice(key) {
   const it = P.ITEMS[key], tier = P.tierFor(st.sqft);
   if (it.prices) { if (tier < 0) return 'from ' + money(it.prices[0]); if (tier >= P.TIERS.length) return 'Quoted'; return money(it.prices[tier]); }
+  if (it.perPhoto) return money(it.price) + '/photo';
   return (it.from ? 'from ' : '') + (key === 'aerialVideo' ? '+' : '') + money(it.price);
 }
 function optRow(key, mode, sub) {
   const it = P.ITEMS[key], id = `o_${mode}_${key}`, on = st.items[mode].has(key);
   return `<label class="opt${sub ? ' sub' : ''}" for="${id}"><input type="checkbox" id="${id}" data-k="${key}" data-m="${mode}"${on ? ' checked' : ''}>` +
-    `<span class="t">${it.name}${it.note ? `<small>${it.note}</small>` : ''}</span><span class="p">${itemPrice(key)}</span></label>`;
+    `<span class="t">${it.name}${it.note ? `<small>${it.note}</small>` : ''}</span><span class="p">${itemPrice(key)}</span></label>` +
+    (it.perPhoto && on ? qtyRow(key) : '');
+}
+// Photo count for per-photo add-ons (virtual staging), with the recommended room set.
+function qtyRow(key) {
+  const it = P.ITEMS[key], n = st.qty[key];
+  return `<div class="opt sub qty-row"><span class="t">How many photos?<small>We recommend 3: living room, kitchen and primary bedroom. Add the game room for a 4th.</small></span>` +
+    `<span class="qty"><button type="button" data-qty="${key}" data-d="-1" aria-label="One fewer photo"${n <= it.qty.min ? ' disabled' : ''}>−</button>` +
+    `<span aria-live="polite"><strong>${n}</strong> · ${money(it.price * n)}</span>` +
+    `<button type="button" data-qty="${key}" data-d="1" aria-label="One more photo"${n >= it.qty.max ? ' disabled' : ''}>+</button></span></div>`;
 }
 function planCard(p) {
   const per = p.reels > 1 ? `<span class="per">${money(Math.round(p.price / p.reels))} per reel${p.monthly ? ` · ${P.CONTENT.minMonths}-month minimum` : ''}</span>` : '<span class="per">Up to 1 hour on location</span>';
@@ -100,10 +110,10 @@ function renderServices() {
       `<span class="inc">${p.includes.map((i) => `<span>${i}</span>`).join('')}</span>` +
       `<span class="fit">Homes up to ${p.max.toLocaleString('en-US')} sq ft</span></button>`;
   }).join('');
-  $('pkgExtras').innerHTML = ['tour3d', 'droneAddon', 'floorplan', 'sameday'].map((k) => optRow(k, 'package')).join('');
+  $('pkgExtras').innerHTML = ['tour3d', 'droneAddon', 'floorplan', 'staging', 'sameday'].map((k) => optRow(k, 'package')).join('');
   const a = st.items.alacarte;
   $('alaServices').innerHTML = optRow('hdr', 'alacarte') + optRow('video', 'alacarte') + optRow('tour3d', 'alacarte') + optRow('aerialPhoto', 'alacarte') + (a.has('aerialPhoto') ? optRow('aerialVideo', 'alacarte', true) : '');
-  $('alaAddons').innerHTML = ['floorplan', 'twilight', 'sameday'].map((k) => optRow(k, 'alacarte')).join('');
+  $('alaAddons').innerHTML = ['floorplan', 'twilight', 'staging', 'sameday'].map((k) => optRow(k, 'alacarte')).join('');
   $('modePkg').setAttribute('aria-pressed', st.mode === 'package');
   $('modeAla').setAttribute('aria-pressed', st.mode === 'alacarte');
   $('pkgWrap').hidden = st.mode !== 'package';
@@ -375,6 +385,12 @@ $('kindListing').addEventListener('click', () => setKind('listing'));
 $('kindContent').addEventListener('click', () => setKind('content'));
 ['plansOne', 'plansMonthly'].forEach((id) => $(id).addEventListener('click', (e) => { const b = e.target.closest('.pkg'); if (!b) return; st.content.planId = b.dataset.plan; update(); }));
 $('purpose').addEventListener('change', renderSummary);
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-qty]'); if (!b || b.disabled) return;
+  const k = b.dataset.qty, q = P.ITEMS[k].qty;
+  st.qty[k] = Math.max(q.min, Math.min(q.max, st.qty[k] + Number(b.dataset.d)));
+  renderServices(); renderSummary();
+});
 $('modePkg').addEventListener('click', () => { st.mode = 'package'; update(); });
 $('modeAla').addEventListener('click', () => { st.mode = 'alacarte'; update(); });
 $('pkgs').addEventListener('click', (e) => { const b = e.target.closest('.pkg'); if (!b || b.disabled) return; st.packageId = b.dataset.p; update(); });
