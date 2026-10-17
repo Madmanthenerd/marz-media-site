@@ -25,9 +25,9 @@
     hdr:         { name: 'HDR Photography',     prices: [165, 210, 260], minutes: [75, 105, 135, 165], primary: true, modes: ['alacarte'] },
     video:       { name: 'Cinematic Video',     prices: [225, 275, 325], minutes: [60, 75, 90, 105],   primary: true, modes: ['alacarte'] },
     tour3d:      { name: '3D Virtual Tour',     prices: [225, 275, 325], minutes: [45, 60, 75, 90],    primary: true, modes: ['alacarte', 'package'] },
-    aerialPhoto: { name: 'Aerial Photography',  price: 115, minutes: 20, primary: true, modes: ['alacarte'] },
+    aerialPhoto: { name: 'Aerial Photography',  price: 115, minutes: 20, primary: true, modes: ['alacarte'], note: 'Drone photos only, no ground photos' },
     aerialVideo: { name: 'Aerial Video',        price: 50,  minutes: 15, requires: 'aerialPhoto', modes: ['alacarte'], note: 'Add-on to aerial photography' },
-    droneAddon:  { name: 'Drone Coverage',      prices: [35, 50, 50], minutes: 20, modes: ['package'], note: 'Aerial photos added to your package' },
+    droneAddon:  { name: 'Drone Coverage',      prices: [35, 50, 50], minutes: 20, modes: ['package', 'alacarte'], requiresAny: ['hdr', 'video', 'tour3d'], note: 'Aerial photos added to your shoot' },
     floorplan:   { name: 'Floor Plans',         price: 50,  minutes: 15, modes: ['alacarte', 'package'] },
     twilight:    { name: 'Twilight Photography', price: 75, minutes: 0,  modes: ['alacarte'], note: 'Captured at sunset' },
     sameday:     { name: 'Same-Day Delivery',   price: 75,  minutes: 0,  modes: ['alacarte', 'package'], note: 'Requires an 8–9 AM start' },
@@ -124,6 +124,8 @@
     for (const k of keys) {
       const it = ITEMS[k];
       if (it.requires && !keys.includes(it.requires)) continue;
+      // Build-your-own drone add-on rides on a ground shoot; drone-only orders use Aerial Photography.
+      if (mode === 'alacarte' && it.requiresAny && (!it.requiresAny.some((r) => keys.includes(r)) || keys.includes('aerialPhoto'))) continue;
       let price = it.prices ? (custom ? null : pick(it.prices, tier)) : it.price;
       let name = it.name;
       if (it.perPhoto) {

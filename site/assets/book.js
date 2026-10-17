@@ -22,7 +22,7 @@ const ALA_PRIMARY = [['hdr', 'hdr-photography'], ['video', 'cinematic-video'], [
 const PLACES_KEY = 'AIzaSyAaP8RKFizdXk4HfoGnNJIQlqZ0iNxm9no';
 
 const st = {
-  sqft: null, mode: 'package', packageId: null, items: { package: new Set(), alacarte: new Set() },
+  sqft: null, mode: null, packageId: null, items: { package: new Set(), alacarte: new Set() },
   services: {}, slug: null, from: startOfToday(), days: null, date: null, slot: null, loading: false, err: '',
   address: { line: '', city: '', state: '', zip: '' }, busy: false,
   kind: 'listing', content: { planId: 'reel1', drone: false },
@@ -32,15 +32,16 @@ const isContent = () => st.kind === 'content';
 
 function startOfToday() { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
 function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
-function quote() { if (isContent()) return P.quote({ mode: 'content', planId: st.content.planId, drone: st.content.drone }); return P.quote({ sqft: st.sqft, mode: st.mode, packageId: st.packageId, items: Array.from(st.items[st.mode]), qty: st.qty }); }
+function quote() { if (isContent()) return P.quote({ mode: 'content', planId: st.content.planId, drone: st.content.drone }); if (!st.mode) return { ok: false, error: 'Choose a listing package or build your own.' }; return P.quote({ sqft: st.sqft, mode: st.mode, packageId: st.packageId, items: Array.from(st.items[st.mode]), qty: st.qty }); }
 function primarySlug() {
   if (isContent()) return P.CONTENT.slug;
+  if (!st.mode) return null;
   if (st.mode === 'package') return st.packageId || null;
   const set = st.items.alacarte;
   const hit = ALA_PRIMARY.find(([k]) => set.has(k));
   return hit ? hit[1] : null;
 }
-const sameDay = () => !isContent() && st.items[st.mode].has('sameday');
+const sameDay = () => !isContent() && !!st.mode && st.items[st.mode].has('sameday');
 function okSlot(s) {
   if (!sameDay()) return true;
   const t = s.startLocal.slice(11, 16); // HH:MM, Houston time
@@ -113,9 +114,11 @@ function renderServices() {
   $('pkgExtras').innerHTML = ['tour3d', 'droneAddon', 'floorplan', 'staging', 'sameday'].map((k) => optRow(k, 'package')).join('');
   const a = st.items.alacarte;
   $('alaServices').innerHTML = optRow('hdr', 'alacarte') + optRow('video', 'alacarte') + optRow('tour3d', 'alacarte') + optRow('aerialPhoto', 'alacarte') + (a.has('aerialPhoto') ? optRow('aerialVideo', 'alacarte', true) : '');
-  $('alaAddons').innerHTML = ['floorplan', 'twilight', 'staging', 'sameday'].map((k) => optRow(k, 'alacarte')).join('');
-  $('modePkg').setAttribute('aria-pressed', st.mode === 'package');
-  $('modeAla').setAttribute('aria-pressed', st.mode === 'alacarte');
+  const ground = ['hdr', 'video', 'tour3d'].some((k) => a.has(k));
+  $('alaAddons').innerHTML = (ground && !a.has('aerialPhoto') ? ['droneAddon'] : []).concat(['floorplan', 'twilight', 'staging', 'sameday']).map((k) => optRow(k, 'alacarte')).join('');
+  $('modePkg').setAttribute('aria-checked', String(st.mode === 'package'));
+  $('modeAla').setAttribute('aria-checked', String(st.mode === 'alacarte'));
+  $('modeHint').hidden = !!st.mode;
   $('pkgWrap').hidden = st.mode !== 'package';
   $('alaWrap').hidden = st.mode !== 'alacarte';
   const big = P.tierFor(st.sqft) >= P.TIERS.length;
@@ -399,7 +402,11 @@ document.addEventListener('change', (e) => {
   if (c.id === 'cDrone') { st.content.drone = c.checked; update(); return; }
   if (!c.dataset || !c.dataset.k) return;
   const set = st.items[c.dataset.m];
-  if (c.checked) set.add(c.dataset.k); else { set.delete(c.dataset.k); if (c.dataset.k === 'aerialPhoto') set.delete('aerialVideo'); }
+  const k = c.dataset.k, ground = (s) => ['hdr', 'video', 'tour3d'].some((g) => s.has(g));
+  if (c.checked) set.add(k); else { set.delete(k); if (k === 'aerialPhoto') set.delete('aerialVideo'); }
+  // Drone with a ground shoot is the $35–$50 add-on; the $115 Aerial Photography is for drone-only orders.
+  if (c.dataset.m === 'alacarte' && ground(set) && set.has('aerialPhoto') && !set.has('aerialVideo')) { set.delete('aerialPhoto'); set.add('droneAddon'); }
+  if (c.dataset.m === 'alacarte' && !ground(set)) set.delete('droneAddon');
   update();
 });
 $('days').addEventListener('click', (e) => { const b = e.target.closest('.day'); if (!b || b.disabled) return; st.date = b.dataset.d; st.missed = null; renderDays(); });
@@ -548,5 +555,6 @@ if (qs.get('type') === 'content' || P.CONTENT.plans.some((p) => p.id === qs.get(
   st.kind = 'content';
   if (P.CONTENT.plans.some((p) => p.id === qs.get('plan'))) st.content.planId = qs.get('plan');
 }
+if (st.packageId) st.mode = 'package';
 if (qs.get('service')) { st.mode = 'alacarte'; const k = qs.get('service'); if (P.ITEMS[k]) st.items.alacarte.add(k); }
 update();
