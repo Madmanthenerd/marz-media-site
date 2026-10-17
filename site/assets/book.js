@@ -89,9 +89,15 @@ function renderContent() {
     ? 'Book your first shoot now. Alex will confirm your plan and schedule the rest of the month with you.'
     : 'Need it every month? A monthly plan lowers the price per reel and includes drone.';
 }
+const choiceOf = () => (isContent() ? 'content' : st.mode);
+const CHOICE_IDS = { package: 'choicePkg', alacarte: 'choiceAla', content: 'choiceReel' };
+const NEEDS_TITLE = { package: 'Choose your package', alacarte: 'Pick your services', content: 'Choose your reels' };
 function renderKind() {
-  const c = isContent();
-  $('kindListing').setAttribute('aria-pressed', String(!c)); $('kindContent').setAttribute('aria-pressed', String(c));
+  const c = isContent(), ch = choiceOf();
+  Object.entries(CHOICE_IDS).forEach(([k, id]) => $(id).setAttribute('aria-checked', String(k === ch)));
+  $('flow').hidden = !ch;
+  $('form').classList.toggle('chosen', !!ch);
+  $('h2').textContent = NEEDS_TITLE[ch] || 'What you need';
   $('h1s').textContent = c ? 'The shoot' : 'The property';
   $('addrLabel').innerHTML = c ? 'Shoot location <span class="opt-hint">(optional, if you know it)</span>' : 'Property address';
   $('sqftField').hidden = c; $('purposeField').hidden = !c;
@@ -116,9 +122,6 @@ function renderServices() {
   $('alaServices').innerHTML = optRow('hdr', 'alacarte') + optRow('video', 'alacarte') + optRow('tour3d', 'alacarte') + optRow('aerialPhoto', 'alacarte') + (a.has('aerialPhoto') ? optRow('aerialVideo', 'alacarte', true) : '');
   const ground = ['hdr', 'video', 'tour3d'].some((k) => a.has(k));
   $('alaAddons').innerHTML = (ground && !a.has('aerialPhoto') ? ['droneAddon'] : []).concat(['floorplan', 'twilight', 'staging', 'sameday']).map((k) => optRow(k, 'alacarte')).join('');
-  $('modePkg').setAttribute('aria-checked', String(st.mode === 'package'));
-  $('modeAla').setAttribute('aria-checked', String(st.mode === 'alacarte'));
-  $('modeHint').hidden = !!st.mode;
   $('pkgWrap').hidden = st.mode !== 'package';
   $('alaWrap').hidden = st.mode !== 'alacarte';
   const big = P.tierFor(st.sqft) >= P.TIERS.length;
@@ -244,6 +247,7 @@ function renderDays() {
 /* ---------- validation + booking ---------- */
 function gap() {
   const q = quote();
+  if (!choiceOf()) return ['h0s', 'Choose what you’re booking: a listing package, build your own, or social media reels.'];
   if (isContent()) {
     if (!q.ok) return ['h2', q.error];
     if (!st.slot) return ['h3', 'Pick a date and start time.'];
@@ -383,9 +387,15 @@ window.gm_authFailure = function () {
   fresh.placeholder = 'Type the full property address'; fresh.value = (old.value || '').replace(/^Oops.*$/, '');
   old.replaceWith(fresh); fresh.addEventListener('input', onAddressInput); places = null; placesStatus('key rejected (check website list on the key)');
 };
-function setKind(k) { if (st.kind === k) return; st.kind = k; st.slot = null; st.date = null; update(); }
-$('kindListing').addEventListener('click', () => setKind('listing'));
-$('kindContent').addEventListener('click', () => setKind('content'));
+// Step 1: package, build your own or reels. Everything after it follows from this choice.
+function choose(c) {
+  const first = !choiceOf();
+  if (choiceOf() !== c) { st.slot = null; st.date = null; }
+  if (c === 'content') st.kind = 'content'; else { st.kind = 'listing'; st.mode = c; }
+  update();
+  if (first) setTimeout(() => { const t = $(c === 'content' ? 'h2' : 'h1s'); t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
+}
+Object.entries(CHOICE_IDS).forEach(([k, id]) => $(id).addEventListener('click', () => choose(k)));
 ['plansOne', 'plansMonthly'].forEach((id) => $(id).addEventListener('click', (e) => { const b = e.target.closest('.pkg'); if (!b) return; st.content.planId = b.dataset.plan; update(); }));
 $('purpose').addEventListener('change', renderSummary);
 document.addEventListener('click', (e) => {
@@ -394,8 +404,6 @@ document.addEventListener('click', (e) => {
   st.qty[k] = Math.max(q.min, Math.min(q.max, st.qty[k] + Number(b.dataset.d)));
   renderServices(); renderSummary();
 });
-$('modePkg').addEventListener('click', () => { st.mode = 'package'; update(); });
-$('modeAla').addEventListener('click', () => { st.mode = 'alacarte'; update(); });
 $('pkgs').addEventListener('click', (e) => { const b = e.target.closest('.pkg'); if (!b || b.disabled) return; st.packageId = b.dataset.p; update(); });
 document.addEventListener('change', (e) => {
   const c = e.target;
