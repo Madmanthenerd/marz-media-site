@@ -12,7 +12,7 @@ import {
 const P = window.MarzPricing;
 const $ = (id) => document.getElementById(id);
 const money = (n) => '$' + Number(n).toLocaleString('en-US', Number(n) % 1 ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {});
-const TIER_CHOICES = ['0–2,499 sq ft', '2,500–3,999 sq ft', '4,000–5,999 sq ft'];
+const TIER_CHOICES = ['0–2,499 sq ft', '2,500–3,999 sq ft', '4,000–5,999 sq ft', '6,000–7,499 sq ft'];
 const VARIANT_OPTION = {
   'hdr-photography': '9a111111-1111-4111-8111-111111111111',
   'cinematic-video': '9b222222-2222-4222-8222-222222222222',
@@ -48,12 +48,13 @@ function okSlot(s) {
   return t >= '08:00' && t <= P.SAMEDAY_LATEST;
 }
 const daySlots = (k) => ((st.days && st.days[k]) || []).filter(okSlot);
-function tierIndex() { const t = P.tierFor(st.sqft); return Math.max(0, Math.min(t, 2)); }
+// Wix size option to book: HDR has a 6,000–7,499 choice; video and 3D tour stop at 4,000–5,999.
+function tierIndex() { const t = P.tierFor(st.sqft); return Math.max(0, Math.min(t, st.slug === 'hdr-photography' ? 3 : 2)); }
 
 /* ---------- services UI ---------- */
 function itemPrice(key) {
   const it = P.ITEMS[key], tier = P.tierFor(st.sqft);
-  if (it.prices) { if (tier < 0) return 'from ' + money(it.prices[0]); if (tier >= P.TIERS.length) return 'Quoted'; return money(it.prices[tier]); }
+  if (it.prices) { if (tier < 0) return 'from ' + money(it.prices[0]); const pr = it.prices[Math.min(tier, it.prices.length - 1)]; if (tier >= P.TIERS.length || pr == null) return 'Quoted'; return money(pr); }
   if (it.perPhoto) return money(it.price) + '/photo';
   return (it.from ? 'from ' : '') + (key === 'aerialVideo' ? '+' : '') + money(it.price);
 }
@@ -124,9 +125,9 @@ function renderServices() {
   $('alaAddons').innerHTML = (ground && !a.has('aerialPhoto') ? ['droneAddon'] : []).concat(['floorplan', 'twilight', 'staging', 'sameday']).map((k) => optRow(k, 'alacarte')).join('');
   $('pkgWrap').hidden = st.mode !== 'package';
   $('alaWrap').hidden = st.mode !== 'alacarte';
-  const big = P.tierFor(st.sqft) >= P.TIERS.length;
+  const big = st.sqft > 5999;
   $('svcErr').hidden = !(st.mode === 'package' && big);
-  $('svcErr').textContent = 'Homes over 5,999 sq ft are custom quoted. Choose Build your own and pick what you need.';
+  $('svcErr').textContent = 'Packages cover homes up to 5,999 sq ft. For larger homes, choose Build your own at the top: HDR photos are $325 up to 7,499 sq ft.';
 }
 function renderRuler() {
   const n = st.sqft, tier = P.tierFor(n), pin = $('pin');
@@ -134,7 +135,7 @@ function renderRuler() {
   if (!(n > 0)) { pin.hidden = true; $('tierHint').textContent = "Pricing follows the home's heated square footage, as listed on HAR or MLS."; return; }
   const pos = n <= 2500 ? n / 2500 * 2.5 : n <= 4000 ? 2.5 + (n - 2500) / 1500 * 1.5 : n <= 6000 ? 4 + (n - 4000) / 2000 * 2 : Math.min(7, 6 + (n - 6000) / 2000);
   pin.hidden = false; pin.style.left = `calc(${pos / 7 * 100}% - 1px)`;
-  $('tierHint').textContent = tier < P.TIERS.length ? `${P.TIERS[tier].label} pricing applies.` : '6,000+ sq ft: custom quote. You can still reserve the time now.';
+  $('tierHint').textContent = tier < P.TIERS.length ? `${P.TIERS[tier].label} pricing applies.` : '7,500+ sq ft: custom quote. You can still reserve the time now.';
 }
 
 /* ---------- summary ---------- */

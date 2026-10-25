@@ -8,7 +8,8 @@
     { max: 2499, label: 'Up to 2,499 sq ft' },
     { max: 3999, label: '2,500–3,999 sq ft' },
     { max: 5999, label: '4,000–5,999 sq ft' },
-  ]; // 6,000+ sq ft = custom quote
+    { max: 7499, label: '6,000–7,499 sq ft' }, // HDR photos priced; other services quoted
+  ]; // 7,500+ sq ft = custom quote
 
   const PACKAGES = [
     { id: 'essential', name: 'Essential', price: 349, max: 2499,
@@ -22,12 +23,12 @@
   // Each item: price (flat) or prices (by sq ft tier), shoot minutes (flat or by tier),
   // and where it can be booked: 'alacarte', 'package', or both.
   const ITEMS = {
-    hdr:         { name: 'HDR Photography',     prices: [165, 210, 260], minutes: [75, 105, 135, 165], primary: true, modes: ['alacarte'] },
-    video:       { name: 'Cinematic Video',     prices: [225, 275, 325], minutes: [60, 75, 90, 105],   primary: true, modes: ['alacarte'] },
-    tour3d:      { name: '3D Virtual Tour',     prices: [225, 275, 325], minutes: [45, 60, 75, 90],    primary: true, modes: ['alacarte', 'package'] },
+    hdr:         { name: 'HDR Photography',     prices: [165, 210, 260, 325], minutes: [75, 105, 135, 165], primary: true, modes: ['alacarte'] },
+    video:       { name: 'Cinematic Video',     prices: [225, 275, 325, null], minutes: [60, 75, 90, 105],   primary: true, modes: ['alacarte'] },
+    tour3d:      { name: '3D Virtual Tour',     prices: [225, 275, 325, null], minutes: [45, 60, 75, 90],    primary: true, modes: ['alacarte', 'package'] },
     aerialPhoto: { name: 'Aerial Photography',  price: 115, minutes: 20, primary: true, modes: ['alacarte'], note: 'Drone photos only, no ground photos' },
     aerialVideo: { name: 'Aerial Video',        price: 50,  minutes: 15, requires: 'aerialPhoto', modes: ['alacarte'], note: 'Add-on to aerial photography' },
-    droneAddon:  { name: 'Drone Coverage',      prices: [35, 50, 50], minutes: 20, modes: ['package', 'alacarte'], requiresAny: ['hdr', 'video', 'tour3d'], note: 'Aerial photos added to your shoot' },
+    droneAddon:  { name: 'Drone Coverage',      prices: [35, 50, 50, 50], minutes: 20, modes: ['package', 'alacarte'], requiresAny: ['hdr', 'video', 'tour3d'], note: 'Aerial photos added to your shoot' },
     floorplan:   { name: 'Floor Plans',         price: 50,  minutes: 15, modes: ['alacarte', 'package'] },
     twilight:    { name: 'Twilight Photography', price: 75, minutes: 0,  modes: ['alacarte'], note: 'Captured at sunset' },
     sameday:     { name: 'Same-Day Delivery',   price: 75,  minutes: 0,  modes: ['alacarte', 'package'], note: 'Requires an 8–9 AM start' },
@@ -112,7 +113,7 @@
     if (mode === 'package') {
       const pkg = PACKAGES.find((p) => p.id === selection.packageId);
       if (!pkg) return { ok: false, error: 'Choose a package.' };
-      if (custom) return { ok: false, error: 'Packages cover homes up to 5,999 sq ft. Build your own for a custom quote.' };
+      if (custom || sqft > 5999) return { ok: false, error: 'Packages cover homes up to 5,999 sq ft. For larger homes, choose Build your own.' };
       if (sqft > pkg.max) return { ok: false, error: `${pkg.name} covers homes up to ${pkg.max.toLocaleString('en-US')} sq ft.` };
       lines.push({ key: pkg.id, name: `${pkg.name} Package`, amount: pkg.price });
       minutes += PACKAGE_MINUTES(tier);
