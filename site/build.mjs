@@ -66,9 +66,10 @@ const OTHER_AREAS = ['Tanglewood', 'Uptown & the Galleria', 'Spring', 'Kingwood'
 /* ---------- shared chrome ---------- */
 const NAV = [['portfolio.html', 'Portfolio'], ['services.html', 'Services & pricing'], ['about.html', 'About'], ['prep.html', 'Prep guide']];
 const BIZ = {
-  '@context': 'https://schema.org', '@type': ['ProfessionalService', 'LocalBusiness'], '@id': ORIGIN + '/#business',
+  '@context': 'https://schema.org', '@type': ['ProfessionalService', 'LocalBusiness', 'Organization'], '@id': ORIGIN + '/#business',
   name: 'Marz Media Photography', url: ORIGIN + '/', telephone: TEL, email: EMAIL,
-  image: src(byKey('3ee3861a'), 1600), logo: src(byKey('3ee3861a'), 600), priceRange: '$$',
+  image: src(byKey('3ee3861a'), 1600), logo: { '@type': 'ImageObject', url: ORIGIN + '/site/assets/logo.png', width: 600, height: 600 }, priceRange: '$$',
+  contactPoint: { '@type': 'ContactPoint', telephone: TEL, email: EMAIL, contactType: 'customer service', areaServed: 'US-TX', availableLanguage: 'English' },
   description: 'Luxury real estate photography, cinematic video, drone and 3D tours across Greater Houston.',
   address: { '@type': 'PostalAddress', addressLocality: 'Cypress', addressRegion: 'TX', addressCountry: 'US' },
   founder: { '@type': 'Person', name: 'Alex Marzette' }, sameAs: [IG],
@@ -78,7 +79,7 @@ const BIZ = {
 const ld = (o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`;
 
 function head({ file, title, desc, image, extra = '' }) {
-  const url = ORIGIN + '/' + (file === 'index.html' ? '' : file);
+  const url = ORIGIN + '/' + (file === 'index.html' ? '' : file.replace(/\.html$/, ''));
   return `<!doctype html><html lang="en" class="no-js"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>${title}</title><meta name="description" content="${desc}">${LIVE ? '' : '<meta name="robots" content="noindex,nofollow">'}
 <link rel="canonical" href="${url}"><meta property="og:type" content="website"><meta property="og:site_name" content="Marz Media Photography"><meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:url" content="${url}"><meta property="og:image" content="${image}"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#07090E">
@@ -127,7 +128,7 @@ const SERVICES_LIST = [
 // HOME
 {
   const H = byKey('3ee3861a'), feat = ['4f28507a', 'f03180ea', 'a4abd4f7', '66f29cfc', '53eeb97a', '4cbca1ea', '89becc90', '3eedf93f', '860a3a1c'].map(byKey);
-  pages['index.html'] = head({ file: 'index.html', title: 'Luxury Real Estate Photography & Video in Houston, TX | Marz Media', desc: 'Luxury real estate photography, cinematic video, drone and 3D tours across Houston, from River Oaks and Memorial to The Woodlands and Katy. Photos next business day.', image: src(H, 1600) }) +
+  pages['index.html'] = head({ file: 'index.html', title: 'Houston Real Estate Photography & Video | Marz Media', desc: 'Luxury real estate photography, cinematic video, drone and 3D tours across Houston, from River Oaks to The Woodlands. Photos next business day.', image: src(H, 1600) }) +
     header('index.html') + `<main id="main">` +
     hero(H, { eyebrow: 'Houston real estate media', h1: 'Luxury listings, captured beautifully.', lede: 'Photography, cinematic video, drone and 3D tours for agents, builders and designers across Greater Houston. Shot by Alex Marzette, start to finish.', actions: BTN_BOOK + BTN_PORT, facts: '<ul class="facts"><li>Photos next business day</li><li>Video in 24–72 hours</li><li>FAA-certified drone pilot</li><li>All of Greater Houston</li></ul>' }) +
     `<section class="section"><div class="wrap split wide-left"><div><span class="eyebrow rv">Marz Media Photography</span><h2 class="rv d1">Media that sells the home before the first showing.</h2><p class="lede rv d2">Buyers decide in the first few photos. Every shoot is planned around light, composition and the story of the home, then delivered fast so your listing goes live on time.</p><p class="rv d2"><a class="link" href="about.html">Meet Alex</a></p></div><div class="figure wide rv d1">${img(byKey('1224ba40'), 1200, 1)}</div></div>
@@ -150,7 +151,7 @@ const SERVICES_LIST = [
   const ex = order.filter((r) => r.album === 'exterior'), inn = order.filter((r) => r.album !== 'exterior'), mixed = [];
   while (ex.length || inn.length) { if (inn.length) mixed.push(inn.shift()); if (inn.length) mixed.push(inn.shift()); if (ex.length) mixed.push(ex.shift()); }
   const H = byKey('1224ba40');
-  pages['portfolio.html'] = head({ file: 'portfolio.html', title: 'Portfolio: Houston Luxury Real Estate Photography & Video | Marz Media', desc: 'Browse luxury real estate photography, interior design photography, exteriors, kitchens and cinematic reels shot across Houston by Marz Media.', image: src(H, 1600),
+  pages['portfolio.html'] = head({ file: 'portfolio.html', title: 'Portfolio: Houston Real Estate Photography | Marz Media', desc: 'Browse luxury real estate photography, interior design photography, exteriors, kitchens and cinematic reels shot across Houston by Marz Media.', image: src(H, 1600),
     extra: ld({ '@context': 'https://schema.org', '@type': 'ImageGallery', name: 'Marz Media Photography portfolio', url: ORIGIN + '/portfolio.html', creator: { '@id': ORIGIN + '/#business' }, image: rows.slice(0, 40).map((r, i) => ({ '@type': 'ImageObject', contentUrl: src(r, 1600), name: cap(r.subject), description: alt(r, i), creator: { '@type': 'Person', name: 'Alex Marzette' }, copyrightHolder: { '@id': ORIGIN + '/#business' } })) }) }) +
     header('portfolio.html') + `<main id="main">` +
     hero(H, { short: true, eyebrow: 'Portfolio', h1: 'Homes, told beautifully.', lede: 'Luxury real estate photography, interior design work and cinematic reels from across Greater Houston.' }) +
@@ -172,7 +173,7 @@ const SERVICES_LIST = [
     ['How should I prepare the home?', 'Turn on every light, open blinds, clear counters and move cars from the driveway. The full room-by-room checklist is on the prep guide.'],
   ];
   const row = (k) => { const it = P.ITEMS[k]; return `<tr><td>${it.name}</td>${[0, 1, 2, 3].map((i) => `<td>${it.prices[i] == null ? 'Quote' : money(it.prices[i])}</td>`).join('')}<td>Quote</td></tr>`; };
-  pages['services.html'] = head({ file: 'services.html', title: 'Real Estate Photography Pricing & Services in Houston | Marz Media', desc: 'Listing packages from $349, HDR photography, cinematic video, drone, 3D tours, twilight and floor plans. Simple square-footage pricing across Houston.', image: src(H, 1600),
+  pages['services.html'] = head({ file: 'services.html', title: 'Real Estate Photography Pricing in Houston | Marz Media', desc: 'Listing packages from $349, HDR photography, cinematic video, drone, 3D tours, twilight and floor plans. Simple square-footage pricing across Houston.', image: src(H, 1600),
     extra: ld({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQ.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }) +
       ld({ '@context': 'https://schema.org', '@type': 'OfferCatalog', name: 'Real estate media packages', itemListElement: P.PACKAGES.map((p) => ({ '@type': 'Offer', name: p.name + ' listing package', price: p.price, priceCurrency: 'USD', description: p.includes.join(', ') + '. ' + PKG_DESC[p.id] + '.', seller: { '@id': ORIGIN + '/#business' } })) }) }) +
     header('services.html') + `<main id="main">` +
@@ -194,7 +195,7 @@ const BOOK_CHOICES = () => [
   ['choiceReel', 'Social media reels', 'Vertical content for your brand or business.', `from ${money(P.CONTENT.plans[0].price)}`, '1224ba40', ''],
 ].map(([id, t, d, p, k, tag]) => { const r = byKey(k); return `<button type="button" class="choice" role="radio" id="${id}" aria-checked="false"><span class="ph"><img src="${src(r, 720)}" alt="" width="720" height="${Math.round(720 * r.h / r.w)}" loading="lazy"></span><span class="tx">${tag ? `<span class="tag">${tag}</span>` : ''}<strong>${t}</strong><span class="d">${d}</span><span class="pr">${p}</span></span><span class="ck" aria-hidden="true"></span></button>`; }).join('');
 
-pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo or Video Shoot in Houston | Marz Media', desc: 'Book Houston real estate photography, video, drone, 3D tours and social media reels online with live availability.', image: src(byKey('3ee3861a'), 1600) }) +
+pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo Shoot in Houston | Marz Media', desc: 'Book Houston real estate photography, video, drone, 3D tours and social media reels online with live availability.', image: src(byKey('3ee3861a'), 1600) }) +
   header('book.html', true) + `<main id="main" style="padding-top:76px"><div id="app" class="wrap"><div style="padding-top:48px"><span class="eyebrow">Book online</span><h1 style="font-size:clamp(40px,6vw,72px)">Book your shoot.</h1><ul class="hero-facts" style="display:flex;flex-wrap:wrap;gap:8px 26px;list-style:none;padding:0;margin:20px 0 0;color:var(--muted);font-size:14px"><li>Live availability</li><li>Photos next business day</li><li>Video in 24–72 hours</li></ul></div>
 <form class="bk-grid" id="form" novalidate><div>
 <section class="step" aria-labelledby="h0s"><div class="step-h"><span class="step-n">01</span><h2 id="h0s" tabindex="-1">What are you booking?</h2></div><div class="choices" role="radiogroup" aria-labelledby="h0s">${BOOK_CHOICES()}</div></section>
@@ -235,7 +236,7 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
     ['Exterior and yard', 'The day before', ['Mow, edge and clear leaves from lawn and walkways', 'Store hoses, tools, toys and trash bins out of view', 'Arrange patio furniture and remove covers', 'Clean and uncover the pool or spa; remove cleaning equipment', 'Close the garage door']],
     ['The final hour', 'Before we arrive', ['Turn on every light, including lamps and under-cabinet lights', 'Open all blinds and curtains fully', 'Turn off ceiling fans', 'Move vehicles out of the driveway and away from the front of the home', 'Secure pets away from the property', 'Confirm the lockbox code, gate code, or that someone will be present']],
   ];
-  pages['prep.html'] = head({ file: 'prep.html', title: 'How to Prepare Your Home for Real Estate Photos | Marz Media Houston', desc: 'A room-by-room checklist for decluttering and preparing your Houston home before real estate photography, video and drone.', image: src(H, 1600) }) +
+  pages['prep.html'] = head({ file: 'prep.html', title: 'How to Prep Your Home for Listing Photos | Marz Media', desc: 'A room-by-room checklist for decluttering and preparing your Houston home before real estate photography, video and drone.', image: src(H, 1600) }) +
     header('prep.html') + `<main id="main">` +
     hero(H, { short: true, eyebrow: 'Client guide', h1: 'Preparing your home for photography.', lede: 'The camera records everything in the frame. A short hour of preparation is the single greatest factor in how the finished listing looks.' }) +
     `<section class="section"><div class="wrap split"><div class="prose"><p class="lede rv">We photograph with wide-angle lenses and high-dynamic-range exposures, which reveal far more of a room than the eye notices in person. Small items on counters, cords and personal effects become prominent in the final images.</p></div><div class="creds rv" style="margin-top:0"><div><strong>Clear surfaces</strong><span>Buyers should see space, not belongings.</span></div><div><strong>Every light on</strong><span>Warm, even light reads as welcoming.</span></div><div><strong>Nothing personal</strong><span>Buyers should picture themselves living there.</span></div></div></div></section>` +
@@ -249,7 +250,7 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
   const H = byKey('790b5577');
   const ALEX = 'https://static.wixstatic.com/media/3f0f07_62cd129eba1942e593f8cdb9dba24316~mv2.jpg/v1/fill/w_1000,h_1500,al_c,q_82,enc_auto/alex-marzette-houston-real-estate-photographer.jpg';
   const portrait = `<img src="${ALEX}" alt="Alex Marzette, Houston real estate photographer and founder of Marz Media Photography" width="1000" height="1500" loading="lazy" decoding="async" style="object-position:50% 20%">`;
-  pages['about.html'] = head({ file: 'about.html', title: 'About Alex Marzette | Marz Media Photography, Houston', desc: 'Meet Alex Marzette: licensed Texas real estate agent, FAA-certified drone pilot and former pro basketball player behind Marz Media Photography in Cypress, serving all of Houston.', image: ALEX,
+  pages['about.html'] = head({ file: 'about.html', title: 'About Alex Marzette | Marz Media Photography, Houston', desc: 'Meet Alex Marzette: licensed Texas agent, FAA-certified drone pilot and former pro basketball player behind Marz Media Photography in Cypress, TX.', image: ALEX,
     extra: ld({ '@context': 'https://schema.org', '@type': 'Person', name: 'Alex Marzette', jobTitle: 'Founder & Photographer', image: ALEX, description: 'Licensed Texas real estate agent, FAA-certified drone pilot and former professional basketball player. Founder of Marz Media Photography in Cypress, Texas.', knowsAbout: ['Real estate photography', 'Real estate videography', 'Drone photography', 'Real estate marketing'], worksFor: { '@id': ORIGIN + '/#business' }, sameAs: [IG] }) }) +
     header('about.html') + `<main id="main">` +
     hero(H, { short: true, eyebrow: 'About', h1: 'An agent’s eye. An athlete’s work ethic.', lede: 'I’m Alex Marzette: licensed Texas real estate agent, FAA-certified drone pilot and former professional basketball player. When you book Marz Media, the person you talk to is the person behind the camera.' }) +
@@ -263,7 +264,7 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
 // AREAS HUB + PAGES
 {
   const H = byKey('db167043');
-  pages['houston.html'] = head({ file: 'houston.html', title: 'Houston Real Estate Photography: Areas We Serve | Marz Media', desc: 'Luxury real estate photography and video across Houston: River Oaks, Memorial, West U, Bellaire, The Heights, The Woodlands, Katy, Cypress, Sugar Land and Tomball.', image: src(H, 1600) }) +
+  pages['houston.html'] = head({ file: 'houston.html', title: 'Houston Real Estate Photography: Areas We Serve | Marz Media', desc: 'Luxury real estate photography and video across Houston: River Oaks, Memorial, West U, Bellaire, The Heights, The Woodlands, Katy and Cypress.', image: src(H, 1600) }) +
     header('houston.html') + `<main id="main">` +
     hero(H, { short: true, eyebrow: 'Areas we serve', h1: 'All of Houston. Every luxury market.', lede: 'Based in Cypress and shooting across the Greater Houston area, inside the Loop and out.' }) +
     `<section class="section"><div class="wrap"><span class="eyebrow rv">Neighborhoods & cities</span><h2 class="rv d1">Where we shoot.</h2><div class="area-grid">${AREAS.map((a) => `<a class="area-card rv" href="${a.slug}.html"><img src="${src(byKey(a.img), 800)}" alt="" width="800" height="533" loading="lazy"><span>${a.name}</span></a>`).join('')}</div>
@@ -272,7 +273,7 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
   AREAS.forEach((a, n) => {
     const r = byKey(a.img), picks = rows.filter((x) => x !== r).filter((_, i) => (i + n * 5) % 7 === 0).slice(0, 6);
     const others = AREAS.filter((x) => x !== a);
-    pages[a.slug + '.html'] = head({ file: a.slug + '.html', title: `${a.name} Real Estate Photography & Video | Marz Media Houston`, desc: `Luxury real estate photography, cinematic video, drone and 3D tours in ${a.name}. Photos next business day. Book online with live availability.`, image: src(r, 1600),
+    pages[a.slug + '.html'] = head({ file: a.slug + '.html', title: `${a.name.split(/,| &/)[0]} Real Estate Photography | Marz Media`, desc: `Luxury real estate photography, cinematic video, drone and 3D tours in ${a.name.split(/,| &/)[0]}. Photos next business day. Book online with live availability.`, image: src(r, 1600),
       extra: ld({ '@context': 'https://schema.org', '@type': 'Service', serviceType: 'Real estate photography and videography', name: `${a.name} real estate photography`, provider: { '@id': ORIGIN + '/#business' }, areaServed: { '@type': 'Place', name: a.name + ', TX' }, url: `${ORIGIN}/${a.slug}.html` }) +
         ld({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: ORIGIN + '/' }, { '@type': 'ListItem', position: 2, name: 'Areas', item: ORIGIN + '/houston.html' }, { '@type': 'ListItem', position: 3, name: a.name, item: `${ORIGIN}/${a.slug}.html` }] }) }) +
       header('houston.html') + `<main id="main">` +
@@ -292,7 +293,7 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
       hero(H, { short: true, eyebrow: 'Marz Media Photography', h1 }) +
       `<section class="section"><div class="wrap"><div class="prose">${body}</div></div></section></main>` + footer();
   };
-  page('privacy.html', 'Privacy Policy | Marz Media Photography', 'How Marz Media Photography collects, uses and protects the information you share when you book.', 'Privacy policy.',
+  page('privacy.html', 'Privacy Policy | Marz Media Photography', 'How Marz Media Photography collects, uses and protects the information you share when you book a real estate photo or video shoot in Houston.', 'Privacy policy.',
     `<p><em>Last updated October 2026</em></p>
 <p>Marz Media Photography (“Marz Media,” “we,” “us”) is a real estate photography and video business based in Cypress, Texas. This policy explains what information we collect through this website and how we use it.</p>
 <h2>What we collect</h2><ul><li><strong>Booking details you provide:</strong> your name, email, phone number, brokerage or business name, the property or shoot address, square footage, access instructions and any notes.</li><li><strong>Basic site usage:</strong> standard technical information such as browser type and pages visited, collected by our hosting and booking providers to keep the site secure and working.</li></ul>
@@ -301,7 +302,7 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
 <h2>How long we keep it</h2><p>We keep booking and invoice records for as long as needed to serve you and to meet tax and accounting requirements.</p>
 <h2>Your choices</h2><p>You can ask us to access, correct or delete your information at any time by emailing <a href="mailto:${EMAIL}">${EMAIL}</a>. We will respond within a reasonable time.</p>
 <h2>Contact</h2><p>Marz Media Photography · Cypress, Texas · <a href="mailto:${EMAIL}">${EMAIL}</a> · <a href="tel:${TEL}">${PHONE}</a></p>`);
-  page('accessibility.html', 'Accessibility Statement | Marz Media Photography', 'Our commitment to making the Marz Media Photography website usable for everyone.', 'Accessibility.',
+  page('accessibility.html', 'Accessibility Statement | Marz Media Photography', 'Our commitment to making the Marz Media Photography website easy to use for everyone, and how to reach us if anything gets in your way.', 'Accessibility.',
     `<p>Marz Media Photography wants everyone to be able to browse our work and book a shoot. This website is built with accessibility in mind, including descriptive text on images, keyboard-friendly navigation, readable color contrast and layouts that work on phones, tablets and computers.</p>
 <p>If anything on the site is hard to use, or you would prefer to book by phone, call or text <a href="tel:${TEL}">${PHONE}</a> or email <a href="mailto:${EMAIL}">${EMAIL}</a> and we will take care of you directly.</p>`);
 }
@@ -313,9 +314,15 @@ pages['404.html'] = head({ file: '404.html', title: 'Page not found | Marz Media
 /* ---------- write ---------- */
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
-for (const [f, html] of Object.entries(pages)) fs.writeFileSync(path.join(OUT, f), html.replace(/\n\s*/g, '\n'));
+// Clean URLs everywhere (/about, not about.html) so links, canonicals and the sitemap all agree.
+const cleanUrls = (h) => h
+  .replace(/href="index\.html(?=["#?])/g, 'href="/')
+  .replace(/(href=")([a-z0-9-]+)\.html(?=["#?])/g, '$1/$2')
+  .replace(/(https:\/\/www\.marzmediaphotography\.com)\/([a-z0-9-]+)\.html/g, '$1/$2');
+for (const [f, html] of Object.entries(pages)) fs.writeFileSync(path.join(OUT, f), cleanUrls(html.replace(/\n\s*/g, '\n')));
+if (LOCAL) fs.writeFileSync(path.join(OUT, '_redirects'), Object.keys(pages).filter((f) => f !== 'index.html' && f !== '404.html').map((f) => `/${f.replace(/\.html$/, '')}  /${f}  200`).join('\n') + '\n');
 const urls = Object.keys(pages).filter((f) => f !== '404.html');
-fs.writeFileSync(path.join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls.map((f) => `<url><loc>${ORIGIN}/${f === 'index.html' ? '' : f}</loc>${f === 'portfolio.html' ? rows.map((r) => `<image:image><image:loc>${src(r, 1600).replace(/&/g, '&amp;')}</image:loc></image:image>`).join('') : ''}</url>`).join('\n')}\n</urlset>\n`);
+fs.writeFileSync(path.join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls.map((f) => `<url><loc>${ORIGIN}/${f === 'index.html' ? '' : f.replace(/\.html$/, '')}</loc>${f === 'portfolio.html' ? rows.map((r) => `<image:image><image:loc>${src(r, 1600).replace(/&/g, '&amp;')}</image:loc></image:image>`).join('') : ''}</url>`).join('\n')}\n</urlset>\n`);
 fs.writeFileSync(path.join(OUT, 'robots.txt'), LIVE ? `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n` : 'User-agent: *\nDisallow: /\n');
 if (LOCAL) {
   const root = path.join(here, '..');

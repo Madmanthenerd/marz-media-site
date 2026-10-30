@@ -365,7 +365,7 @@ function showDone(q) {
     (isContent()
       ? `<p>A confirmation is on its way to <strong>${esc($('email').value.trim())}</strong>. Alex will reach out before the shoot to plan your content. Reels arrive within 3 business days.</p>`
       : `<p>A confirmation is on its way to <strong>${esc($('email').value.trim())}</strong>. Photos arrive the next business day; video within 24–72 hours.</p>` +
-        `<p><a class="btn btn-primary" href="prep.html">Prepare the home <span class="arr">→</span></a></p>`);
+        `<p><a class="btn btn-primary" href="/prep">Prepare the home <span class="arr">→</span></a></p>`);
   $('done').hidden = false; window.scrollTo(0, 0);
 }
 

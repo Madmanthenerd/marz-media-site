@@ -21,11 +21,12 @@ Every push to `main` on GitHub rebuilds and publishes the site in about a minute
 - **Old/ignore**: root-level `index.html`, `booking*.html`, `portfolio.html`, `prep.html`,
   `style.css`, `files (1).zip`, `netlify/functions/check-availability.js`, `create-booking.js`
   are earlier prototypes and are not part of the live site. `site/gen.js` was for a retired Wix
-  preview; keep it in step with build.mjs if convenient, but it is not deployed.
+  preview and is no longer maintained; ignore it.
 
 ## Making a change
 1. Edit `site/build.mjs` (pages/copy), `pricing.js` (prices) or `site/assets/*` (behaviour/look).
 2. Check it builds: `node site/build.mjs test --live --local` (writes `site/dist/`).
+   Internal links are written as clean URLs (/about, /book); `_redirects` maps them to the .html files.
 3. Commit and push to `main`. Confirm the change on the live site after ~1–2 minutes.
 
 ## House rules (from Alex)
