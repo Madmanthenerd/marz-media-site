@@ -65,6 +65,21 @@ const OTHER_AREAS = ['Tanglewood', 'Uptown & the Galleria', 'Spring', 'Kingwood'
 
 /* ---------- shared chrome ---------- */
 const NAV = [['portfolio.html', 'Portfolio'], ['services.html', 'Services & pricing'], ['interiors.html', 'Interiors'], ['commercial.html', 'Commercial'], ['about.html', 'About']];
+const PERSON = {
+  '@type': 'Person', '@id': ORIGIN + '/about#alex', name: 'Alex Marzette', alternateName: 'Alexander Marzette', url: ORIGIN + '/about',
+  jobTitle: 'Founder & Photographer', worksFor: { '@id': ORIGIN + '/#business' }, sameAs: [IG],
+  image: 'https://static.wixstatic.com/media/3f0f07_62cd129eba1942e593f8cdb9dba24316~mv2.jpg/v1/fill/w_1000,h_1500,al_c,q_82,enc_auto/alex-marzette-houston-real-estate-photographer.jpg',
+  hasCredential: [
+    { '@type': 'EducationalOccupationalCredential', name: 'FAA Part 107 Remote Pilot Certificate', credentialCategory: 'license', recognizedBy: { '@type': 'GovernmentOrganization', name: 'Federal Aviation Administration', url: 'https://www.faa.gov' } },
+    { '@type': 'EducationalOccupationalCredential', name: 'Texas Real Estate Sales Agent License', credentialCategory: 'license', recognizedBy: { '@type': 'GovernmentOrganization', name: 'Texas Real Estate Commission', url: 'https://www.trec.texas.gov' } },
+  ],
+  knowsAbout: ['Real estate photography', 'Real estate videography', 'Interior design photography', 'Commercial real estate photography', 'Drone photography', 'Real estate marketing'],
+};
+// Visible author box: who shot it and why he's qualified (E-E-A-T)
+const byline = (topic = 'every shoot') => `<section class="section tight"><div class="wrap"><div class="byline rv"><img src="${PERSON.image.replace('w_1000,h_1500', 'w_200,h_200')}" alt="Alex Marzette" width="96" height="96" loading="lazy"><div><span class="eyebrow">Who shoots ${topic}</span><p><strong>Alex Marzette</strong>, founder of Marz Media Photography. Licensed Texas real estate agent, FAA-certified drone pilot and 4+ years photographing Houston properties. Alex plans, shoots and edits every project himself. <a class="link" href="about.html">More about Alex →</a></p></div></div></div></section>`;
+// FAQ block + FAQPage schema (answer-engine friendly: direct question, direct answer)
+const faqBlock = (items) => `<section class="section paper"><div class="wrap split"><div><span class="eyebrow rv">FAQ</span><h2 class="rv d1">Questions, answered.</h2></div><div class="faq rv">${items.map(([q, a], i) => `<details${i ? '' : ' open'}><summary>${q}</summary><p>${a}</p></details>`).join('')}</div></div></section>`;
+const faqLd = (items) => ld({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a.replace(/<[^>]+>/g, '') } })) });
 const BIZ = {
   '@context': 'https://schema.org', '@type': ['ProfessionalService', 'LocalBusiness', 'Organization'], '@id': ORIGIN + '/#business',
   name: 'Marz Media Photography', url: ORIGIN + '/', telephone: TEL, email: EMAIL,
@@ -72,7 +87,7 @@ const BIZ = {
   contactPoint: { '@type': 'ContactPoint', telephone: TEL, email: EMAIL, contactType: 'customer service', areaServed: 'US-TX', availableLanguage: 'English' },
   description: 'Luxury real estate photography, cinematic video, drone and 3D tours across Greater Houston.',
   address: { '@type': 'PostalAddress', addressLocality: 'Cypress', addressRegion: 'TX', addressCountry: 'US' },
-  founder: { '@type': 'Person', name: 'Alex Marzette' }, sameAs: [IG],
+  founder: PERSON, employee: { '@id': PERSON['@id'] }, sameAs: [IG],
   areaServed: ['Houston', ...AREAS.map((a) => a.name), ...OTHER_AREAS].map((n) => ({ '@type': 'Place', name: n + ', TX' })),
   knowsAbout: ['Real estate photography', 'Real estate videography', 'Luxury property photography', 'Interior design photography', 'Drone photography', '3D virtual tours', 'Twilight photography'],
 };
@@ -186,7 +201,7 @@ const SERVICES_LIST = [
     `<section class="section on-dark" id="content"><div class="wrap"><span class="eyebrow rv">Social media reels</span><h2 class="rv d1" style="max-width:20ch">Reels for your brand, not just your listings.</h2><p class="lede rv d2">Vertical content for agents, businesses, restaurants and events, shot and edited for Instagram, TikTok and YouTube Shorts. No listing needed.</p><div class="tiers rv" style="margin-top:40px">${P.CONTENT.plans.filter((p) => !p.monthly).map((p) => `<article class="tier" style="background:transparent;color:var(--on-dark);border-color:rgba(255,255,255,.2)"><span class="badge" style="color:#9DB4E0">${p.reels === 1 ? 'Start here' : 'Best value per shoot'}</span><h3>${p.name}</h3><div class="price">${money(p.price)}</div><span class="size">${p.desc}</span><ul><li>Up to 1 hour on location</li><li>Music, captions-ready, edited in-house</li><li>Delivered within 3 business days</li><li>Drone footage +${money(P.CONTENT.drone.price)}</li></ul><a class="btn btn-light" href="book.html?type=content&amp;plan=${p.id}">Book ${p.name}</a></article>`).join('')}<article class="tier" style="background:transparent;color:var(--on-dark);border-color:rgba(255,255,255,.2)"><span class="badge" style="color:#9DB4E0">Every month</span><h3>Monthly content</h3><div class="price">${money(P.CONTENT.plans.find((p) => p.monthly).price)}<small style="font-size:18px">/mo</small></div><span class="size">From 4 reels a month, drone included</span><ul>${P.CONTENT.plans.filter((p) => p.monthly).map((p) => `<li>${p.reels} reels / month · ${money(p.price)}</li>`).join('')}<li>${P.CONTENT.minMonths}-month minimum</li></ul><a class="btn btn-light" href="book.html?type=content&amp;plan=monthly6">Start a plan</a></article></div></div></section>` +
     `<section class="section"><div class="wrap split"><div><span class="eyebrow rv">Good to know</span><h2 class="rv d1">Booking policies.</h2></div><div class="prose rv"><ul><li><strong>Arrival times</strong> are in Houston time. Packages take about two hours on site; photo-only shoots about an hour.</li><li><strong>Homes of 6,000–7,499 sq ft:</strong> HDR photos are $325; video, 3D tours and packages are custom quoted. Homes of 7,500+ sq ft are custom quoted. You can still reserve your time online.</li><li><strong>Weather.</strong> Drone and twilight work depend on conditions; Alex will reschedule those parts with you if needed.</li><li><strong>Prep matters.</strong> Please follow the <a href="prep.html">prep checklist</a> before we arrive.</li></ul></div></div></section>` +
     `<section class="section paper"><div class="wrap split"><div><span class="eyebrow rv">FAQ</span><h2 class="rv d1">Questions, answered.</h2></div><div class="faq rv">${FAQ.map(([q, a], i) => `<details${i ? '' : ' open'}><summary>${q}</summary><p>${a.replace('prep guide', '<a class="link" href="prep.html">prep guide</a>')}</p></details>`).join('')}</div></div></section>` +
-    cta(byKey('66f29cfc')) + `</main>` + footer();
+    byline('your listing') + cta(byKey('66f29cfc')) + `</main>` + footer();
 }
 
 // BOOK
@@ -253,7 +268,7 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
   const ALEX = 'https://static.wixstatic.com/media/3f0f07_62cd129eba1942e593f8cdb9dba24316~mv2.jpg/v1/fill/w_1000,h_1500,al_c,q_82,enc_auto/alex-marzette-houston-real-estate-photographer.jpg';
   const portrait = `<img src="${ALEX}" alt="Alex Marzette, Houston real estate photographer and founder of Marz Media Photography" width="1000" height="1500" loading="lazy" decoding="async" style="object-position:50% 20%">`;
   pages['about.html'] = head({ file: 'about.html', title: 'About Alex Marzette | Marz Media Photography, Houston', desc: 'Meet Alex Marzette: licensed Texas agent, FAA-certified drone pilot and former pro basketball player behind Marz Media Photography in Cypress, TX.', image: ALEX,
-    extra: ld({ '@context': 'https://schema.org', '@type': 'Person', name: 'Alex Marzette', jobTitle: 'Founder & Photographer', image: ALEX, description: 'Licensed Texas real estate agent, FAA-certified drone pilot and former professional basketball player. Founder of Marz Media Photography in Cypress, Texas.', knowsAbout: ['Real estate photography', 'Real estate videography', 'Drone photography', 'Real estate marketing'], worksFor: { '@id': ORIGIN + '/#business' }, sameAs: [IG] }) }) +
+    extra: ld({ '@context': 'https://schema.org', '@type': 'ProfilePage', mainEntity: { ...PERSON, description: 'Licensed Texas real estate agent, FAA-certified drone pilot and former professional basketball player. Founder of Marz Media Photography in Cypress, Texas.' } }) }) +
     header('about.html') + `<main id="main">` +
     hero(H, { short: true, eyebrow: 'About', h1: 'An agent’s eye. An athlete’s work ethic.', lede: 'I’m Alex Marzette: licensed Texas real estate agent, FAA-certified drone pilot and former professional basketball player. When you book Marz Media, the person you talk to is the person behind the camera.' }) +
     `<section class="section"><div class="wrap split wide-left"><div class="prose"><span class="eyebrow rv">Alex Marzette, founder</span><h2 class="rv d1" style="margin-top:0">It started with a camera roll full of houses.</h2><p class="rv">Long before I owned a camera, my phone was full of home wallpapers and aerial shots. Whenever I visited a big city like Houston, I’d spend hours driving through neighborhoods just to look at the homes. Real estate always had my attention.</p><p class="rv">I earned my Texas real estate license and bought a camera right after. Three months in, my mentor told me I was further along than he had been at the same point. That’s when I knew I had the eye for this, and I’ve taken it seriously ever since. Four-plus years later, it’s what I do every day.</p><p class="rv"><a class="btn btn-primary" href="book.html">Book a shoot <span class="arr">→</span></a></p></div><div class="figure tall rv d1">${portrait}</div></div>
@@ -283,7 +298,7 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
       `<section class="section"><div class="wrap split"><div><span class="eyebrow rv">${a.name}, Texas</span><h2 class="rv d1">Luxury listing media for ${a.name}.</h2></div><div class="prose rv"><p class="lede">${a.blurb}</p><p>Marz Media covers ${a.name} with HDR photography, cinematic video and reels, FAA-certified drone work, 3D virtual tours, twilight photography and floor plans. Photos arrive the next business day and video within 24–72 hours, so your listing goes live on schedule.</p><p><a class="link" href="services.html">See pricing</a></p></div></div></section>` +
       `<section class="section paper"><div class="wrap"><span class="eyebrow rv">Recent work around Houston</span><div class="mosaic" data-lb style="margin-top:28px">${picks.map((x, i) => fig(x, i + n)).join('')}</div></div></section>` +
       `<section class="section tight"><div class="wrap"><span class="eyebrow rv">Packages</span>${tiers()}<p style="margin-top:36px;color:var(--muted)">Also serving ${others.map((o) => `<a class="link" href="${o.slug}.html">${o.name}</a>`).join(', ')}.</p></div></section>` +
-      cta(byKey(AREAS[(n + 3) % AREAS.length].img), `Booking in ${a.name}?`) + `</main>` + footer();
+      byline(`your ${a.name.split(/,| &/)[0]} listing`) + cta(byKey(AREAS[(n + 3) % AREAS.length].img), `Booking in ${a.name}?`) + `</main>` + footer();
   });
 }
 
@@ -306,9 +321,17 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
 
   // INTERIORS
   const I = P.INTERIORS, HI = byKey('4cbca1ea');
+  const IFAQ = [
+    ['How much does interior design photography cost in Houston?', `Marz Media’s interior packages start at ${money(I.packages[0].price)} for one or two rooms (10 edited images), ${money(I.packages[1].price)} for a half day of up to five rooms (20 images) and ${money(I.packages[2].price)} for a full project (40 images). Additional images are ${money(I.addons[0][1])} each.`],
+    ['How is interior design photography different from real estate photography?', 'Real estate photos document a home for buyers. Design photography is composed around the design itself: accurate color and materials, straight lines, and detail and vignette shots that show the thinking behind the space, for portfolios, websites and award submissions.'],
+    ['Can I use the photos on my website, social media and award entries?', 'Yes. Every package includes use on your website, social media, portfolio and award or publication submissions. Paid advertising and print ads are quoted separately.'],
+    ['Can a builder or vendor on the project use the same photos?', `Yes. Each additional company can license the images for ${money(I.addons[3][1])}, which usually costs everyone less than separate shoots.`],
+    ['Who styles the space?', 'You or your stylist lead the styling, since it’s your design. Alex walks the space with you first, plans the shot list, and makes small adjustments for the camera as he shoots.'],
+    ['How long until I receive the images?', 'Edited interior images are delivered within 3–5 business days.'],
+  ];
   const design = rows.filter((r) => r.album === 'design').concat(['a6eeb3e9', '4f28507a', 'e3a86909'].map(byKey)).slice(0, 12);
   pages['interiors.html'] = head({ file: 'interiors.html', title: 'Interior Design Photography in Houston | Marz Media', desc: `Interior design photography for Houston designers, builders, remodelers and stagers. Styled, true-color portfolio images from ${money(I.packages[0].price)}.`, image: src(HI, 1600),
-    extra: service('Interior design photography', 'Interior photography', 'Styled interior photography for interior designers, builders, remodelers, home stagers and short-term rental hosts in Houston.', I.packages[0].price, 'interiors') }) +
+    extra: service('Interior design photography', 'Interior photography', 'Styled interior photography for interior designers, builders, remodelers, home stagers and short-term rental hosts in Houston.', I.packages[0].price, 'interiors') + faqLd(IFAQ) }) +
     header('interiors.html') + `<main id="main">` +
     hero(HI, { short: true, eyebrow: 'Interior design photography', h1: 'Your best work, photographed like it deserves.', lede: 'Styled, true-color images for interior designers, builders, remodelers and stagers across Greater Houston. Made for your portfolio, website and award submissions.', actions: '<a class="btn btn-light" href="#quote">Request a quote <span class="arr">→</span></a>' }) +
     `<section class="section"><div class="wrap split"><div><span class="eyebrow rv">The difference</span><h2 class="rv d1">Not listing photos. Portfolio images.</h2></div><div class="prose rv"><p class="lede">Real estate photos show a buyer the space. Design photography shows your client the thinking behind it.</p><p>Every shoot is composed around your design: straight lines, accurate color and materials, and the details that make the room yours. You get the wide hero shots plus the vignettes and close-ups that carry a portfolio, a project page or an awards entry.</p></div></div>
@@ -318,13 +341,20 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
     `<section class="section"><div class="wrap"><span class="eyebrow rv">Recent interiors</span><h2 class="rv d1">Rooms with a point of view.</h2><div class="mosaic" data-lb style="margin-top:40px">${design.map((r, i) => fig(r, i)).join('')}</div></div></section>` +
     `<section class="section on-dark"><div class="wrap split"><div><span class="eyebrow rv">Who it’s for</span><h2 class="rv d1">Built for the people who build beautiful spaces.</h2></div><div class="prose rv"><ul><li><strong>Interior designers and decorators:</strong> portfolio, website and award-ready project photos.</li><li><strong>Builders and remodelers:</strong> kitchens, baths, additions and model homes.</li><li><strong>Home stagers:</strong> every staged home, captured before it sells.</li><li><strong>Short-term rental hosts:</strong> listing photos that earn the booking.</li><li><strong>Showrooms and brands:</strong> furniture, cabinetry and finishes in real rooms.</li></ul><p style="color:var(--on-dark-muted)"><strong>Sharing a project?</strong> When a builder, stager or vendor also wants the images, each additional company adds a shared license, so everyone pays less than shooting separately.</p></div></div></section>` +
     `<section class="section" id="quote"><div class="wrap split"><div><span class="eyebrow rv">Request a quote</span><h2 class="rv d1">Tell us about the project.</h2><p class="lede rv d2">Alex will follow up to talk through the space, your shot list and timing.</p></div>${quoteForm('Interiors', I.packages, '')}</div></section>` +
-    `</main>` + footer(pickPkg);
+    faqBlock(IFAQ) + byline('your project') + `</main>` + footer(pickPkg);
 
   // COMMERCIAL
   const C = P.COMMERCIAL, HC = byKey('3ee3861a');
+  const CFAQ = [
+    ['How much does commercial real estate photography cost in Houston?', `Marz Media’s commercial packages are priced by building size: ${money(C.packages[0].price)} up to 5,000 sq ft, ${money(C.packages[1].price)} for 5,000–20,000 sq ft and ${money(C.packages[2].price)} for 20,000–50,000 sq ft. Larger properties, campuses and multiple buildings are custom quoted from ${money(C.customFrom)}.`],
+    ['Is drone photography included?', 'Yes. Every commercial package includes drone aerials, from 5 to 15 depending on the package. Drone video is available as an add-on.'],
+    ['Are you licensed and insured to fly drones commercially?', 'Yes. Alex Marzette holds an FAA Part 107 Remote Pilot Certificate and carries liability insurance. A certificate of insurance is available on request, and airspace is checked before every flight, with FAA authorization requested where it’s required.'],
+    ['What types of commercial properties do you photograph?', 'Office, medical, retail, restaurant, industrial and flex, multifamily and land across Greater Houston.'],
+    ['Can the property owner or another broker use the photos?', `Yes. Each additional company can license the images for ${money(C.addons[5][1])}.`],
+  ];
   const typeField = `<div class="field"><label for="q-type">Property type</label><select id="q-type" name="property_type">${C.types.map((t) => `<option>${t}</option>`).join('')}</select></div><div class="field"><label for="q-sqft">Building size (sq ft)</label><input id="q-sqft" name="sqft" inputmode="numeric" placeholder="e.g. 12,000"></div>`;
   pages['commercial.html'] = head({ file: 'commercial.html', title: 'Commercial Real Estate Photography Houston | Marz Media', desc: `Commercial real estate photography and drone aerials in Houston for office, retail, industrial and multifamily. Packages from ${money(C.packages[0].price)}, drone included.`, image: src(HC, 1600),
-    extra: service('Commercial real estate photography', 'Commercial real estate photography and aerial photography', 'Photography, drone aerials, leasing videos and 3D tours for commercial properties in Houston: office, retail, industrial, multifamily and land.', C.packages[0].price, 'commercial') }) +
+    extra: service('Commercial real estate photography', 'Commercial real estate photography and aerial photography', 'Photography, drone aerials, leasing videos and 3D tours for commercial properties in Houston: office, retail, industrial, multifamily and land.', C.packages[0].price, 'commercial') + faqLd(CFAQ) }) +
     header('commercial.html') + `<main id="main">` +
     hero(HC, { short: true, eyebrow: 'Commercial real estate', h1: 'Photos and aerials that lease space.', lede: 'Photography, drone aerials and leasing video for brokers, owners and property managers across Greater Houston. Drone is included in every package.', actions: '<a class="btn btn-light" href="#quote">Request a quote <span class="arr">→</span></a>' }) +
     `<section class="section"><div class="wrap split"><div><span class="eyebrow rv">Why it works</span><h2 class="rv d1">Tenants buy location first.</h2></div><div class="prose rv"><p class="lede">The building matters. Where it sits matters more.</p><p>Every package pairs clean interior and exterior photography with FAA-certified, fully insured drone aerials that show access, parking, visibility and what surrounds the property. That’s what tenants and buyers want to see before they ever schedule a tour.</p></div></div>
@@ -333,7 +363,7 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
 <h3 class="rv" style="margin-top:56px">Add-ons</h3>${addonList(C.addons)}</div></section>` +
     `<section class="section on-dark"><div class="wrap split"><div><span class="eyebrow rv">Property types</span><h2 class="rv d1">From a single suite to a full site.</h2></div><div class="prose rv"><ul><li><strong>Office and medical:</strong> lobbies, suites, common areas and building exteriors.</li><li><strong>Retail and restaurant:</strong> storefronts, frontage, signage and the traffic around it.</li><li><strong>Industrial and flex:</strong> warehouses, docks, yards and truck access from the air.</li><li><strong>Multifamily:</strong> amenities, model units and the whole community.</li><li><strong>Land:</strong> aerials that show boundaries, roads and nearby development.</li></ul></div></div></section>` +
     `<section class="section" id="quote"><div class="wrap split"><div><span class="eyebrow rv">Request a quote</span><h2 class="rv d1">Tell us about the property.</h2><p class="lede rv d2">Alex will follow up with a quote and available dates.</p></div>${quoteForm('Commercial', C.packages, typeField)}</div></section>` +
-    `</main>` + footer(pickPkg);
+    faqBlock(CFAQ) + byline('your property') + `</main>` + footer(pickPkg);
 
   // THANK YOU (after a quote request)
   pages['quote-thanks.html'] = head({ file: 'quote-thanks.html', title: 'Thank You | Marz Media Photography', desc: 'Thanks for your quote request. Alex Marzette will follow up with you shortly.', image: src(HI, 1600) }).replace('<link rel="canonical"', '<meta name="robots" content="noindex"><link rel="x-canonical"') +
@@ -378,6 +408,25 @@ for (const [f, html] of Object.entries(pages)) fs.writeFileSync(path.join(OUT, f
 if (LOCAL) fs.writeFileSync(path.join(OUT, '_redirects'), Object.keys(pages).filter((f) => f !== 'index.html' && f !== '404.html').map((f) => `/${f.replace(/\.html$/, '')}  /${f}  200`).join('\n') + '\n');
 const urls = Object.keys(pages).filter((f) => f !== '404.html' && f !== 'quote-thanks.html');
 fs.writeFileSync(path.join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls.map((f) => `<url><loc>${ORIGIN}/${f === 'index.html' ? '' : f.replace(/\.html$/, '')}</loc>${f === 'portfolio.html' ? rows.map((r) => `<image:image><image:loc>${src(r, 1600).replace(/&/g, '&amp;')}</image:loc></image:image>`).join('') : ''}</url>`).join('\n')}\n</urlset>\n`);
+fs.writeFileSync(path.join(OUT, 'llms.txt'), `# Marz Media Photography
+
+> Real estate photography, cinematic video, drone and 3D tours in Houston, Texas. Founded and run by Alex Marzette, a licensed Texas real estate agent and FAA Part 107 certified drone pilot with 4+ years photographing Houston properties. Based in Cypress, TX, serving Greater Houston.
+
+Contact: ${PHONE} · ${EMAIL} · ${ORIGIN}
+
+## Services and pricing
+- [Listing packages and à la carte pricing](${ORIGIN}/services): packages from ${money(P.PACKAGES[0].price)} (Essential, up to 2,499 sq ft), ${money(P.PACKAGES[1].price)} (Pro, 2,500–3,999 sq ft), ${money(P.PACKAGES[2].price)} (Signature, 4,000–5,999 sq ft). HDR photos from ${money(P.ITEMS.hdr.prices[0])}, video from ${money(P.ITEMS.video.prices[0])}, aerial photography ${money(P.ITEMS.aerialPhoto.price)}. Photos delivered next business day; video in 24–72 hours.
+- [Social media reels](${ORIGIN}/services#content): single reels from ${money(P.CONTENT.plans[0].price)}; monthly content plans from ${money(P.CONTENT.plans.find((p) => p.monthly).price)}/month.
+- [Interior design photography](${ORIGIN}/interiors): for designers, builders, remodelers and stagers; from ${money(P.INTERIORS.packages[0].price)}.
+- [Commercial real estate photography](${ORIGIN}/commercial): office, retail, industrial, multifamily and land, drone included; from ${money(P.COMMERCIAL.packages[0].price)}.
+
+## Key pages
+- [Book online](${ORIGIN}/book): live availability.
+- [Portfolio](${ORIGIN}/portfolio)
+- [About Alex Marzette](${ORIGIN}/about)
+- [Home prep checklist](${ORIGIN}/prep)
+- [Areas served](${ORIGIN}/houston)
+`);
 fs.writeFileSync(path.join(OUT, 'robots.txt'), LIVE ? `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n` : 'User-agent: *\nDisallow: /\n');
 if (LOCAL) {
   const root = path.join(here, '..');

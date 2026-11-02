@@ -431,3 +431,8 @@ html.no-js .rv,html.reduce .rv{opacity:1;transform:none}
 .quote .btn{width:100%;justify-content:center}
 @media (min-width:600px){.quote .btn{width:auto}}
 .on-dark .prose li{color:var(--on-dark-muted)}.on-dark .prose li strong,.on-dark .prose p strong{color:var(--on-dark)}
+/* author byline (E-E-A-T) */
+.byline{display:flex;gap:20px;align-items:center;border:1px solid var(--line);border-radius:var(--r);padding:22px}
+.byline img{width:96px;height:96px;border-radius:50%;object-fit:cover;object-position:50% 20%;flex:none}
+.byline p{margin:6px 0 0;color:var(--muted);font-size:15px}.byline strong{color:var(--ink)}
+@media (max-width:520px){.byline{flex-direction:column;align-items:flex-start}}
