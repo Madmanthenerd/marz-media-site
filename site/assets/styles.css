@@ -425,3 +425,9 @@ html.no-js .rv,html.reduce .rv{opacity:1;transform:none}
 .bk-grid:not(.chosen) .sum{display:none}
 .bk-grid:not(.chosen)~.mbar,body:has(.bk-grid:not(.chosen)) .mbar{display:none}
 .step h2{scroll-margin-top:110px}
+/* quote request forms (interiors, commercial) */
+#quote .split{align-items:start}
+.quote{background:var(--paper);border-radius:var(--r);padding:clamp(20px,4vw,36px)}
+.quote .btn{width:100%;justify-content:center}
+@media (min-width:600px){.quote .btn{width:auto}}
+.on-dark .prose li{color:var(--on-dark-muted)}.on-dark .prose li strong,.on-dark .prose p strong{color:var(--on-dark)}

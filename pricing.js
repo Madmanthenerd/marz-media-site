@@ -51,6 +51,38 @@
     purposes: ['Agent or personal brand', 'Business or product', 'Restaurant or venue', 'Event', 'Other'],
   };
 
+  // Interior design and commercial work are quote-based (request form, not online booking).
+  const INTERIORS = {
+    packages: [
+      { id: 'single', name: 'Single Space', price: 375, size: '1–2 rooms', includes: ['Up to 2 hours on site', '10 edited images', 'Detail and vignette shots'] },
+      { id: 'half', name: 'Half Day', price: 695, size: 'Up to 5 rooms', mostBooked: true, includes: ['Up to 4 hours on site', '20 edited images', 'Wide, detail and vignette shots'] },
+      { id: 'full', name: 'Full Project', price: 1250, size: 'Whole home or project', includes: ['Up to 8 hours on site', '40 edited images', 'Interiors, exteriors and details'] },
+    ],
+    addons: [
+      ['Additional edited image', 30, 'each'],
+      ['Twilight exterior', 110, 'captured at sunset'],
+      ['Walkthrough reel', 225, 'vertical video for social'],
+      ['Shared license', 175, 'per additional company, such as a builder or vendor'],
+    ],
+  };
+  const COMMERCIAL = {
+    packages: [
+      { id: 'small', name: 'Small Commercial', price: 450, size: 'Up to 5,000 sq ft', includes: ['25 edited photos', '5 drone aerials', 'Retail suite, restaurant or small office'] },
+      { id: 'mid', name: 'Mid-Size', price: 750, size: '5,000–20,000 sq ft', mostBooked: true, includes: ['35 edited photos', '10 drone aerials', 'Interiors, exteriors and site'] },
+      { id: 'large', name: 'Large', price: 1150, size: '20,000–50,000 sq ft', includes: ['50 edited photos', '15 drone aerials', 'Buildings, lots and surroundings'] },
+    ],
+    customFrom: 1500, // 50,000+ sq ft, campuses, multiple buildings
+    addons: [
+      ['Leasing video', 450, '60–90 seconds'],
+      ['Drone video', 175, 'aerial footage of the property and area'],
+      ['Twilight', 150, 'exterior at sunset'],
+      ['3D virtual tour', 350, 'from'],
+      ['Floor plan', 125, 'per floor'],
+      ['Shared license', 175, 'per additional company'],
+    ],
+    types: ['Office', 'Retail', 'Restaurant', 'Industrial or flex', 'Multifamily', 'Land', 'Medical', 'Other'],
+  };
+
   const TAX_RATE = 0.05; // added to every order total
   const SAMEDAY_LATEST = '09:00'; // same-day delivery shoots must start by this time
 
@@ -148,7 +180,7 @@
     return { ok: true, tier, mode, lines, subtotal, tax, total, customQuote, minutes, includesTwilight };
   }
 
-  const api = { TIERS, PACKAGES, ITEMS, CONTENT, SCHEDULE, TAX_RATE, SAMEDAY_LATEST, tierFor, quote };
+  const api = { TIERS, PACKAGES, ITEMS, CONTENT, INTERIORS, COMMERCIAL, SCHEDULE, TAX_RATE, SAMEDAY_LATEST, tierFor, quote };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MarzPricing = api;
 })(typeof window !== 'undefined' ? window : globalThis);

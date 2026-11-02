@@ -17,6 +17,9 @@ Every push to `main` on GitHub rebuilds and publishes the site in about a minute
 - **Invoices**: `netlify/functions/wix-booking.js` receives Wix automation webhooks and creates,
   updates, voids Stripe invoices (sent 7 AM on shoot day, due that day, itemized, 5% tax).
   Secrets (STRIPE_SECRET_KEY, WIX_WEBHOOK_KEY) live only in Netlify environment variables.
+- **Interiors & Commercial pages** (`/interiors`, `/commercial`): quote-request only, no online
+  booking. Prices live in `pricing.js` (INTERIORS, COMMERCIAL). Forms are Netlify Forms
+  (quote-interiors, quote-commercial); submissions show in Netlify > Forms.
 - **Photos**: served from Alex's Wix Media (static.wixstatic.com). The list is `site/catalog.tsv`.
 - **Old/ignore**: root-level `index.html`, `booking*.html`, `portfolio.html`, `prep.html`,
   `style.css`, `files (1).zip`, `netlify/functions/check-availability.js`, `create-booking.js`
