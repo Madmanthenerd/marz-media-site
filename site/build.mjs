@@ -110,7 +110,7 @@ function header(file, light) {
 const footer = (scripts = '') => `<footer class="site-foot"><div class="wrap top"><div><p class="big">Real estate media for Houston’s finest homes.</p><p>Photography, cinematic video, drone and 3D tours. Shot by Alex Marzette, FAA-certified drone pilot and licensed Texas real estate agent.</p><p><a class="btn btn-light" href="book.html">Book a shoot <span class="arr">→</span></a></p></div>
 <div><h4>Services</h4><ul><li><a href="services.html#packages">Listing packages</a></li><li><a href="services.html#a-la-carte">HDR photography</a></li><li><a href="services.html#a-la-carte">Cinematic video</a></li><li><a href="services.html#a-la-carte">Drone & aerial</a></li><li><a href="services.html#a-la-carte">3D virtual tours</a></li><li><a href="services.html#content">Social media reels</a></li><li><a href="services.html#content">Monthly content plans</a></li><li><a href="interiors.html">Interior design photography</a></li><li><a href="commercial.html">Commercial real estate</a></li></ul></div>
 <div><h4>Areas</h4><ul>${AREAS.slice(0, 6).map((a) => `<li><a href="${a.slug}.html">${a.name}</a></li>`).join('')}<li><a href="houston.html">All of Houston</a></li></ul></div>
-<div><h4>Contact</h4><ul><li><a href="tel:${TEL}">${PHONE}</a></li><li><a href="mailto:${EMAIL}">${EMAIL}</a></li><li><a href="${IG}" rel="noopener">Instagram</a></li><li>Based in Cypress, TX</li><li><a href="prep.html">Prepare your home</a></li></ul></div></div>
+<div><h4>Contact</h4><ul><li><a href="tel:${TEL}">${PHONE}</a></li><li><a href="mailto:${EMAIL}">${EMAIL}</a></li><li><a href="${IG}" rel="noopener">Instagram</a></li><li>Based in Cypress, TX</li><li><a href="prep.html">Prepare your home</a></li><li><a href="faq.html">FAQ</a></li></ul></div></div>
 <div class="wrap base"><span>© <span id="year">2026</span> Marz Media Photography · Houston, Texas · <a href="privacy.html">Privacy</a> · <a href="accessibility.html">Accessibility</a></span><span>Luxury real estate photography & video</span></div></footer>
 <script src="${CDN}/site/assets/site.js" defer></script>${scripts}</body></html>`;
 
@@ -200,7 +200,7 @@ const SERVICES_LIST = [
 <h3 class="rv" style="margin-top:56px">Add-ons</h3><div class="addons rv"><div><strong>Drone coverage <span>$35–$50</span></strong><span>Added to any package or shoot: $35 under 2,500 sq ft, $50 above. Drone-only orders are $115</span></div><div><strong>Twilight photography <span>$75</span></strong><span>Captured at sunset</span></div><div><strong>Floor plans <span>$50</span></strong><span>Clean, accurate layouts</span></div><div><strong>Virtual staging <span>$15/photo</span></strong><span>Empty rooms furnished digitally. We recommend 3: living room, kitchen and primary bedroom</span></div><div><strong>Same-day delivery <span>$75</span></strong><span>Photos the same evening, for 8–9 AM shoots</span></div></div></div></section>` +
     `<section class="section on-dark" id="content"><div class="wrap"><span class="eyebrow rv">Social media reels</span><h2 class="rv d1" style="max-width:20ch">Reels for your brand, not just your listings.</h2><p class="lede rv d2">Vertical content for agents, businesses, restaurants and events, shot and edited for Instagram, TikTok and YouTube Shorts. No listing needed.</p><div class="tiers rv" style="margin-top:40px">${P.CONTENT.plans.filter((p) => !p.monthly).map((p) => `<article class="tier" style="background:transparent;color:var(--on-dark);border-color:rgba(255,255,255,.2)"><span class="badge" style="color:#9DB4E0">${p.reels === 1 ? 'Start here' : 'Best value per shoot'}</span><h3>${p.name}</h3><div class="price">${money(p.price)}</div><span class="size">${p.desc}</span><ul><li>Up to 1 hour on location</li><li>Music, captions-ready, edited in-house</li><li>Delivered within 3 business days</li><li>Drone footage +${money(P.CONTENT.drone.price)}</li></ul><a class="btn btn-light" href="book.html?type=content&amp;plan=${p.id}">Book ${p.name}</a></article>`).join('')}<article class="tier" style="background:transparent;color:var(--on-dark);border-color:rgba(255,255,255,.2)"><span class="badge" style="color:#9DB4E0">Every month</span><h3>Monthly content</h3><div class="price">${money(P.CONTENT.plans.find((p) => p.monthly).price)}<small style="font-size:18px">/mo</small></div><span class="size">From 4 reels a month, drone included</span><ul>${P.CONTENT.plans.filter((p) => p.monthly).map((p) => `<li>${p.reels} reels / month · ${money(p.price)}</li>`).join('')}<li>${P.CONTENT.minMonths}-month minimum</li></ul><a class="btn btn-light" href="book.html?type=content&amp;plan=monthly6">Start a plan</a></article></div></div></section>` +
     `<section class="section"><div class="wrap split"><div><span class="eyebrow rv">Good to know</span><h2 class="rv d1">Booking policies.</h2></div><div class="prose rv"><ul><li><strong>Arrival times</strong> are in Houston time. Packages take about two hours on site; photo-only shoots about an hour.</li><li><strong>Homes of 6,000–7,499 sq ft:</strong> HDR photos are $325; video, 3D tours and packages are custom quoted. Homes of 7,500+ sq ft are custom quoted. You can still reserve your time online.</li><li><strong>Weather.</strong> Drone and twilight work depend on conditions; Alex will reschedule those parts with you if needed.</li><li><strong>Prep matters.</strong> Please follow the <a href="prep.html">prep checklist</a> before we arrive.</li></ul></div></div></section>` +
-    `<section class="section paper"><div class="wrap split"><div><span class="eyebrow rv">FAQ</span><h2 class="rv d1">Questions, answered.</h2></div><div class="faq rv">${FAQ.map(([q, a], i) => `<details${i ? '' : ' open'}><summary>${q}</summary><p>${a.replace('prep guide', '<a class="link" href="prep.html">prep guide</a>')}</p></details>`).join('')}</div></div></section>` +
+    `<section class="section paper"><div class="wrap split"><div><span class="eyebrow rv">FAQ</span><h2 class="rv d1">Questions, answered.</h2></div><div class="faq rv">${FAQ.map(([q, a], i) => `<details${i ? '' : ' open'}><summary>${q}</summary><p>${a.replace('prep guide', '<a class="link" href="prep.html">prep guide</a>')}</p></details>`).join('')}<p style="margin-top:20px"><a class="link" href="faq.html">All questions →</a></p></div></div></section>` +
     byline('your listing') + cta(byKey('66f29cfc')) + `</main>` + footer();
 }
 
@@ -370,6 +370,57 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
     header('') + `<main id="main">` + hero(HI, { eyebrow: 'Request received', h1: 'Thank you. We’ll be in touch.', lede: `Alex will follow up with you shortly. Need something sooner? Call or text ${PHONE}.`, actions: '<a class="btn btn-light" href="index.html">Back home</a>' + BTN_PORT }) + `</main>` + footer();
 }
 
+// FAQ HUB: question-led, answer-first (first sentence answers the question), grouped by topic,
+// FAQPage schema, internal links to the page that covers each topic in depth.
+{
+  const H = byKey('ca539374');
+  const pk = P.PACKAGES, it = P.ITEMS;
+  const GROUPS = [
+    ['pricing', 'Pricing', [
+      ['How much does real estate photography cost in Houston?', `At Marz Media, HDR real estate photography starts at ${money(it.hdr.prices[0])} for homes up to 2,499 sq ft, and listing packages with photos, video and twilight start at ${money(pk[0].price)}. Prices are set by the home’s heated square footage and shown up front on the <a href="services.html">pricing page</a>.`],
+      ['How much do real estate listing packages cost?', `${pk.map((p) => `${p.name} is ${money(p.price)} (${PKG_DESC[p.id].replace('Homes up', 'up').toLowerCase()})`).join(', ')}. Each includes HDR photography, cinematic video or a reel, and twilight photos.`],
+      ['How much does real estate drone photography cost?', `Drone coverage added to a shoot is ${money(it.droneAddon.prices[0])} for homes under 2,500 sq ft and ${money(it.droneAddon.prices[1])} above. A drone-only aerial photo shoot is ${money(it.aerialPhoto.price)}, and aerial video adds ${money(it.aerialVideo.price)}.`],
+      ['How much does a real estate video cost?', `Cinematic listing video starts at ${money(it.video.prices[0])} for homes up to 2,499 sq ft. Video is also included in every listing package.`],
+      ['How much does virtual staging cost?', `Virtual staging is ${money(it.staging.price)} per photo. Most listings need three: the living room, kitchen and primary bedroom.`],
+      ['Is there tax on orders?', 'Yes. A 5% tax is added to every order total.'],
+    ]],
+    ['booking', 'Booking & delivery', [
+      ['How do I book a real estate photographer in Houston?', 'You can <a href="book.html">book online</a> with live availability: choose a package, build your own or social reels, enter the address and square footage, then pick an open time. You can also call or text ' + PHONE + '.'],
+      ['How fast will I get my listing photos?', 'Edited photos are delivered the next business day. Video is delivered within 24–72 hours. Same-day photo delivery is available for ' + money(it.sameday.price) + ' when the shoot starts between 8 and 9 AM.'],
+      ['How long does a real estate photo shoot take?', 'A photos-only shoot takes about an hour for most homes. Packages with photos and video take about two hours on site.'],
+      ['What days do you shoot?', 'Shoots are available Monday through Saturday, with morning start times as early as 8 AM on most weekdays.'],
+      ['What happens if it rains on shoot day?', 'Interior photos and video can usually go ahead. Drone and twilight work depend on the weather, and Alex reschedules those parts with you if conditions aren’t right.'],
+      ['What areas do you serve?', `All of Greater Houston, including ${AREAS.map((a) => a.name).slice(0, 8).join(', ')} and more. See all <a href="houston.html">areas served</a>.`],
+    ]],
+    ['services', 'Services', [
+      ['What is HDR real estate photography?', 'HDR (high dynamic range) photography blends several exposures of the same room so bright windows and darker corners both look natural. It produces bright, true-to-life listing photos without blown-out windows.'],
+      ['Do I need drone photos to sell my house?', 'Not always, but drone photos help when the lot, the view, the neighborhood or nearby amenities are selling points. They show buyers what ground photos can’t, like acreage, a pool layout or proximity to a lake.'],
+      ['What is twilight real estate photography?', 'Twilight photos are taken around sunset with the home’s lights on, creating a warm, glowing hero image. Listing packages include one or two, and they’re ' + money(it.twilight.price) + ' as an add-on.'],
+      ['What is virtual staging, and do I have to disclose it?', 'Virtual staging adds furniture and decor to photos of empty rooms digitally. Most MLS rules require that virtually staged photos be disclosed, so check your MLS’s current guidelines before publishing.'],
+      ['Do you offer 3D virtual tours and floor plans?', `Yes. 3D virtual tours start at ${money(it.tour3d.prices[0])} and floor plans are ${money(it.floorplan.price)}.`],
+      ['Do you shoot social media reels for businesses?', `Yes. Reels for agents, businesses, restaurants and events start at ${money(P.CONTENT.plans[0].price)}, and <a href="services.html#content">monthly content plans</a> start at ${money(P.CONTENT.plans.find((p) => p.monthly).price)} for four reels with drone included.`],
+      ['Do you photograph interior design projects?', `Yes. <a href="interiors.html">Interior design photography</a> for designers, builders, remodelers and stagers starts at ${money(P.INTERIORS.packages[0].price)}.`],
+      ['Do you photograph commercial real estate?', `Yes. <a href="commercial.html">Commercial photography</a> for office, retail, industrial, multifamily and land starts at ${money(P.COMMERCIAL.packages[0].price)}, with drone aerials included.`],
+    ]],
+    ['prep', 'Preparing the home', [
+      ['How do I prepare my home for real estate photos?', 'Turn on every light, open all blinds, clear kitchen and bathroom counters, hide personal items and move cars out of the driveway. The full room-by-room list is in the <a href="prep.html">prep guide</a>.'],
+      ['Do I need to be home during the shoot?', 'No. Many shoots use a lockbox. If someone will be home, plan to keep pets secured and stay out of the rooms being photographed.'],
+    ]],
+    ['trust', 'About Marz Media', [
+      ['Who takes the photos?', 'Alex Marzette, the founder of Marz Media Photography, plans, shoots and edits every job himself. He is a licensed Texas real estate agent with 4+ years photographing Houston properties. <a href="about.html">More about Alex</a>.'],
+      ['Are you licensed and insured to fly drones?', 'Yes. Alex holds an FAA Part 107 Remote Pilot Certificate and is insured. He checks airspace and HOA rules before every flight, and a certificate of insurance is available on request.'],
+    ]],
+  ];
+  const all = GROUPS.flatMap(([, , q]) => q);
+  pages['faq.html'] = head({ file: 'faq.html', title: 'Real Estate Photography FAQ: Houston | Marz Media', desc: 'Answers on real estate photography in Houston: pricing, drone, video, twilight, virtual staging, delivery times, booking and how to prep your home.', image: src(H, 1600),
+    extra: ld({ '@context': 'https://schema.org', '@type': 'FAQPage', dateModified: new Date().toISOString().slice(0, 10), author: { '@id': PERSON['@id'] }, mainEntity: all.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a.replace(/<[^>]+>/g, '') } })) }) }) +
+    header('faq.html') + `<main id="main">` +
+    hero(H, { short: true, eyebrow: 'FAQ', h1: 'Real estate photography, answered.', lede: `Straight answers on pricing, drone, video, delivery and booking across Houston. ${all.length} questions, answered by Alex Marzette.` }) +
+    `<section class="section tight"><div class="wrap"><nav class="faq-toc" aria-label="FAQ topics">${GROUPS.map(([id, t]) => `<a href="#${id}">${t}</a>`).join('')}</nav><p class="hint">Last updated ${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p></div></section>` +
+    GROUPS.map(([id, t, qs], gi) => `<section class="section tight${gi % 2 ? ' paper' : ''}" id="${id}"><div class="wrap split" style="align-items:start"><div><span class="eyebrow rv">${t}</span></div><div class="qa">${qs.map(([q, a]) => `<article class="rv"><h2>${q}</h2><p>${a}</p></article>`).join('')}</div></div></section>`).join('') +
+    byline('your listing') + cta(byKey('3ee3861a'), 'Still have a question?', `Call or text ${PHONE}, or book online with live availability.`) + `</main>` + footer();
+}
+
 // PRIVACY + ACCESSIBILITY
 {
   const H = byKey('3ee3861a');
@@ -425,6 +476,7 @@ Contact: ${PHONE} · ${EMAIL} · ${ORIGIN}
 - [Portfolio](${ORIGIN}/portfolio)
 - [About Alex Marzette](${ORIGIN}/about)
 - [Home prep checklist](${ORIGIN}/prep)
+- [FAQ](${ORIGIN}/faq): pricing, drone, video, delivery, booking and prep questions answered.
 - [Areas served](${ORIGIN}/houston)
 `);
 fs.writeFileSync(path.join(OUT, 'robots.txt'), LIVE ? `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n` : 'User-agent: *\nDisallow: /\n');
