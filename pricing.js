@@ -83,6 +83,9 @@
     types: ['Office', 'Retail', 'Restaurant', 'Industrial or flex', 'Multifamily', 'Land', 'Medical', 'Other'],
   };
 
+  // Cancellation fees (billed manually): cancelled on the day of the shoot, or after Alex has arrived.
+  const POLICY = { cancelSameDay: 75, cancelOnSite: 100 };
+
   const TAX_RATE = 0.05; // added to every order total
   const SAMEDAY_LATEST = '09:00'; // same-day delivery shoots must start by this time
 
@@ -180,7 +183,7 @@
     return { ok: true, tier, mode, lines, subtotal, tax, total, customQuote, minutes, includesTwilight };
   }
 
-  const api = { TIERS, PACKAGES, ITEMS, CONTENT, INTERIORS, COMMERCIAL, SCHEDULE, TAX_RATE, SAMEDAY_LATEST, tierFor, quote };
+  const api = { TIERS, PACKAGES, ITEMS, CONTENT, INTERIORS, COMMERCIAL, POLICY, SCHEDULE, TAX_RATE, SAMEDAY_LATEST, tierFor, quote };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MarzPricing = api;
 })(typeof window !== 'undefined' ? window : globalThis);
