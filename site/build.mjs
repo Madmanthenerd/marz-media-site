@@ -41,10 +41,29 @@ const KW = ['luxury real estate photography in Houston, TX', 'Houston real estat
 const alt = (r, i) => `${cap(r.subject)}: ${KW[i % KW.length]} by Marz Media Photography`;
 const img = (r, W, i = 0, extra = '') => `<img src="${src(r, W)}" alt="${alt(r, i)}" width="${W}" height="${Math.round(W * r.h / r.w)}" loading="lazy" decoding="async"${extra}>`;
 const isKitchen = (r) => /kitchen|cooktop/.test(r.subject);
-const albumOf = (r) => r.album === 'interior' ? (isKitchen(r) ? 'interiors kitchens' : 'interiors') : r.album === 'exterior' ? 'exteriors' : 'design';
+const albumOf = (r) => r.album === 'twilight' ? 'twilight exteriors' : r.album === 'interior' ? (isKitchen(r) ? 'interiors kitchens' : 'interiors') : r.album === 'exterior' ? 'exteriors' : 'design';
 const fig = (r, i, W = 900) => `<figure data-album="${albumOf(r)}" tabindex="0">${img(r, W, i)}<figcaption>${cap(r.subject)}</figcaption></figure>`;
 
 const REELS = [
+  ['338ed0e12280445b8c8a47f5f46fbcbb', 'Kitchen and living reel'],
+  ['3bda098489c14c6082cf5e0362e947a9', 'Modern kitchen listing reel'],
+  ['74492e17923b4db9b15b388ec5274180', 'Land and lots drone reel'],
+  ['2ccdf7eae9c84accbd515aa7ac7e80c2', 'Kitchen walkthrough reel'],
+  ['a6c50bcebb614ad0ae126be7e2daa655', 'Closing day reel'],
+  ['a10e2a5ca7b946f5a303301db6613d49', 'Agent team brand reel'],
+  ['273050ae587c4e03afe9cb800399074e', 'Primary suite listing reel'],
+  ['3875bd1d477c4495bbedfe19412c9e87', 'Dining room walkthrough reel'],
+  ['e01b49b060d4453bb363e8cab27ade3c', 'New construction detail reel'],
+  ['0ee49625e1f84f8ab0af6d42079d39e4', 'Demolition and rebuild reel'],
+  ['7688ad7e108c458081c62f7db7879fe0', 'Neighborhood intro reel'],
+  ['9dafc5d820f948739d73a6c92f39d50d', 'Agent brand reel'],
+  ['2cb77cb712ad48999a92bcbab6f322e0', 'Listing walkthrough reel'],
+  ['1fb453ade43846068c5334275e3b2b65', 'Bedroom walkthrough reel'],
+  ['dac54bfd72184e3baaf23295b3b0aae8', 'Cozy bedroom detail reel'],
+  ['0146be95f8fa44338a0eb0296ec1296e', 'Living room walkthrough reel'],
+  ['6928c6ed643547388067c17de9b54eb0', 'Open living room reel'],
+  ['a52f04458c564d048afe5d7d7f01d0f9', 'Bath and finishes reel'],
+  ['b04443b3c671431cac7c3fefdd277178', 'Hallway walkthrough reel'],
   ['e4f0495d87a54f1f867467940c12c03e', 'Slow-motion detail reel'], ['7cd86b1381a044e5990c49c9e9456c02', 'Listing reel'],
   ['937811427ce245758f5b43564aea9418', 'Cinematic walkthrough'], ['100ae210b3d84ddeabbe272afee3fc57', 'Luxury listing reel'],
   ['0ea959d93f07412ca28749c6c56b8794', 'Interior walkthrough'], ['52d681b1aec648fe941044c5dd2d9fa0', 'Social-first reel'],
@@ -150,7 +169,8 @@ const SERVICES_LIST = [
 
 // HOME
 {
-  const H = byKey('3ee3861a'), feat = ['4f28507a', 'f03180ea', 'a4abd4f7', '66f29cfc', '53eeb97a', '4cbca1ea', '89becc90', '3eedf93f', '860a3a1c'].map(byKey);
+  // Home hero: twilight pool shot (previous hero: '3ee3861a', the daytime exterior)
+  const H = byKey('e97ae12a'), feat = ['4f28507a', 'a814aadb', 'a4abd4f7', '11a5dea3', '53eeb97a', '4cbca1ea', 'cc71b813', '3eedf93f', '860a3a1c'].map(byKey);
   pages['index.html'] = head({ file: 'index.html', title: 'Houston Real Estate Photography & Video | Marz Media', desc: 'Luxury real estate photography, cinematic video, drone and 3D tours across Houston, from River Oaks to The Woodlands. Photos next business day.', image: src(H, 1600) }) +
     header('index.html') + `<main id="main">` +
     hero(H, { eyebrow: 'Houston real estate media', h1: 'Luxury listings, captured beautifully.', lede: 'Photography, cinematic video, drone and 3D tours for agents, builders and designers across Greater Houston. Shot by Alex Marzette, start to finish.', actions: BTN_BOOK + BTN_PORT, facts: '<ul class="facts"><li>Photos next business day</li><li>Video in 24–72 hours</li><li>FAA-certified drone pilot</li><li>All of Greater Houston</li></ul>' }) +
@@ -167,11 +187,12 @@ const SERVICES_LIST = [
 
 // PORTFOLIO
 {
-  const albums = [['interiors', 'Interiors'], ['kitchens', 'Kitchens'], ['exteriors', 'Exteriors & outdoor living'], ['design', 'Interior design'], ['reels', 'Reels']];
+  const albums = [['twilight', 'Twilight'], ['interiors', 'Interiors'], ['kitchens', 'Kitchens'], ['exteriors', 'Exteriors & outdoor living'], ['design', 'Interior design'], ['reels', 'Reels']];
   const count = (k) => k === 'reels' ? REELS.length : rows.filter((r) => albumOf(r).split(' ').includes(k)).length;
   const order = [...rows].sort((a, b) => ['exterior', 'interior', 'design'].indexOf(a.album) - ['exterior', 'interior', 'design'].indexOf(b.album));
   // interleave so the grid mixes rooms and exteriors
-  const ex = order.filter((r) => r.album === 'exterior'), inn = order.filter((r) => r.album !== 'exterior'), mixed = [];
+  const isOut = (r) => r.album === 'exterior' || r.album === 'twilight';
+  const ex = order.filter(isOut), inn = order.filter((r) => !isOut(r)), mixed = [];
   while (ex.length || inn.length) { if (inn.length) mixed.push(inn.shift()); if (inn.length) mixed.push(inn.shift()); if (ex.length) mixed.push(ex.shift()); }
   const H = byKey('1224ba40');
   pages['portfolio.html'] = head({ file: 'portfolio.html', title: 'Portfolio: Houston Real Estate Photography | Marz Media', desc: 'Browse luxury real estate photography, interior design photography, exteriors, kitchens and cinematic reels shot across Houston by Marz Media.', image: src(H, 1600),
