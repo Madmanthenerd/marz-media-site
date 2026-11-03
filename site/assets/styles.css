@@ -449,3 +449,4 @@ html.no-js .rv,html.reduce .rv{opacity:1;transform:none}
 .qa .cmp{margin-top:16px;font-size:14px}.qa .cmp caption{text-align:left;font-weight:600;padding-bottom:8px;color:var(--ink)}
 .qa .cmp th[scope],.qa .cmp tbody th{text-align:left;font-weight:600}
 .qa .cmp{min-width:0;table-layout:fixed}.qa .cmp th,.qa .cmp td{white-space:normal;padding:10px 8px;vertical-align:top}.qa .cmp thead th:first-child,.qa .cmp tbody th{width:24%}
+.paper .quote{background:var(--white)}

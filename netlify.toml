@@ -51,6 +51,16 @@
   from = "/pricing-plans/*"
   to = "/services"
   status = 301
+# Interiors and Commercial are sections of Services for now (SPECIALTY_PAGES = false in build.mjs).
+# Temporary (302) so these pages can come back later. Remove these two when they return.
+[[redirects]]
+  from = "/interiors"
+  to = "/services#interiors"
+  status = 302
+[[redirects]]
+  from = "/commercial"
+  to = "/services#commercial"
+  status = 302
 [[redirects]]
   from = "/privacy-policy"
   to = "/privacy"

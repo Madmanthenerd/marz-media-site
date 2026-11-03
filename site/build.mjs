@@ -20,6 +20,9 @@ const IG = 'https://www.instagram.com/marzmediaphotography/';
 const GA = 'G-4BVLLTL8N6'; // Google Analytics 4 (Marz Media Website stream)
 // Flip to true once property websites are live; turns on the FAQ answer and site mentions.
 const PROPERTY_SITES = false;
+// Interiors and Commercial live as sections of Services (and in the portfolio) for now.
+// Flip to true to bring back their own pages (/interiors, /commercial) and header links.
+const SPECIALTY_PAGES = false;
 
 /* ---------- media ---------- */
 const rows = fs.readFileSync(path.join(here, 'catalog.tsv'), 'utf8').trim().split('\n').slice(1).map((l) => {
@@ -67,7 +70,7 @@ const AREAS = [
 const OTHER_AREAS = ['Tanglewood', 'Uptown & the Galleria', 'Spring', 'Kingwood', 'Fulshear', 'Pearland', 'Missouri City', 'Montrose', 'Bunker Hill Village', 'Hunters Creek Village', 'Piney Point Village', 'Fairfield', 'Jersey Village'];
 
 /* ---------- shared chrome ---------- */
-const NAV = [['portfolio.html', 'Portfolio'], ['services.html', 'Services & pricing'], ['interiors.html', 'Interiors'], ['commercial.html', 'Commercial'], ['about.html', 'About']];
+const NAV = [['portfolio.html', 'Portfolio'], ['services.html', 'Services & pricing'], ...(SPECIALTY_PAGES ? [['interiors.html', 'Interiors'], ['commercial.html', 'Commercial']] : []), ['about.html', 'About']];
 const PERSON = {
   '@type': 'Person', '@id': ORIGIN + '/about#alex', name: 'Alex Marzette', alternateName: 'Alexander Marzette', url: ORIGIN + '/about',
   jobTitle: 'Founder & Photographer', worksFor: { '@id': ORIGIN + '/#business' }, sameAs: [IG],
@@ -111,7 +114,7 @@ function header(file, light) {
 <button class="menu-btn" aria-label="Menu" aria-expanded="false"><i></i><i></i><i></i></button><nav class="nav" aria-label="Main">${NAV.map(([h, t]) => `<a href="${h}"${h === file ? ' aria-current="page"' : ''}>${t}</a>`).join('')}<a class="btn btn-primary" href="book.html">Book a shoot</a></nav></div></header>`;
 }
 const footer = (scripts = '') => `<footer class="site-foot"><div class="wrap top"><div><p class="big">Real estate media for Houston’s finest homes.</p><p>Photography, cinematic video, drone and 3D tours. Shot by Alex Marzette, FAA-certified drone pilot and licensed Texas real estate agent.</p><p><a class="btn btn-light" href="book.html">Book a shoot <span class="arr">→</span></a></p></div>
-<div><h4>Services</h4><ul><li><a href="services.html#packages">Listing packages</a></li><li><a href="services.html#a-la-carte">HDR photography</a></li><li><a href="services.html#a-la-carte">Cinematic video</a></li><li><a href="services.html#a-la-carte">Drone & aerial</a></li><li><a href="services.html#a-la-carte">3D virtual tours</a></li><li><a href="services.html#content">Social media reels</a></li><li><a href="services.html#content">Monthly content plans</a></li><li><a href="interiors.html">Interior design photography</a></li><li><a href="commercial.html">Commercial real estate</a></li></ul></div>
+<div><h4>Services</h4><ul><li><a href="services.html#packages">Listing packages</a></li><li><a href="services.html#a-la-carte">HDR photography</a></li><li><a href="services.html#a-la-carte">Cinematic video</a></li><li><a href="services.html#a-la-carte">Drone & aerial</a></li><li><a href="services.html#a-la-carte">3D virtual tours</a></li><li><a href="services.html#content">Social media reels</a></li><li><a href="services.html#content">Monthly content plans</a></li><li><a href="${SPECIALTY_PAGES ? 'interiors.html' : 'services.html#interiors'}">Interior design photography</a></li><li><a href="${SPECIALTY_PAGES ? 'commercial.html' : 'services.html#commercial'}">Commercial real estate</a></li></ul></div>
 <div><h4>Areas</h4><ul>${AREAS.slice(0, 6).map((a) => `<li><a href="${a.slug}.html">${a.name}</a></li>`).join('')}<li><a href="houston.html">All of Houston</a></li></ul></div>
 <div><h4>Contact</h4><ul><li><a href="tel:${TEL}">${PHONE}</a></li><li><a href="mailto:${EMAIL}">${EMAIL}</a></li><li><a href="${IG}" rel="noopener">Instagram</a></li><li>Based in Cypress, TX</li><li><a href="prep.html">Prepare your home</a></li><li><a href="faq.html">FAQ</a></li></ul></div></div>
 <div class="wrap base"><span>© <span id="year">2026</span> Marz Media Photography · Houston, Texas · <a href="privacy.html">Privacy</a> · <a href="accessibility.html">Accessibility</a></span><span>Luxury real estate photography & video</span></div></footer>
@@ -141,8 +144,8 @@ const SERVICES_LIST = [
   ['Twilight Photography', 'The sunset hero shot that stops the scroll and lifts the whole listing.', '$75'],
   ['Floor Plans', 'Clear, accurate layouts that answer buyers’ first question.', '$50'],
   ['Social Media Reels', 'Vertical reels for agents, brands and businesses. Single reels, or a monthly plan with drone included.', 'from $165'],
-  ['Interior Design Photography', 'Styled, true-color portfolio images for designers, builders and stagers.', 'from $375', 'interiors.html'],
-  ['Commercial Real Estate', 'Office, retail, industrial and multifamily, with drone aerials in every package.', 'from $450', 'commercial.html'],
+  ['Interior Design Photography', 'Styled, true-color portfolio images for designers, builders and stagers.', 'from $375', SPECIALTY_PAGES ? 'interiors.html' : 'services.html#interiors'],
+  ['Commercial Real Estate', 'Office, retail, industrial and multifamily, with drone aerials in every package.', 'from $450', SPECIALTY_PAGES ? 'commercial.html' : 'services.html#commercial'],
 ];
 
 // HOME
@@ -164,7 +167,7 @@ const SERVICES_LIST = [
 
 // PORTFOLIO
 {
-  const albums = [['interiors', 'Interiors'], ['kitchens', 'Kitchens'], ['exteriors', 'Exteriors & outdoor living'], ['design', 'Styled interiors'], ['reels', 'Reels']];
+  const albums = [['interiors', 'Interiors'], ['kitchens', 'Kitchens'], ['exteriors', 'Exteriors & outdoor living'], ['design', 'Interior design'], ['reels', 'Reels']];
   const count = (k) => k === 'reels' ? REELS.length : rows.filter((r) => albumOf(r).split(' ').includes(k)).length;
   const order = [...rows].sort((a, b) => ['exterior', 'interior', 'design'].indexOf(a.album) - ['exterior', 'interior', 'design'].indexOf(b.album));
   // interleave so the grid mixes rooms and exteriors
@@ -197,7 +200,7 @@ const SERVICES_LIST = [
     extra: ld({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQ.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }) +
       ld({ '@context': 'https://schema.org', '@type': 'OfferCatalog', name: 'Real estate media packages', itemListElement: P.PACKAGES.map((p) => ({ '@type': 'Offer', name: p.name + ' listing package', price: p.price, priceCurrency: 'USD', description: p.includes.join(', ') + '. ' + PKG_DESC[p.id] + '.', seller: { '@id': ORIGIN + '/#business' } })) }) }) +
     header('services.html') + `<main id="main">` +
-    hero(H, { short: true, eyebrow: 'Services & pricing', h1: 'Simple pricing. Premium results.', lede: 'Every price is set by square footage and shown up front.', actions: BTN_BOOK }) +
+    hero(H, { short: true, eyebrow: 'Services & pricing', h1: 'Simple pricing. Premium results.', lede: 'Every price is set by square footage and shown up front.', actions: BTN_BOOK + (SPECIALTY_PAGES ? '' : '<a class="btn btn-ghost" href="#interiors">Interiors & commercial</a>') }) +
     `<section class="section" id="packages"><div class="wrap"><span class="eyebrow rv">Listing packages</span><h2 class="rv d1">Photo, video and twilight in one visit.</h2><p class="lede rv d2">Add drone coverage to any package from $35, plus 3D tours, floor plans, virtual staging or same-day delivery.</p>${tiers()}</div></section>` +
     `<section class="section paper" id="a-la-carte"><div class="wrap"><span class="eyebrow rv">À la carte</span><h2 class="rv d1">Build exactly what you need.</h2><div class="rate-wrap rv"><table class="rate"><thead><tr><th>Service</th><th>Up to 2,499 sq ft</th><th>2,500–3,999</th><th>4,000–5,999</th><th>6,000–7,499</th><th>7,500+</th></tr></thead><tbody>${row('hdr')}${row('video')}${row('tour3d')}<tr><td>Aerial Photography</td><td colspan="5">$115 · add aerial video for +$50</td></tr></tbody></table></div>
 <h3 class="rv" style="margin-top:56px">Add-ons</h3><div class="addons rv"><div><strong>Drone coverage <span>$35–$50</span></strong><span>Added to any package or shoot: $35 under 2,500 sq ft, $50 above. Drone-only orders are $115</span></div><div><strong>Twilight photography <span>$75</span></strong><span>Captured at sunset</span></div><div><strong>Floor plans <span>$50</span></strong><span>Clean, accurate layouts</span></div><div><strong>Virtual staging <span>$15/photo</span></strong><span>Empty rooms furnished digitally. We recommend 3: living room, kitchen and primary bedroom</span></div><div><strong>Same-day delivery <span>$75</span></strong><span>Photos the same evening, for 8–9 AM shoots</span></div></div></div></section>` +
@@ -308,18 +311,18 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
 // INTERIORS + COMMERCIAL (quote requests, not online booking)
 {
   // Quote form, collected by Netlify Forms (Netlify dashboard > Forms; email notifications set there).
-  const quoteForm = (kind, pkgs, extraFields) => `<form class="quote rv" name="quote-${kind.toLowerCase()}" method="POST" action="/quote-thanks" data-netlify="true" netlify-honeypot="company">
+  const quoteForm = (kind, pkgs, extraFields) => { const x = kind === 'Interiors' ? 'iq' : 'cq'; return `<form class="quote rv" name="quote-${kind.toLowerCase()}" method="POST" action="/quote-thanks" data-netlify="true" netlify-honeypot="company">
 <input type="hidden" name="form-name" value="quote-${kind.toLowerCase()}"><div class="hp" aria-hidden="true"><label>Company website <input name="company" tabindex="-1" autocomplete="off"></label></div>
-<div class="row2"><div class="field"><label for="q-name">Name</label><input id="q-name" name="name" autocomplete="name" required></div><div class="field"><label for="q-biz">Company <span class="opt-hint">(optional)</span></label><input id="q-biz" name="business" autocomplete="organization"></div>
-<div class="field"><label for="q-email">Email</label><input id="q-email" type="email" name="email" autocomplete="email" required></div><div class="field"><label for="q-phone">Phone</label><input id="q-phone" type="tel" name="phone" autocomplete="tel" required></div></div>
-<div class="field"><label for="q-addr">Property address</label><input id="q-addr" name="address" autocomplete="street-address"></div>
-<div class="row2"><div class="field"><label for="q-pkg">Package</label><select id="q-pkg" name="package">${pkgs.map((p) => `<option value="${p.name}">${p.name} · ${money(p.price)}</option>`).join('')}<option value="Not sure">Not sure yet</option></select></div>${extraFields}
-<div class="field"><label for="q-date">Preferred date <span class="opt-hint">(optional)</span></label><input id="q-date" type="date" name="date"></div></div>
-<div class="field"><label for="q-notes">About the project</label><textarea id="q-notes" name="details" placeholder="Rooms or areas to feature, add-ons you’d like, anything we should know"></textarea></div>
-<button type="submit" class="btn btn-primary">Request a quote <span class="arr">→</span></button><p class="hint" style="margin-top:14px">Prefer to talk? Call or text <a href="tel:${TEL}">${PHONE}</a>.</p></form>`;
-  const pkgCards = (pkgs, label) => `<div class="tiers">${pkgs.map((p, i) => `<article class="tier${p.mostBooked ? ' feature' : ''} rv d${i + 1}"><span class="badge">${p.mostBooked ? 'Most popular' : label}</span><h3>${p.name}</h3><div class="price">${money(p.price)}</div><span class="size">${p.size}</span><ul>${p.includes.map((x) => `<li>${x}</li>`).join('')}</ul><a class="btn ${p.mostBooked ? '' : 'btn-primary'}" href="#quote" data-pkg="${p.name}">Request ${p.name}</a></article>`).join('')}</div>`;
+<div class="row2"><div class="field"><label for="${x}-name">Name</label><input id="${x}-name" name="name" autocomplete="name" required></div><div class="field"><label for="${x}-biz">Company <span class="opt-hint">(optional)</span></label><input id="${x}-biz" name="business" autocomplete="organization"></div>
+<div class="field"><label for="${x}-email">Email</label><input id="${x}-email" type="email" name="email" autocomplete="email" required></div><div class="field"><label for="${x}-phone">Phone</label><input id="${x}-phone" type="tel" name="phone" autocomplete="tel" required></div></div>
+<div class="field"><label for="${x}-addr">Property address</label><input id="${x}-addr" name="address" autocomplete="street-address"></div>
+<div class="row2"><div class="field"><label for="${x}-pkg">Package</label><select id="${x}-pkg" name="package">${pkgs.map((p) => `<option value="${p.name}">${p.name} · ${money(p.price)}</option>`).join('')}<option value="Not sure">Not sure yet</option></select></div>${extraFields}
+<div class="field"><label for="${x}-date">Preferred date <span class="opt-hint">(optional)</span></label><input id="${x}-date" type="date" name="date"></div></div>
+<div class="field"><label for="${x}-notes">About the project</label><textarea id="${x}-notes" name="details" placeholder="Rooms or areas to feature, add-ons you’d like, anything we should know"></textarea></div>
+<button type="submit" class="btn btn-primary">Request a quote <span class="arr">→</span></button><p class="hint" style="margin-top:14px">Prefer to talk? Call or text <a href="tel:${TEL}">${PHONE}</a>.</p></form>`; };
+  const pkgCards = (pkgs, label, anchor = 'quote', sel = 'iq-pkg') => `<div class="tiers">${pkgs.map((p, i) => `<article class="tier${p.mostBooked ? ' feature' : ''} rv d${i + 1}"><span class="badge">${p.mostBooked ? 'Most popular' : label}</span><h3>${p.name}</h3><div class="price">${money(p.price)}</div><span class="size">${p.size}</span><ul>${p.includes.map((x) => `<li>${x}</li>`).join('')}</ul><a class="btn ${p.mostBooked ? '' : 'btn-primary'}" href="#${anchor}" data-pkg="${p.name}" data-sel="${sel}">Request ${p.name}</a></article>`).join('')}</div>`;
   const addonList = (list) => `<div class="addons rv">${list.map(([t, pr, d]) => `<div><strong>${t} <span>${d === 'from' ? 'from ' : ''}${money(pr)}</span></strong><span>${d === 'from' ? 'Priced by size' : cap(d)}</span></div>`).join('')}</div>`;
-  const pickPkg = `<script>document.querySelectorAll('[data-pkg]').forEach(function(a){a.addEventListener('click',function(){var s=document.getElementById('q-pkg');if(s)s.value=a.getAttribute('data-pkg');});});</script>`;
+  const pickPkg = `<script>document.querySelectorAll('[data-pkg]').forEach(function(a){a.addEventListener('click',function(){var s=document.getElementById(a.getAttribute('data-sel'));if(s)s.value=a.getAttribute('data-pkg');});});</script>`;
   const service = (name, type, desc, low, file) => ld({ '@context': 'https://schema.org', '@type': 'Service', name, serviceType: type, description: desc, provider: { '@id': ORIGIN + '/#business' }, areaServed: { '@type': 'City', name: 'Houston, TX' }, url: `${ORIGIN}/${file}`, offers: { '@type': 'AggregateOffer', priceCurrency: 'USD', lowPrice: low } });
 
   // INTERIORS
@@ -333,7 +336,7 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
     ['How long until I receive the images?', 'Edited interior images are delivered within 3–5 business days.'],
   ];
   const design = rows.filter((r) => r.album === 'design').concat(['a6eeb3e9', '4f28507a', 'e3a86909'].map(byKey)).slice(0, 12);
-  pages['interiors.html'] = head({ file: 'interiors.html', title: 'Interior Design Photography in Houston | Marz Media', desc: `Interior design photography for Houston designers, builders, remodelers and stagers. Styled, true-color portfolio images from ${money(I.packages[0].price)}.`, image: src(HI, 1600),
+  if (SPECIALTY_PAGES) pages['interiors.html'] = head({ file: 'interiors.html', title: 'Interior Design Photography in Houston | Marz Media', desc: `Interior design photography for Houston designers, builders, remodelers and stagers. Styled, true-color portfolio images from ${money(I.packages[0].price)}.`, image: src(HI, 1600),
     extra: service('Interior design photography', 'Interior photography', 'Styled interior photography for interior designers, builders, remodelers, home stagers and short-term rental hosts in Houston.', I.packages[0].price, 'interiors') + faqLd(IFAQ) }) +
     header('interiors.html') + `<main id="main">` +
     hero(HI, { short: true, eyebrow: 'Interior design photography', h1: 'Your best work, photographed like it deserves.', lede: 'Styled, true-color images for interior designers, builders, remodelers and stagers across Greater Houston. Made for your portfolio, website and award submissions.', actions: '<a class="btn btn-light" href="#quote">Request a quote <span class="arr">→</span></a>' }) +
@@ -355,18 +358,31 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
     ['What types of commercial properties do you photograph?', 'Office, medical, retail, restaurant, industrial and flex, multifamily and land across Greater Houston.'],
     ['Can the property owner or another broker use the photos?', `Yes. Each additional company can license the images for ${money(C.addons[5][1])}.`],
   ];
-  const typeField = `<div class="field"><label for="q-type">Property type</label><select id="q-type" name="property_type">${C.types.map((t) => `<option>${t}</option>`).join('')}</select></div><div class="field"><label for="q-sqft">Building size (sq ft)</label><input id="q-sqft" name="sqft" inputmode="numeric" placeholder="e.g. 12,000"></div>`;
-  pages['commercial.html'] = head({ file: 'commercial.html', title: 'Commercial Real Estate Photography Houston | Marz Media', desc: `Commercial real estate photography and drone aerials in Houston for office, retail, industrial and multifamily. Packages from ${money(C.packages[0].price)}, drone included.`, image: src(HC, 1600),
+  const typeField = `<div class="field"><label for="cq-type">Property type</label><select id="cq-type" name="property_type">${C.types.map((t) => `<option>${t}</option>`).join('')}</select></div><div class="field"><label for="cq-sqft">Building size (sq ft)</label><input id="cq-sqft" name="sqft" inputmode="numeric" placeholder="e.g. 12,000"></div>`;
+  if (SPECIALTY_PAGES) pages['commercial.html'] = head({ file: 'commercial.html', title: 'Commercial Real Estate Photography Houston | Marz Media', desc: `Commercial real estate photography and drone aerials in Houston for office, retail, industrial and multifamily. Packages from ${money(C.packages[0].price)}, drone included.`, image: src(HC, 1600),
     extra: service('Commercial real estate photography', 'Commercial real estate photography and aerial photography', 'Photography, drone aerials, leasing videos and 3D tours for commercial properties in Houston: office, retail, industrial, multifamily and land.', C.packages[0].price, 'commercial') + faqLd(CFAQ) }) +
     header('commercial.html') + `<main id="main">` +
     hero(HC, { short: true, eyebrow: 'Commercial real estate', h1: 'Photos and aerials that lease space.', lede: 'Photography, drone aerials and leasing video for brokers, owners and property managers across Greater Houston. Drone is included in every package.', actions: '<a class="btn btn-light" href="#quote">Request a quote <span class="arr">→</span></a>' }) +
     `<section class="section"><div class="wrap split"><div><span class="eyebrow rv">Why it works</span><h2 class="rv d1">Tenants buy location first.</h2></div><div class="prose rv"><p class="lede">The building matters. Where it sits matters more.</p><p>Every package pairs clean interior and exterior photography with FAA-certified, fully insured drone aerials that show access, parking, visibility and what surrounds the property. That’s what tenants and buyers want to see before they ever schedule a tour.</p></div></div>
 <div class="wrap"><div class="creds rv"><div><strong>Drone included</strong><span>Aerials in every package, not an upcharge.</span></div><div><strong>FAA-certified & insured</strong><span>Airspace checked before every flight. Certificate of insurance on request.</span></div><div><strong>Agent’s eye</strong><span>A licensed Texas agent who knows what moves space.</span></div><div><strong>One point of contact</strong><span>Alex plans, shoots and delivers every project.</span></div></div></div></section>` +
-    `<section class="section paper" id="packages"><div class="wrap"><span class="eyebrow rv">Packages</span><h2 class="rv d1">Priced by building size.</h2><p class="lede rv d2">Over 50,000 sq ft, a campus or multiple buildings? Custom quotes start at ${money(C.customFrom)}.</p>${pkgCards(C.packages, 'Commercial')}
+    `<section class="section paper" id="packages"><div class="wrap"><span class="eyebrow rv">Packages</span><h2 class="rv d1">Priced by building size.</h2><p class="lede rv d2">Over 50,000 sq ft, a campus or multiple buildings? Custom quotes start at ${money(C.customFrom)}.</p>${pkgCards(C.packages, 'Commercial', 'quote', 'cq-pkg')}
 <h3 class="rv" style="margin-top:56px">Add-ons</h3>${addonList(C.addons)}</div></section>` +
     `<section class="section on-dark"><div class="wrap split"><div><span class="eyebrow rv">Property types</span><h2 class="rv d1">From a single suite to a full site.</h2></div><div class="prose rv"><ul><li><strong>Office and medical:</strong> lobbies, suites, common areas and building exteriors.</li><li><strong>Retail and restaurant:</strong> storefronts, frontage, signage and the traffic around it.</li><li><strong>Industrial and flex:</strong> warehouses, docks, yards and truck access from the air.</li><li><strong>Multifamily:</strong> amenities, model units and the whole community.</li><li><strong>Land:</strong> aerials that show boundaries, roads and nearby development.</li></ul></div></div></section>` +
     `<section class="section" id="quote"><div class="wrap split"><div><span class="eyebrow rv">Request a quote</span><h2 class="rv d1">Tell us about the property.</h2><p class="lede rv d2">Alex will follow up with a quote and available dates.</p></div>${quoteForm('Commercial', C.packages, typeField)}</div></section>` +
     faqBlock(CFAQ) + byline('your property') + `</main>` + footer(pickPkg);
+
+  // Interiors + Commercial as sections of the Services page (while SPECIALTY_PAGES is off)
+  if (!SPECIALTY_PAGES) {
+    const sec = `<section class="section" id="interiors"><div class="wrap"><span class="eyebrow rv">Interior design photography</span><h2 class="rv d1" style="max-width:20ch">Portfolio images for designers, builders and stagers.</h2><p class="lede rv d2">Styled, true-color photos composed around the design: straight lines, accurate materials, and the detail and vignette shots that carry a portfolio or an awards entry. Introductory rates; images delivered in 3–5 business days, with web, social, portfolio and award use included.</p>${pkgCards(I.packages, 'Interiors', 'interiors-quote', 'iq-pkg')}
+<h3 class="rv" style="margin-top:48px">Interior add-ons</h3>${addonList(I.addons)}</div>
+<div class="wrap split" id="interiors-quote" style="align-items:start;margin-top:64px"><div><span class="eyebrow rv">Request a quote</span><h3 class="rv d1" style="font-size:clamp(26px,3vw,34px)">Tell us about the project.</h3><p class="rv d2" style="color:var(--muted)">For interior designers, decorators, builders, remodelers, home stagers, short-term rental hosts and showrooms. Alex follows up to talk through the space, your shot list and timing.</p></div>${quoteForm('Interiors', I.packages, '')}</div></section>` +
+      `<section class="section paper" id="commercial"><div class="wrap"><span class="eyebrow rv">Commercial real estate</span><h2 class="rv d1" style="max-width:20ch">Photos and aerials that lease space.</h2><p class="lede rv d2">Office, medical, retail, restaurant, industrial, multifamily and land. Every package pairs interior and exterior photography with FAA-certified, insured drone aerials that show access, parking and surroundings. Over 50,000 sq ft, a campus or multiple buildings: custom quotes from ${money(C.customFrom)}.</p>${pkgCards(C.packages, 'Commercial', 'commercial-quote', 'cq-pkg')}
+<h3 class="rv" style="margin-top:48px">Commercial add-ons</h3>${addonList(C.addons)}</div>
+<div class="wrap split" id="commercial-quote" style="align-items:start;margin-top:64px"><div><span class="eyebrow rv">Request a quote</span><h3 class="rv d1" style="font-size:clamp(26px,3vw,34px)">Tell us about the property.</h3><p class="rv d2" style="color:var(--muted)">For brokers, owners and property managers. Alex follows up with a quote and available dates.</p></div>${quoteForm('Commercial', C.packages, typeField)}</div></section>`;
+    const anchor = '<section class="section"><div class="wrap split"><div><span class="eyebrow rv">Good to know</span>';
+    if (!pages['services.html'].includes(anchor)) throw new Error('services anchor missing');
+    pages['services.html'] = pages['services.html'].replace(anchor, sec + anchor).replace('</head>', service('Interior design photography', 'Interior photography', 'Styled interior photography for interior designers, builders, remodelers and home stagers in Houston.', I.packages[0].price, 'services#interiors') + service('Commercial real estate photography', 'Commercial real estate photography and aerial photography', 'Photography and drone aerials for office, retail, industrial, multifamily and land in Houston.', C.packages[0].price, 'services#commercial') + '</head>').replace(/<\/body><\/html>$/, pickPkg + '</body></html>');
+  }
 
   // THANK YOU (after a quote request)
   pages['quote-thanks.html'] = head({ file: 'quote-thanks.html', title: 'Thank You | Marz Media Photography', desc: 'Thanks for your quote request. Alex Marzette will follow up with you shortly.', image: src(HI, 1600) }).replace('<link rel="canonical"', '<meta name="robots" content="noindex"><link rel="x-canonical"') +
@@ -411,9 +427,9 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
       ['What is virtual staging, and do I have to disclose it?', 'Virtual staging adds furniture and decor to photos of empty rooms digitally. Most MLS rules require that virtually staged photos be disclosed, so check your MLS’s current guidelines before publishing.'],
       ['Do you offer 3D virtual tours and floor plans?', `Yes. 3D virtual tours start at ${money(it.tour3d.prices[0])} and floor plans are ${money(it.floorplan.price)}.`],
       ['Do you shoot social media reels for businesses?', `Yes. Reels for agents, businesses, restaurants and events start at ${money(P.CONTENT.plans[0].price)}, and <a href="services.html#content">monthly content plans</a> start at ${money(P.CONTENT.plans.find((p) => p.monthly).price)} for four reels with drone included.`],
-      ['Do you photograph interior design projects?', `Yes. <a href="interiors.html">Interior design photography</a> for designers, builders, remodelers and stagers starts at ${money(P.INTERIORS.packages[0].price)}.`],
+      ['Do you photograph interior design projects?', `Yes. <a href="${SPECIALTY_PAGES ? 'interiors.html' : 'services.html#interiors'}">Interior design photography</a> for designers, builders, remodelers and stagers starts at ${money(P.INTERIORS.packages[0].price)}.`],
       ...(PROPERTY_SITES ? [['Do you offer property websites?', 'Yes. Every shoot includes a free single-property website with the listing’s photos, video, map and agent details, plus an unbranded version for the MLS. It goes live when the photos are delivered.']] : []),
-      ['Do you photograph commercial real estate?', `Yes. <a href="commercial.html">Commercial photography</a> for office, retail, industrial, multifamily and land starts at ${money(P.COMMERCIAL.packages[0].price)}, with drone aerials included.`],
+      ['Do you photograph commercial real estate?', `Yes. <a href="${SPECIALTY_PAGES ? 'commercial.html' : 'services.html#commercial'}">Commercial photography</a> for office, retail, industrial, multifamily and land starts at ${money(P.COMMERCIAL.packages[0].price)}, with drone aerials included.`],
     ]],
     ['prep', 'Preparing the home', [
       ['How do I prepare my home for real estate photos?', `To prepare a home for real estate photos, declutter every surface, remove personal items, turn on every light, open all blinds and move cars out of the driveway. The camera’s wide-angle lens shows far more of each room than you notice in person, so small items on counters become prominent in the final photos.
@@ -486,8 +502,8 @@ Contact: ${PHONE} · ${EMAIL} · ${ORIGIN}
 ## Services and pricing
 - [Listing packages and à la carte pricing](${ORIGIN}/services): packages from ${money(P.PACKAGES[0].price)} (Essential, up to 2,499 sq ft), ${money(P.PACKAGES[1].price)} (Pro, 2,500–3,999 sq ft), ${money(P.PACKAGES[2].price)} (Signature, 4,000–5,999 sq ft). HDR photos from ${money(P.ITEMS.hdr.prices[0])}, video from ${money(P.ITEMS.video.prices[0])}, aerial photography ${money(P.ITEMS.aerialPhoto.price)}. Photos delivered next business day; video in 24–72 hours.
 - [Social media reels](${ORIGIN}/services#content): single reels from ${money(P.CONTENT.plans[0].price)}; monthly content plans from ${money(P.CONTENT.plans.find((p) => p.monthly).price)}/month.
-- [Interior design photography](${ORIGIN}/interiors): for designers, builders, remodelers and stagers; from ${money(P.INTERIORS.packages[0].price)}.
-- [Commercial real estate photography](${ORIGIN}/commercial): office, retail, industrial, multifamily and land, drone included; from ${money(P.COMMERCIAL.packages[0].price)}.
+- [Interior design photography](${ORIGIN}/${SPECIALTY_PAGES ? 'interiors' : 'services#interiors'}): for designers, builders, remodelers and stagers; from ${money(P.INTERIORS.packages[0].price)}.
+- [Commercial real estate photography](${ORIGIN}/${SPECIALTY_PAGES ? 'commercial' : 'services#commercial'}): office, retail, industrial, multifamily and land, drone included; from ${money(P.COMMERCIAL.packages[0].price)}.
 
 ## Key pages
 - [Book online](${ORIGIN}/book): live availability.
