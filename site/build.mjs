@@ -41,7 +41,7 @@ const KW = ['luxury real estate photography in Houston, TX', 'Houston real estat
 const alt = (r, i) => `${cap(r.subject)}: ${KW[i % KW.length]} by Marz Media Photography`;
 const img = (r, W, i = 0, extra = '') => `<img src="${src(r, W)}" alt="${alt(r, i)}" width="${W}" height="${Math.round(W * r.h / r.w)}" loading="lazy" decoding="async"${extra}>`;
 const isKitchen = (r) => /kitchen|cooktop/.test(r.subject);
-const albumOf = (r) => r.album === 'twilight' ? 'twilight exteriors' : r.album === 'interior' ? (isKitchen(r) ? 'interiors kitchens' : 'interiors') : r.album === 'exterior' ? 'exteriors' : 'design';
+const albumOf = (r) => r.album === 'twilight' ? 'twilight exteriors' : r.album === 'aerial' ? 'aerials exteriors' : r.album === 'interior' ? (isKitchen(r) ? 'interiors kitchens' : 'interiors') : r.album === 'exterior' ? 'exteriors' : 'design';
 const fig = (r, i, W = 900) => `<figure data-album="${albumOf(r)}" tabindex="0">${img(r, W, i)}<figcaption>${cap(r.subject)}</figcaption></figure>`;
 
 const REELS = [
@@ -170,7 +170,7 @@ const SERVICES_LIST = [
 // HOME
 {
   // Home hero: twilight pool shot (previous hero: '3ee3861a', the daytime exterior)
-  const H = byKey('e97ae12a'), feat = ['4f28507a', 'a814aadb', 'a4abd4f7', '11a5dea3', '53eeb97a', '4cbca1ea', 'cc71b813', '3eedf93f', '860a3a1c'].map(byKey);
+  const H = byKey('e97ae12a'), feat = ['4f28507a', 'a814aadb', 'a4abd4f7', '11a5dea3', '3ba4e1ea', '4cbca1ea', 'cc71b813', '3eedf93f', 'a7c39049'].map(byKey);
   pages['index.html'] = head({ file: 'index.html', title: 'Houston Real Estate Photography & Video | Marz Media', desc: 'Luxury real estate photography, cinematic video, drone and 3D tours across Houston, from River Oaks to The Woodlands. Photos next business day.', image: src(H, 1600) }) +
     header('index.html') + `<main id="main">` +
     hero(H, { eyebrow: 'Houston real estate media', h1: 'Luxury listings, captured beautifully.', lede: 'Photography, cinematic video, drone and 3D tours for agents, builders and designers across Greater Houston. Shot by Alex Marzette, start to finish.', actions: BTN_BOOK + BTN_PORT, facts: '<ul class="facts"><li>Photos next business day</li><li>Video in 24–72 hours</li><li>FAA-certified drone pilot</li><li>All of Greater Houston</li></ul>' }) +
@@ -187,11 +187,11 @@ const SERVICES_LIST = [
 
 // PORTFOLIO
 {
-  const albums = [['twilight', 'Twilight'], ['interiors', 'Interiors'], ['kitchens', 'Kitchens'], ['exteriors', 'Exteriors & outdoor living'], ['design', 'Interior design'], ['reels', 'Reels']];
+  const albums = [['twilight', 'Twilight'], ['aerials', 'Drone & aerial'], ['interiors', 'Interiors'], ['kitchens', 'Kitchens'], ['exteriors', 'Exteriors & outdoor living'], ['design', 'Interior design'], ['reels', 'Reels']];
   const count = (k) => k === 'reels' ? REELS.length : rows.filter((r) => albumOf(r).split(' ').includes(k)).length;
   const order = [...rows].sort((a, b) => ['exterior', 'interior', 'design'].indexOf(a.album) - ['exterior', 'interior', 'design'].indexOf(b.album));
   // interleave so the grid mixes rooms and exteriors
-  const isOut = (r) => r.album === 'exterior' || r.album === 'twilight';
+  const isOut = (r) => r.album === 'exterior' || r.album === 'twilight' || r.album === 'aerial';
   const ex = order.filter(isOut), inn = order.filter((r) => !isOut(r)), mixed = [];
   while (ex.length || inn.length) { if (inn.length) mixed.push(inn.shift()); if (inn.length) mixed.push(inn.shift()); if (ex.length) mixed.push(ex.shift()); }
   const H = byKey('1224ba40');
