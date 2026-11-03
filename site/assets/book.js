@@ -356,6 +356,8 @@ async function book() {
 function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function showDone(q) {
   $('app').hidden = true; $('bar').hidden = true;
+  // GA4 conversion: a confirmed booking
+  try { if (window.gtag) gtag('event', 'generate_lead', { lead_source: 'online_booking', service_type: st.mode || '', value: q && q.total ? q.total : undefined, currency: 'USD' }); } catch (e) {}
   const when = dayLabel(st.slot.dayKey, { weekday: 'long', month: 'long', day: 'numeric' }) + ' at ' + st.slot.label;
   $('done').innerHTML = `<p class="eyebrow">Confirmed</p><h2>You’re booked, ${esc($('fname').value.trim())}.</h2>` +
     `<p class="lede">${esc(when)}<br>${esc($('address').value.trim() || (isContent() ? 'Location to be confirmed with Alex' : ''))}</p>` +

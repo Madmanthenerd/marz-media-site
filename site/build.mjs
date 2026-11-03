@@ -17,6 +17,7 @@ const ORIGIN = 'https://www.marzmediaphotography.com';
 const OUT = path.join(here, 'dist');
 const PHONE = '346-533-4026', TEL = '+13465334026', EMAIL = 'admin@marzmediaphotography.com';
 const IG = 'https://www.instagram.com/marzmediaphotography/';
+const GA = 'G-4BVLLTL8N6'; // Google Analytics 4 (Marz Media Website stream)
 // Flip to true once property websites are live; turns on the FAQ answer and site mentions.
 const PROPERTY_SITES = false;
 
@@ -97,7 +98,7 @@ const ld = (o) => `<script type="application/ld+json">${JSON.stringify(o)}</scri
 
 function head({ file, title, desc, image, extra = '' }) {
   const url = ORIGIN + '/' + (file === 'index.html' ? '' : file.replace(/\.html$/, ''));
-  return `<!doctype html><html lang="en" class="no-js"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  return `<!doctype html><html lang="en" class="no-js"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${LIVE ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA}"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA}');</script>` : ''}
 <title>${title}</title><meta name="description" content="${desc}">${LIVE ? '' : '<meta name="robots" content="noindex,nofollow">'}
 <link rel="canonical" href="${url}"><meta property="og:type" content="website"><meta property="og:site_name" content="Marz Media Photography"><meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:url" content="${url}"><meta property="og:image" content="${image}"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#07090E">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2307090E'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='34' fill='%23fff' text-anchor='middle'%3EM%3C/text%3E%3C/svg%3E">
@@ -369,7 +370,7 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
 
   // THANK YOU (after a quote request)
   pages['quote-thanks.html'] = head({ file: 'quote-thanks.html', title: 'Thank You | Marz Media Photography', desc: 'Thanks for your quote request. Alex Marzette will follow up with you shortly.', image: src(HI, 1600) }).replace('<link rel="canonical"', '<meta name="robots" content="noindex"><link rel="x-canonical"') +
-    header('') + `<main id="main">` + hero(HI, { eyebrow: 'Request received', h1: 'Thank you. We’ll be in touch.', lede: `Alex will follow up with you shortly. Need something sooner? Call or text ${PHONE}.`, actions: '<a class="btn btn-light" href="index.html">Back home</a>' + BTN_PORT }) + `</main>` + footer();
+    header('') + `<main id="main">` + hero(HI, { eyebrow: 'Request received', h1: 'Thank you. We’ll be in touch.', lede: `Alex will follow up with you shortly. Need something sooner? Call or text ${PHONE}.`, actions: '<a class="btn btn-light" href="index.html">Back home</a>' + BTN_PORT }) + `</main>` + footer(`<script>try{gtag('event','generate_lead',{lead_source:'quote_request'});}catch(e){}</script>`);
 }
 
 // FAQ HUB: question-led, answer-first (first sentence answers the question), grouped by topic,
