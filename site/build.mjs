@@ -12,6 +12,8 @@ if (!COMMIT) { console.error('usage: node site/build.mjs <commit> [--live]'); pr
 const LIVE = process.argv.includes('--live');
 // --local serves the assets from the site itself (Netlify hosting) instead of jsDelivr.
 const LOCAL = process.argv.includes('--local');
+// Cache-busting version for CSS/JS (browsers cache /site/* for an hour).
+const VER = String(COMMIT || Date.now()).slice(0, 7);
 const CDN = LOCAL ? '' : `https://cdn.jsdelivr.net/gh/Madmanthenerd/marz-media-site@${COMMIT}`;
 const ORIGIN = 'https://www.marzmediaphotography.com';
 const OUT = path.join(here, 'dist');
@@ -126,7 +128,7 @@ function head({ file, title, desc, image, extra = '' }) {
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2307090E'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='34' fill='%23fff' text-anchor='middle'%3EM%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preconnect" href="https://static.wixstatic.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Manrope:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="${CDN}/site/assets/styles.css">${ld(BIZ)}${extra}</head>`;
+<link rel="stylesheet" href="${CDN}/site/assets/styles.css?v=${VER}">${ld(BIZ)}${extra}</head>`;
 }
 function header(file, light) {
   return `<body><a class="skip" href="#main">Skip to content</a><header class="site-head${light ? ' light' : ''}"><div class="wrap bar"><a class="brand" href="index.html" aria-label="Marz Media Photography home">Marz<span>Media</span></a>
@@ -137,7 +139,7 @@ const footer = (scripts = '') => `<footer class="site-foot"><div class="wrap top
 <div><h4>Areas</h4><ul>${AREAS.slice(0, 6).map((a) => `<li><a href="${a.slug}.html">${a.name}</a></li>`).join('')}<li><a href="houston.html">All of Houston</a></li></ul></div>
 <div><h4>Contact</h4><ul><li><a href="tel:${TEL}">${PHONE}</a></li><li><a href="mailto:${EMAIL}">${EMAIL}</a></li><li><a href="${IG}" rel="noopener">Instagram</a></li><li>Based in Cypress, TX</li><li><a href="prep.html">Prepare your home</a></li><li><a href="faq.html">FAQ</a></li></ul></div></div>
 <div class="wrap base"><span>© <span id="year">2026</span> Marz Media Photography · Houston, Texas · <a href="privacy.html">Privacy</a> · <a href="accessibility.html">Accessibility</a></span><span>Luxury real estate photography & video</span></div></footer>
-<script src="${CDN}/site/assets/site.js" defer></script>${scripts}</body></html>`;
+<script src="${CDN}/site/assets/site.js?v=${VER}" defer></script>${scripts}</body></html>`;
 
 function hero(r, { eyebrow, h1, lede, actions = '', facts = '', short = false, crumbs = '' }) {
   return `<section class="hero${short ? ' short' : ''}"><div class="bg"><img src="${src(r, 2400)}" alt="${alt(r, 0)}" width="2400" height="${Math.round(2400 * r.h / r.w)}" fetchpriority="high"></div><div class="wrap">${crumbs}${eyebrow ? `<span class="eyebrow" style="color:rgba(238,241,246,.8)">${eyebrow}</span>` : ''}<h1>${h1}</h1>${lede ? `<p class="lede">${lede}</p>` : ''}${actions ? `<div class="actions">${actions}</div>` : ''}${facts}</div></section>`;
@@ -266,7 +268,7 @@ pages['book.html'] = head({ file: 'book.html', title: 'Book a Real Estate Photo 
 <p class="ret">Posting every month? <a href="services.html#content">Monthly content plans</a> start at $599 for 4 reels, drone included. Call or text <a href="tel:${TEL}">${PHONE}</a>.</p></aside></form></div>
 <section class="done wrap" id="done" hidden aria-live="polite"></section></main>
 <div class="mbar" id="bar"><div class="bt"><small id="barSub">Choose your services</small><strong id="barTotal">$0</strong></div><button type="button" class="btn btn-primary" id="barBtn">Continue</button></div>` +
-  footer(`<script src="${CDN}/pricing.js"></script><script type="module" src="${CDN}/site/assets/book.js"></script>`);
+  footer(`<script src="${CDN}/pricing.js?v=${VER}"></script><script type="module" src="${CDN}/site/assets/book.js?v=${VER}"></script>`);
 
 // PREP
 {
