@@ -51,7 +51,7 @@ export default function lookbook(h) {
     return `<figure tabindex="0"><img src="${src(r, W)}" alt="${alt(r, i)}" width="${W}" height="${Hh}" loading="${i < 2 ? 'eager' : 'lazy'}" decoding="async"><figcaption>${cap(r.subject)}</figcaption></figure>`;
   };
   const chapter = (c, n) => `<section class="lk-ch" id="${c.id}" aria-labelledby="${c.id}-h">
-<div class="lk-wrap lk-ch-head"><p class="lk-idx">${String(n + 1).padStart(2, '0')} / ${String(CHAPTERS.length).padStart(2, '0')}</p><h2 id="${c.id}-h">${c.name}</h2><p class="lk-line">${c.line}</p><ul class="lk-spec">${c.spec.map((s) => `<li>${s}</li>`).join('')}</ul></div>
+<div class="lk-wrap lk-ch-head"><p class="lk-idx">${String(n + 1).padStart(2, '0')} / ${String(CHAPTERS.length).padStart(2, '0')}</p><h2 id="${c.id}-h">${c.name}</h2><p class="lk-line">${c.line}</p><ul class="lk-spec">${c.spec.map((s) => `<li>${s}</li>`).join('')}</ul><p class="lk-hint">${c.items.length} photos · swipe →</p></div>
 <div class="lk-strip" data-lb aria-label="${c.name} photos, swipe to see more">${c.items.map(shot).join('')}<a class="lk-more" href="portfolio.html" data-ev="lookbook_full_portfolio">See the full portfolio <span aria-hidden="true">→</span></a></div>
 </section>`;
 
@@ -124,13 +124,13 @@ body.lk::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-in
 .lk-spec{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
 .lk-spec li{font:600 11px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;padding:8px 10px;border:1px solid var(--lk-line);border-radius:3px;color:var(--lk-fg)}
 .lk-strip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:max(18px,calc((100vw - 1180px)/2 + 18px));padding:22px max(18px,calc((100vw - 1180px)/2 + 18px)) 18px;scrollbar-width:thin;scrollbar-color:var(--lk-line) transparent;overscroll-behavior-x:contain}
-.lk-strip figure{flex:none;margin:0;height:min(64vw,460px);scroll-snap-align:start;position:relative;border-radius:6px;overflow:hidden;background:var(--lk-panel);cursor:zoom-in}
+.lk-strip figure{flex:none;margin:0;height:min(52vw,460px);scroll-snap-align:start;position:relative;border-radius:6px;overflow:hidden;background:var(--lk-panel);cursor:zoom-in}
 .lk-strip img{height:100%;width:auto;max-width:none;display:block;transition:transform .8s var(--ease)}
 .lk-strip figure:hover img{transform:scale(1.03)}
 .lk-strip figcaption{position:absolute;left:0;right:0;bottom:0;padding:28px 12px 10px;font-size:12px;color:#fff;background:linear-gradient(transparent,rgba(7,9,14,.7));opacity:0;transition:opacity .3s}
 .lk-strip figure:hover figcaption,.lk-strip figure:focus-visible figcaption{opacity:1}
 .lk-more{flex:none;align-self:stretch;width:180px;scroll-snap-align:start;display:flex;align-items:flex-end;padding:18px;border:1px solid var(--lk-line);border-radius:6px;text-decoration:none;font:300 22px/1.15 var(--display)}
-.lk-hint{font-size:12px;color:var(--lk-dim);letter-spacing:.06em}
+.lk-hint{font-size:12px;color:var(--lk-dim);letter-spacing:.06em;margin:4px 0 0}
 
 .lk-reels{padding-block:64px 8px}
 .lk .reels{grid-auto-columns:min(58vw,240px);gap:10px;padding:22px max(18px,calc((100vw - 1180px)/2 + 18px)) 18px;scroll-padding-inline:max(18px,calc((100vw - 1180px)/2 + 18px))}
@@ -219,7 +219,7 @@ ev('lookbook_view');})();</script>`;
 `<body class="lk"><header class="lk-top"><div class="lk-wrap"><a class="lk-brand" href="/" data-ev="lookbook_home">Marz<span>Media</span></a><a class="lk-btn lk-btn-light lk-btn-sm" href="book.html" data-ev="lookbook_book_top">Book a shoot</a></div></header>
 <main id="main">
 <section class="lk-hero"><img src="${src(H, 2000)}" alt="${alt(H, 0)}" width="2000" height="${Math.round(2000 * H.h / H.w)}" fetchpriority="high"><div class="lk-wrap">
-<p class="lk-kicker">Lookbook · Houston real estate media</p>
+<p class="lk-kicker">The Marz Media lookbook</p>
 <h1>Your listing, at its <em>best hour.</em></h1>
 <p class="lk-lede">Photography, cinematic video, drone and 3D tours for agents, builders and designers. Shot and edited by me, Alex Marzette. Photos the next business day.</p>
 <div class="lk-actions"><a class="lk-btn lk-btn-light" href="#twilight" data-ev="lookbook_see_work">See the work <span aria-hidden="true">↓</span></a>${OFFERS.welcome.on ? `<a class="lk-btn lk-btn-ghost" href="#offers" data-ev="lookbook_see_offer">New-client offer</a>` : ''}</div>
