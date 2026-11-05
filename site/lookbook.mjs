@@ -7,7 +7,7 @@
 // when booking (or in a DM) and Alex applies it on the Stripe invoice.
 const OFFERS = {
   code: 'WELCOME',
-  welcome: { on: true },   // first listing package: free drone coverage + 3 virtually staged photos
+  welcome: { on: false },   // first listing package: free drone coverage + 3 virtually staged photos
   referral: { on: true, amount: 50 }, // $ off the referrer's next shoot when a referred agent books
 };
 
@@ -213,7 +213,7 @@ if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es
 d.querySelectorAll('.lk-ch,#reels,#offers,#pricing').forEach(function(s){io.observe(s)});}
 ev('lookbook_view');})();</script>`;
 
-  const page = head({ file: 'lookbook.html', title: 'Alex Marzette | Marz Media Lookbook', desc: `Twilight, drone, interiors and cinematic reels from across Houston. New clients get free drone coverage and 3 staged photos on their first listing package.`, image: OG, extra: css })
+  const page = head({ file: 'lookbook.html', title: 'Alex Marzette | Marz Media Lookbook', desc: `Twilight, drone, interiors and cinematic reels from across Houston. Shot and edited by Alex Marzette. Photos the next business day.`, image: OG, extra: css })
     .replace('<link rel="canonical"', '<meta name="robots" content="noindex"><link rel="x-canonical"')
     +
 `<body class="lk"><header class="lk-top"><div class="lk-wrap"><a class="lk-brand" href="/" data-ev="lookbook_home">Marz<span>Media</span></a><a class="lk-btn lk-btn-light lk-btn-sm" href="book.html" data-ev="lookbook_book_top">Book a shoot</a></div></header>
@@ -229,9 +229,9 @@ ${nav}
 ${CHAPTERS.map(chapter).join('')}
 <section class="lk-reels" id="reels" aria-labelledby="reels-h"><div class="lk-wrap lk-ch-head"><p class="lk-idx">Video</p><h2 id="reels-h">Made for the feed.</h2><p class="lk-line">Vertical reels and listing films for Instagram, TikTok and MLS. Tap to play.</p><ul class="lk-spec"><li>Vertical + horizontal</li><li>24–72 hours</li><li>Reels from ${money(reelFrom)}</li></ul></div>
 <div class="reels">${REELS.slice(0, 8).map(reel).join('')}</div></section>
-<section class="lk-offers" id="offers" aria-labelledby="offers-h"><div class="lk-wrap"><div class="lk-sec-head"><p class="lk-idx">Offers</p><h2 id="offers-h">Start with a <em>head start.</em></h2></div>
+<section class="lk-offers" id="offers" aria-labelledby="offers-h"><div class="lk-wrap"><div class="lk-sec-head"><p class="lk-idx">Offers</p><h2 id="offers-h">${OFFERS.welcome.on ? 'Start with a <em>head start.</em>' : 'More ways to <em>win.</em>'}</h2></div>
 <div class="lk-grid">${offers}</div>
-<p class="lk-fine">Welcome offer applies to a client’s first listing package. Referral credit applies once the referred agent’s first shoot is complete. Offers can’t be combined with each other.</p></div></section>
+<p class="lk-fine">${OFFERS.welcome.on ? 'Welcome offer applies to a client’s first listing package. ' : ''}Referral credit applies once the referred agent’s first shoot is complete.${OFFERS.welcome.on ? ' Offers can’t be combined with each other.' : ''}</p></div></section>
 <section class="lk-pricing" id="pricing" aria-labelledby="pricing-h"><div class="lk-wrap"><div class="lk-sec-head"><p class="lk-idx">Pricing</p><h2 id="pricing-h">Simple, by square footage.</h2><p class="lk-line">Every package is photos, cinematic video and twilight in one visit.</p></div>
 <div class="lk-grid">${packages}</div>
 <div class="lk-also"><a href="services.html#a-la-carte" data-ev="lookbook_alacarte"><span>HDR photos only</span><b>from ${money(P.ITEMS.hdr.prices[0])}</b></a><a href="services.html#a-la-carte" data-ev="lookbook_alacarte"><span>Drone photos only</span><b>${money(P.ITEMS.aerialPhoto.price)}</b></a><a href="services.html#a-la-carte" data-ev="lookbook_alacarte"><span>3D virtual tour</span><b>from ${money(P.ITEMS.tour3d.prices[0])}</b></a><a href="services.html#interiors" data-ev="lookbook_interiors"><span>Interior design shoots</span><b>from ${money(P.INTERIORS.packages[0].price)}</b></a><a href="services.html#commercial" data-ev="lookbook_commercial"><span>Commercial</span><b>from ${money(P.COMMERCIAL.packages[0].price)}</b></a><a href="services.html" data-ev="lookbook_services"><span>All services & add-ons</span><b>→</b></a></div></div></section>
