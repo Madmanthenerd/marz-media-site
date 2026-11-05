@@ -23,22 +23,31 @@ export default function lookbook(h) {
   const reelFrom = P.CONTENT.plans[0].price;
   const plan6 = P.CONTENT.plans.find((p) => p.id === 'monthly6');
 
+  // Curated by eye from every photo in Wix Media (Nov 2026). Each list is ordered strongest first.
+  const ESTATES = [['21a8a82f', 'wide'], ['a8a0a0b0', ''], ['19939799', ''], ['bda0a794', 'wide'], ['a638be84', ''], ['efd40c7b', ''], ['6645f7fa', 'wide']]
+    .map(([k, cls]) => ({ r: byKey(k), cls })).filter((x) => x.r);
   const CHAPTERS = [
     { id: 'twilight', name: 'Twilight', line: 'The sunset hero shot that stops the scroll.',
       spec: ['Shot at sunset', `${money(P.ITEMS.twilight.price)} add-on`, 'Included in every package'],
-      items: by('twilight').slice(0, 10) },
+      items: keys(['cc71b813', 'ef45c99d', 'a814aadb', '93427d51', 'b7613ce2', '553bba15', '9a2194a6', '11a5dea3', 'b07a7f6b', 'fcf19c80', '0619538d']) },
+    { id: 'kitchens', name: 'Kitchens', line: 'The room that sells the house, shot straight, bright and true to color.',
+      spec: ['HDR photography', `from ${money(P.ITEMS.hdr.prices[0])}`, 'Next business day'],
+      items: keys(['ab868a02', 'df663b61', 'd14f18eb', 'e90869f9', '10c339fc', '9429220a', 'f0abc8bc', 'd66c1505', '9058c210', 'e353cc81', '3eedf93f']) },
+    { id: 'living', name: 'Living spaces', line: 'Volume, light and flow. Every room reads bigger than the floor plan.',
+      spec: ['Wide, level, natural', 'Two-story rooms', 'Media and game rooms'],
+      items: keys(['d50bf4c3', '79a5de5c', '05b78c56', '321a60e4', '1329ddc0', '11686483', '7f35d8ea', '04832219', '105c1dd5', '48e50cc5', 'aa7fc1c6', '60bdfb37']) },
+    { id: 'rooms', name: 'Dining & suites', line: 'Dining rooms, breakfast nooks and primary suites buyers fall for.',
+      spec: ['Styled, not staged', 'Window-balanced light', 'Every room covered'],
+      items: keys(['559dd9c5', 'f2615a7f', '3178e462', 'eaf43773', 'd35b2fd2', '8a4946c6', '5c06080f', 'f1966f59', '2dfc0740', 'afdd41a5']) },
     { id: 'drone', name: 'Drone', line: 'The lot, the pool, the neighborhood. Buyers see all of it.',
       spec: ['FAA Part 107 certified', `from ${money(P.ITEMS.aerialPhoto.price)}`, `${money(P.ITEMS.droneAddon.prices[0])} on any package`],
-      items: [...by('aerial').slice(0, 6), ...keys(['a7c39049', '07a28447'])] },
-    { id: 'interiors', name: 'Interiors', line: 'Bright, true-to-life rooms with straight lines and real color.',
-      spec: ['HDR photography', `from ${money(P.ITEMS.hdr.prices[0])}`, 'Next business day'],
-      items: [...by('interior').filter(isKitchen).slice(0, 5), ...by('interior').filter((r) => !isKitchen(r)).slice(0, 5)] },
+      items: keys(['6c3e7370', '8f1ad366', 'a626fa4a', '3ba4e1ea', '779497c5', '498e4e97', 'a7c39049', '07a28447', 'adced197']) },
     { id: 'outdoor', name: 'Exteriors & outdoor living', line: 'Curb appeal and the backyard buyers picture themselves in.',
       spec: ['HDR exteriors', 'Pools and patios', 'Same visit'],
-      items: by('exterior').slice(0, 6) },
+      items: keys(['66f29cfc', '1224ba40', 'c538e548', '51bb564e', '3ee3861a', '93e3b725', '987d71ba', '45f910f0']) },
     { id: 'design', name: 'Interior design', line: 'Styled, editorial frames for designers, builders and stagers.',
       spec: ['Detail and vignettes', `from ${money(P.INTERIORS.packages[0].price)}`, 'Portfolio-ready'],
-      items: [...by('design').filter((r) => r.h > r.w).slice(0, 6), ...by('design').filter((r) => r.w > r.h).slice(0, 4)] },
+      items: keys(['8acce589', 'fa326e57', 'd6c48fa6', '13788d42', 'c86552ca', 'a4f01b83', '438b9fef', '0c03f521', '36a6c42b', '8e5979b3', '1e5dad77']) },
     { id: 'commercial', name: 'Commercial', line: 'Office, retail and multifamily, with aerials in every package.',
       spec: ['Drone included', `from ${money(P.COMMERCIAL.packages[0].price)}`, 'Quote in a day'],
       items: by('commercial') },
@@ -132,6 +141,14 @@ body.lk::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-in
 .lk-more{flex:none;align-self:stretch;width:180px;scroll-snap-align:start;display:flex;align-items:flex-end;padding:18px;border:1px solid var(--lk-line);border-radius:6px;text-decoration:none;font:300 22px/1.15 var(--display)}
 .lk-hint{font-size:12px;color:var(--lk-dim);letter-spacing:.06em;margin:4px 0 0}
 
+.lk-estates{padding-block:64px 8px}
+.lk-est{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:26px auto 0;max-width:1600px;padding-inline:max(6px,env(safe-area-inset-left,0px)) max(6px,env(safe-area-inset-right,0px))}
+.lk-est figure{margin:0;position:relative;overflow:hidden;aspect-ratio:3/2;border-radius:4px;background:var(--lk-panel);cursor:zoom-in}
+.lk-est figure.wide{grid-column:1/-1;aspect-ratio:2/1}
+.lk-est img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 1.2s var(--ease)}
+.lk-est figure:hover img{transform:scale(1.025)}
+.lk-est figcaption{position:absolute;left:0;right:0;bottom:0;padding:48px 18px 14px;background:linear-gradient(transparent,rgba(7,9,14,.78));font:300 clamp(15px,2.2vw,22px)/1.25 var(--display);color:#fff;text-wrap:balance}
+@media (max-width:640px){.lk-est{grid-template-columns:1fr;padding-inline:0;gap:4px}.lk-est figure{border-radius:0}.lk-est figure.wide{aspect-ratio:4/3}}
 .lk-reels{padding-block:64px 8px}
 .lk .reels{grid-auto-columns:min(58vw,240px);gap:10px;padding:22px max(18px,calc((100vw - 1180px)/2 + 18px)) 18px;scroll-padding-inline:max(18px,calc((100vw - 1180px)/2 + 18px))}
 .lk .reel{border-radius:8px}
@@ -198,7 +215,9 @@ body.lk::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-in
 @media (prefers-reduced-motion:reduce){.lk-hero>img{animation:none}.lk-strip img{transition:none}}
 </style>`;
 
-  const nav = `<nav class="lk-nav" aria-label="Lookbook sections"><ul class="lk-wrap">${CHAPTERS.map((c) => `<li><a href="#${c.id}">${c.name.replace(' & outdoor living', '')}</a></li>`).join('')}<li><a href="#reels">Video</a></li><li><a href="#offers">Offers</a></li><li><a href="#pricing">Pricing</a></li></ul></nav>`;
+  const estates = `<section class="lk-estates" id="estates" aria-labelledby="estates-h"><div class="lk-wrap lk-ch-head"><p class="lk-idx">Featured</p><h2 id="estates-h">Million-dollar <em>homes.</em></h2><p class="lk-line">Big rooms, big views, big first impressions. This is the standard on every shoot, whatever the price point.</p></div>
+<div class="lk-est" data-lb>${ESTATES.map(({ r, cls }, i) => { const W = cls ? 2000 : 1200; return `<figure class="${cls}" tabindex="0"><img src="${src(r, W)}" alt="${alt(r, i)}" width="${W}" height="${Math.round(W * r.h / r.w)}" loading="${i < 2 ? 'eager' : 'lazy'}" decoding="async"><figcaption>${cap(r.subject)}</figcaption></figure>`; }).join('')}</div></section>`;
+  const nav = `<nav class="lk-nav" aria-label="Lookbook sections"><ul class="lk-wrap"><li><a href="#estates">Estates</a></li>${CHAPTERS.map((c) => `<li><a href="#${c.id}">${c.name.replace(' & outdoor living', '')}</a></li>`).join('')}<li><a href="#reels">Video</a></li><li><a href="#offers">Offers</a></li><li><a href="#pricing">Pricing</a></li></ul></nav>`;
 
   const js = `<script>(function(){var d=document;
 function ev(n){try{window.gtag&&gtag('event',n,{page:'lookbook'})}catch(e){}}
@@ -211,7 +230,7 @@ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.write
 function sel(){var s=d.getElementById('lk-code'),r=d.createRange();r.selectNodeContents(s);var w=getSelection();w.removeAllRanges();w.addRange(r);toast('Code selected: '+v)}});});
 var links=[].slice.call(d.querySelectorAll('.lk-nav a'));
 if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){links.forEach(function(l){var on=l.getAttribute('href')==='#'+x.target.id;l.classList.toggle('on',on);if(on&&l.scrollIntoView)l.parentNode.parentNode.scrollTo({left:l.offsetLeft-20,behavior:'smooth'})})}})},{rootMargin:'-45% 0px -50% 0px'});
-d.querySelectorAll('.lk-ch,#reels,#offers,#pricing').forEach(function(s){io.observe(s)});}
+d.querySelectorAll('.lk-ch,#estates,#reels,#offers,#pricing').forEach(function(s){io.observe(s)});}
 ev('lookbook_view');})();</script>`;
 
   const page = head({ file: 'lookbook.html', title: 'Alex Marzette | Marz Media Lookbook', desc: `Twilight, drone, interiors and cinematic reels from across Houston. Shot and edited by Alex Marzette. Photos the next business day.`, image: OG, extra: css })
@@ -227,6 +246,7 @@ ev('lookbook_view');})();</script>`;
 </div></section>
 <section class="lk-stats" aria-label="At a glance"><div class="lk-wrap"><ul><li><b>4+ yrs</b><span>shooting Houston real estate</span></li><li><b>25+</b><span>shoots a month</span></li><li><b>Next day</b><span>photos, next business day</span></li><li><b>Part 107</b><span>FAA-certified, insured drone</span></li></ul></div></section>
 ${nav}
+${estates}
 ${CHAPTERS.map(chapter).join('')}
 <section class="lk-reels" id="reels" aria-labelledby="reels-h"><div class="lk-wrap lk-ch-head"><p class="lk-idx">Video</p><h2 id="reels-h">Made for the feed.</h2><p class="lk-line">Vertical reels and listing films for Instagram, TikTok and MLS. Tap to play.</p><ul class="lk-spec"><li>Vertical + horizontal</li><li>24–72 hours</li><li>Reels from ${money(reelFrom)}</li></ul></div>
 <div class="reels">${REELS.slice(0, 8).map(reel).join('')}</div></section>

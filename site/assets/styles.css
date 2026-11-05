@@ -456,3 +456,13 @@ html.no-js .rv,html.reduce .rv{opacity:1;transform:none}
 .strip figure{margin:0;cursor:zoom-in;border-radius:var(--r);overflow:hidden}
 .strip img{width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;display:block}
 .strip figcaption{display:none}
+
+/* Million-dollar homes band (home page) */
+.estates{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:1600px;margin:40px auto 0;padding-inline:6px}
+.estates figure{margin:0;position:relative;overflow:hidden;aspect-ratio:3/2;border-radius:4px;cursor:zoom-in;background:#111}
+.estates figure.wide{grid-column:1/-1;aspect-ratio:2/1}
+.estates img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 1.2s var(--ease)}
+.estates figure:hover img{transform:scale(1.025)}
+.estates figcaption{position:absolute;left:0;right:0;bottom:0;padding:48px 18px 14px;background:linear-gradient(transparent,rgba(7,9,14,.78));font:300 clamp(15px,2.2vw,22px)/1.25 var(--display);color:#fff;text-wrap:balance}
+@media (max-width:640px){.estates{grid-template-columns:1fr;padding-inline:0;gap:4px}.estates figure{border-radius:0}.estates figure.wide{aspect-ratio:4/3}}
+html.reduce .estates img{transition:none}
