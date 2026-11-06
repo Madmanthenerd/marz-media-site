@@ -73,7 +73,10 @@ export default function lookbook(h) {
   ].filter(Boolean).join('');
 
   const PKG_SIZE = Object.fromEntries(P.PACKAGES.map((p) => [p.id, p.size.replace('Homes up', 'Up')]));
-  const packages = P.PACKAGES.map((p) => `<article class="lk-pkg${p.mostBooked || p.luxury ? ' hot' : ''}"><header><h3>${p.name}</h3>${p.mostBooked ? '<span class="lk-pill">Most booked</span>' : p.luxury ? '<span class="lk-pill">Estate</span>' : ''}</header><p class="lk-price">${money(p.price)}</p><p class="lk-size">${PKG_SIZE[p.id]}</p><ul>${p.includes.map((x) => `<li>${x}</li>`).join('')}</ul><a class="lk-btn ${p.mostBooked ? 'lk-btn-light' : 'lk-btn-ghost'}" href="book.html?package=${p.id}" data-ev="lookbook_book_${p.id}">Book ${p.name}</a></article>`).join('');
+  const LUX = P.PACKAGES.filter((p) => p.luxury);
+  const estatePkgs = `<div class="lk-wrap"><div class="lk-estpk"><div class="lk-estpk-head"><p class="lk-idx">Estate collection</p><h3>Built for 6,000–9,999 sq ft.</h3><p>Photos with detail shots, cinematic video and reels, drone and aerial video, a full twilight set and floor plans. One booking.</p></div>${LUX.map((p) => `<a class="lk-estpk-card" href="book.html?package=${p.id}" data-ev="lookbook_estate_${p.id}"><span class="lk-estpk-nm">${p.name}</span><span class="lk-estpk-pr">${money(p.price)}</span><span class="lk-estpk-sz">${p.size}</span><s>${money(P.separatePrice(p))} booked separately</s><span class="lk-estpk-go">Book ${p.name} <span aria-hidden="true">→</span></span></a>`).join('')}<a class="lk-estpk-more" href="#pricing" data-ev="lookbook_estate_details">See everything included ↓</a></div></div>`;
+  const ORDER = [...LUX, ...P.PACKAGES.filter((p) => !p.luxury)];
+  const packages = ORDER.map((p) => `<article class="lk-pkg${p.mostBooked || p.luxury ? ' hot' : ''}"><header><h3>${p.name}</h3>${p.mostBooked ? '<span class="lk-pill">Most booked</span>' : p.luxury ? '<span class="lk-pill">Estate</span>' : ''}</header><p class="lk-price">${money(p.price)}</p><p class="lk-size">${PKG_SIZE[p.id]}</p>${p.luxury ? `<p class="lk-was">${money(P.separatePrice(p))} booked separately</p>` : ''}<ul>${p.includes.map((x) => `<li>${x}</li>`).join('')}</ul><a class="lk-btn ${p.mostBooked || p.luxury ? 'lk-btn-light' : 'lk-btn-ghost'}" href="book.html?package=${p.id}" data-ev="lookbook_book_${p.id}">Book ${p.name}</a></article>`).join('');
 
   const alexImg = PERSON.image.replace('w_1000,h_1500', 'w_600,h_750');
   const dm = 'https://ig.me/m/marzmediaphotography';
@@ -147,6 +150,22 @@ body.lk::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-in
 .lk-est figure.wide{grid-column:1/-1;aspect-ratio:2/1}
 .lk-est img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 1.2s var(--ease)}
 .lk-est figure:hover img{transform:scale(1.025)}
+.lk-estpk{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:22px;align-items:stretch}
+.lk-estpk-head{display:flex;flex-direction:column;gap:6px;padding:4px 10px 4px 0}
+.lk-estpk-head h3{font-size:clamp(24px,3vw,32px);margin:0}
+.lk-estpk-head p{margin:0;color:var(--lk-dim);font-size:15px;max-width:44ch}
+.lk-estpk-card{display:flex;flex-direction:column;gap:4px;padding:20px;border:1px solid var(--lk-glow);border-radius:10px;background:linear-gradient(180deg,rgba(31,58,110,.55),var(--lk-panel) 75%);color:inherit;text-decoration:none;transition:transform .3s var(--ease)}
+.lk-estpk-card:hover{transform:translateY(-3px)}
+.lk-estpk-card:focus-visible,.lk-estpk-more:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.lk-estpk-nm{font:400 22px/1.1 var(--display)}
+.lk-estpk-pr{font:300 40px/1.05 var(--display);font-variant-numeric:tabular-nums}
+.lk-estpk-sz{font-size:14px;opacity:.8}
+.lk-estpk-card s,.lk-was{font-size:13px;opacity:.7;margin:0}
+.lk-estpk-go{margin-top:auto;padding-top:10px;font-weight:600;font-size:14px}
+.lk-estpk-more{grid-column:1/-1;justify-self:start;color:inherit;font-size:14px;opacity:.85}
+.lk-was{text-decoration:line-through}
+@media (max-width:760px){.lk-estpk{grid-template-columns:1fr 1fr}.lk-estpk-head{grid-column:1/-1}}
+@media (max-width:420px){.lk-estpk{grid-template-columns:1fr}}
 .lk-est figcaption{position:absolute;left:0;right:0;bottom:0;padding:48px 18px 14px;background:linear-gradient(transparent,rgba(7,9,14,.78));font:300 clamp(15px,2.2vw,22px)/1.25 var(--display);color:#fff;text-wrap:balance}
 @media (max-width:640px){.lk-est{grid-template-columns:1fr;padding-inline:0;gap:4px}.lk-est figure{border-radius:0}.lk-est figure.wide{aspect-ratio:4/3}}
 .lk-reels{padding-block:64px 8px}
@@ -216,7 +235,7 @@ body.lk::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-in
 </style>`;
 
   const estates = `<section class="lk-estates" id="estates" aria-labelledby="estates-h"><div class="lk-wrap lk-ch-head"><p class="lk-idx">Featured</p><h2 id="estates-h">Million-dollar <em>homes.</em></h2><p class="lk-line">Big rooms, big views, big first impressions. This is the standard on every shoot, whatever the price point.</p></div>
-<div class="lk-est" data-lb>${ESTATES.map(({ r, cls }, i) => { const W = cls ? 2000 : 1200; return `<figure class="${cls}" tabindex="0"><img src="${src(r, W)}" alt="${alt(r, i)}" width="${W}" height="${Math.round(W * r.h / r.w)}" loading="${i < 2 ? 'eager' : 'lazy'}" decoding="async"><figcaption>${cap(r.subject)}</figcaption></figure>`; }).join('')}</div></section>`;
+<div class="lk-est" data-lb>${ESTATES.map(({ r, cls }, i) => { const W = cls ? 2000 : 1200; return `<figure class="${cls}" tabindex="0"><img src="${src(r, W)}" alt="${alt(r, i)}" width="${W}" height="${Math.round(W * r.h / r.w)}" loading="${i < 2 ? 'eager' : 'lazy'}" decoding="async"><figcaption>${cap(r.subject)}</figcaption></figure>`; }).join('')}</div>${estatePkgs}</section>`;
   const nav = `<nav class="lk-nav" aria-label="Lookbook sections"><ul class="lk-wrap"><li><a href="#estates">Estates</a></li>${CHAPTERS.map((c) => `<li><a href="#${c.id}">${c.name.replace(' & outdoor living', '')}</a></li>`).join('')}<li><a href="#reels">Video</a></li><li><a href="#offers">Offers</a></li><li><a href="#pricing">Pricing</a></li></ul></nav>`;
 
   const js = `<script>(function(){var d=document;
@@ -253,7 +272,7 @@ ${CHAPTERS.map(chapter).join('')}
 <section class="lk-offers" id="offers" aria-labelledby="offers-h"><div class="lk-wrap"><div class="lk-sec-head"><p class="lk-idx">Offers</p><h2 id="offers-h">${OFFERS.welcome.on ? 'Start with a <em>head start.</em>' : 'More ways to <em>win.</em>'}</h2></div>
 <div class="lk-grid">${offers}</div>
 <p class="lk-fine">${OFFERS.welcome.on ? 'Welcome offer applies to a client’s first listing package. ' : ''}Referral credit applies once the referred agent’s first shoot is complete.${OFFERS.welcome.on ? ' Offers can’t be combined with each other.' : ''}</p></div></section>
-<section class="lk-pricing" id="pricing" aria-labelledby="pricing-h"><div class="lk-wrap"><div class="lk-sec-head"><p class="lk-idx">Pricing</p><h2 id="pricing-h">Simple, by square footage.</h2><p class="lk-line">Every package is photos, cinematic video and twilight in one visit.</p></div>
+<section class="lk-pricing" id="pricing" aria-labelledby="pricing-h"><div class="lk-wrap"><div class="lk-sec-head"><p class="lk-idx">Pricing</p><h2 id="pricing-h">Simple, by square footage.</h2><p class="lk-line">Every package is photos, cinematic video and twilight in one visit. Estate packages add drone, reels and floor plans.</p></div>
 <div class="lk-grid">${packages}</div>
 <div class="lk-also"><a href="services.html#a-la-carte" data-ev="lookbook_alacarte"><span>HDR photos only</span><b>from ${money(P.ITEMS.hdr.prices[0])}</b></a><a href="services.html#a-la-carte" data-ev="lookbook_alacarte"><span>Drone photos only</span><b>${money(P.ITEMS.aerialPhoto.price)}</b></a><a href="services.html#a-la-carte" data-ev="lookbook_alacarte"><span>3D virtual tour</span><b>from ${money(P.ITEMS.tour3d.prices[0])}</b></a><a href="services.html#interiors" data-ev="lookbook_interiors"><span>Interior design shoots</span><b>from ${money(P.INTERIORS.packages[0].price)}</b></a><a href="services.html#commercial" data-ev="lookbook_commercial"><span>Commercial</span><b>from ${money(P.COMMERCIAL.packages[0].price)}</b></a><a href="services.html" data-ev="lookbook_services"><span>All services & add-ons</span><b>→</b></a></div>
 <a class="lk-btn lk-btn-light lk-full" href="services.html" data-ev="lookbook_full_pricing">See full pricing <span aria-hidden="true">→</span></a></div></section>

@@ -22,9 +22,9 @@
       includes: ['HDR photography', 'Cinematic video or reel', '2 twilight photos'] },
     { id: 'signature', name: 'Signature', price: 599, min: 0, max: 5999, size: '4,000–5,999 sq ft', extras: STD_EXTRAS,
       includes: ['HDR photography', 'Cinematic video or reel', '2 twilight photos', 'Priority scheduling'] },
-    { id: 'estate', name: 'Estate', price: 899, min: 6000, max: 7999, size: '6,000–7,999 sq ft', luxury: true, minutes: 180, extras: ['tour3d', 'staging'],
+    { id: 'estate', name: 'Estate', price: 899, min: 6000, max: 7999, size: '6,000–7,999 sq ft', luxury: true, minutes: 180, reels: 1, extras: ['tour3d', 'staging'],
       includes: ['HDR photography with detail shots', 'Cinematic video and a vertical reel', 'Drone photos and aerial video', '4 twilight photos', 'Floor plan', 'Priority scheduling'] },
-    { id: 'grand-estate', name: 'Grand Estate', price: 1149, min: 8000, max: 9999, size: '8,000–9,999 sq ft', luxury: true, minutes: 240, extras: ['tour3d', 'staging'],
+    { id: 'grand-estate', name: 'Grand Estate', price: 1149, min: 8000, max: 9999, size: '8,000–9,999 sq ft', luxury: true, minutes: 240, reels: 2, extras: ['tour3d', 'staging'],
       includes: ['HDR photography with detail shots', 'Cinematic video and 2 vertical reels', 'Drone photos and aerial video', '6 twilight photos', 'Floor plans for every level', 'Priority scheduling'] },
   ];
   const PACKAGE_MAX = Math.max(...PACKAGES.map((p) => p.max));
@@ -194,7 +194,15 @@
     return { ok: true, tier, mode, lines, subtotal, tax, total, customQuote, minutes, includesTwilight };
   }
 
-  const api = { TIERS, PACKAGES, PACKAGE_MAX, packageFor, ITEMS, CONTENT, INTERIORS, COMMERCIAL, POLICY, SCHEDULE, TAX_RATE, SAMEDAY_LATEST, tierFor, quote };
+  // What an Estate package's contents cost booked one by one at its largest size (published prices):
+  // HDR + video + reels + drone + aerial video + twilight + floor plan.
+  function separatePrice(p) {
+    const t = tierFor(p.max);
+    return pick(ITEMS.hdr.prices, t) + pick(ITEMS.video.prices, t) + CONTENT.plans[0].price * (p.reels || 1) +
+      pick(ITEMS.droneAddon.prices, t) + ITEMS.aerialVideo.price + ITEMS.twilight.price + ITEMS.floorplan.price;
+  }
+
+  const api = { TIERS, PACKAGES, PACKAGE_MAX, packageFor, separatePrice, ITEMS, CONTENT, INTERIORS, COMMERCIAL, POLICY, SCHEDULE, TAX_RATE, SAMEDAY_LATEST, tierFor, quote };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MarzPricing = api;
 })(typeof window !== 'undefined' ? window : globalThis);

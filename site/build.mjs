@@ -154,10 +154,7 @@ const P = await import(path.join(here, '..', 'pricing.js')).then((m) => m.defaul
 const money = (n) => '$' + n.toLocaleString('en-US');
 const PKG_DESC = Object.fromEntries(P.PACKAGES.map((p) => [p.id, p.size]));
 const STD = P.PACKAGES.filter((p) => !p.luxury), LUX = P.PACKAGES.filter((p) => p.luxury);
-// What an Estate package's contents cost when booked one by one at the same home size (published prices).
-const separately = (p) => { const t = P.tierFor(p.max), it = P.ITEMS, reel = P.CONTENT.plans[0].price;
-  return it.hdr.prices[t] + it.video.prices[t] + reel * (/2 vertical reels/.test(p.includes.join()) ? 2 : 1) + it.droneAddon.prices[Math.min(t, it.droneAddon.prices.length - 1)] + it.aerialVideo.price + it.twilight.price + it.floorplan.price; };
-const estateTiers = () => `<div class="tiers estate-tiers">${LUX.map((p, i) => `<article class="tier lux rv d${i + 1}"><span class="badge">Estate collection</span><h3>${p.name}</h3><div class="price">${money(p.price)}</div><span class="size">${p.size}</span><span class="was">${money(separately(p))} booked separately</span><ul>${p.includes.map((x) => `<li>${x}</li>`).join('')}</ul><a class="btn btn-light" href="book.html?package=${p.id}">Book ${p.name}</a></article>`).join('')}</div>`;
+const estateTiers = () => `<div class="tiers estate-tiers">${LUX.map((p, i) => `<article class="tier lux rv d${i + 1}"><span class="badge">Estate collection</span><h3>${p.name}</h3><div class="price">${money(p.price)}</div><span class="size">${p.size}</span><span class="was">${money(P.separatePrice(p))} booked separately</span><ul>${p.includes.map((x) => `<li>${x}</li>`).join('')}</ul><a class="btn btn-light" href="book.html?package=${p.id}">Book ${p.name}</a></article>`).join('')}</div>`;
 const tiers = () => `<div class="tiers">${STD.map((p, i) => `<article class="tier${p.mostBooked ? ' feature' : ''} rv d${i + 1}"><span class="badge">${p.mostBooked ? 'Most booked' : 'Listing package'}</span><h3>${p.name}</h3><div class="price">${money(p.price)}</div><span class="size">${PKG_DESC[p.id]}</span><ul>${p.includes.map((x) => `<li>${x}</li>`).join('')}</ul><a class="btn ${p.mostBooked ? '' : 'btn-primary'}" href="book.html?package=${p.id}">Book ${p.name}</a></article>`).join('')}</div>`;
 
 /* ---------- pages ---------- */
