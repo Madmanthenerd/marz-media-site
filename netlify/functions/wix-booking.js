@@ -66,7 +66,8 @@ function orderFromMessage(f) {
 // Fallback when Wix sends no price: fixed package prices from pricing.js.
 function priceFromService(name) {
   const n = name.toLowerCase();
-  const pkg = PACKAGES.find((p) => n.includes(p.name.toLowerCase()));
+  // Longest name first, so "Grand Estate" is not read as "Estate".
+  const pkg = [...PACKAGES].sort((a, b) => b.name.length - a.name.length).find((p) => n.includes(p.name.toLowerCase()));
   if (pkg) return pkg.price;
   if (n.includes('aerial')) return ITEMS.aerialPhoto.price;
   return null;

@@ -49,6 +49,7 @@ function okSlot(s) {
 }
 const daySlots = (k) => ((st.days && st.days[k]) || []).filter(okSlot);
 // Wix size option to book: HDR has a 6,000–7,499 choice; video and 3D tour stop at 4,000–5,999.
+// Larger homes book the largest Wix choice; the invoice uses the website's ORDER line, which has the real size and price.
 function tierIndex() { const t = P.tierFor(st.sqft); return Math.max(0, Math.min(t, st.slug === 'hdr-photography' ? 3 : 2)); }
 
 /* ---------- services UI ---------- */
@@ -113,29 +114,30 @@ function renderServices() {
   if (isContent()) { renderContent(); $('svcErr').hidden = true; return; }
   $('pkgs').innerHTML = P.PACKAGES.map((p) => {
     const fits = !(st.sqft > 0) || st.sqft <= p.max;
-    return `<button type="button" class="pkg" role="radio" data-p="${p.id}" aria-checked="${st.packageId === p.id}"${fits ? '' : ' disabled'}>` +
-      `<span class="tag">${p.mostBooked ? 'Most booked' : '&nbsp;'}</span><span class="nm"><strong>${p.name}</strong><span class="pr">${money(p.price)}</span></span>` +
+    return `<button type="button" class="pkg${p.luxury ? ' lux' : ''}" role="radio" data-p="${p.id}" aria-checked="${st.packageId === p.id}"${fits ? '' : ' disabled'}>` +
+      `<span class="tag">${p.luxury ? 'Luxury' : p.mostBooked ? 'Most booked' : '&nbsp;'}</span><span class="nm"><strong>${p.name}</strong><span class="pr">${money(p.price)}</span></span>` +
       `<span class="inc">${p.includes.map((i) => `<span>${i}</span>`).join('')}</span>` +
-      `<span class="fit">Homes up to ${p.max.toLocaleString('en-US')} sq ft</span></button>`;
+      `<span class="fit">${p.luxury ? p.size : 'Homes up to ' + p.max.toLocaleString('en-US') + ' sq ft'}</span></button>`;
   }).join('');
-  $('pkgExtras').innerHTML = ['tour3d', 'droneAddon', 'floorplan', 'staging', 'sameday'].map((k) => optRow(k, 'package')).join('');
+  const curPkg = P.PACKAGES.find((p) => p.id === st.packageId);
+  $('pkgExtras').innerHTML = (curPkg ? curPkg.extras : P.PACKAGES[0].extras).map((k) => optRow(k, 'package')).join('');
   const a = st.items.alacarte;
   $('alaServices').innerHTML = optRow('hdr', 'alacarte') + optRow('video', 'alacarte') + optRow('tour3d', 'alacarte') + optRow('aerialPhoto', 'alacarte') + (a.has('aerialPhoto') ? optRow('aerialVideo', 'alacarte', true) : '');
   const ground = ['hdr', 'video', 'tour3d'].some((k) => a.has(k));
   $('alaAddons').innerHTML = (ground && !a.has('aerialPhoto') ? ['droneAddon'] : []).concat(['floorplan', 'twilight', 'staging', 'sameday']).map((k) => optRow(k, 'alacarte')).join('');
   $('pkgWrap').hidden = st.mode !== 'package';
   $('alaWrap').hidden = st.mode !== 'alacarte';
-  const big = st.sqft > 5999;
+  const big = st.sqft > P.PACKAGE_MAX;
   $('svcErr').hidden = !(st.mode === 'package' && big);
-  $('svcErr').textContent = 'Packages cover homes up to 5,999 sq ft. For larger homes, choose Build your own at the top: HDR photos are $325 up to 7,499 sq ft.';
+  $('svcErr').textContent = `Packages cover homes up to ${P.PACKAGE_MAX.toLocaleString('en-US')} sq ft. For larger estates, choose Build your own at the top and Alex will send a custom quote.`;
 }
 function renderRuler() {
   const n = st.sqft, tier = P.tierFor(n), pin = $('pin');
   document.querySelectorAll('.band').forEach((b, i) => b.classList.toggle('on', i === tier));
   if (!(n > 0)) { pin.hidden = true; $('tierHint').textContent = "Pricing follows the home's heated square footage, as listed on HAR or MLS."; return; }
-  const pos = n <= 2500 ? n / 2500 * 2.5 : n <= 4000 ? 2.5 + (n - 2500) / 1500 * 1.5 : n <= 6000 ? 4 + (n - 4000) / 2000 * 2 : Math.min(7, 6 + (n - 6000) / 2000);
-  pin.hidden = false; pin.style.left = `calc(${pos / 7 * 100}% - 1px)`;
-  $('tierHint').textContent = tier < P.TIERS.length ? `${P.TIERS[tier].label} pricing applies.` : '7,500+ sq ft: custom quote. You can still reserve the time now.';
+  const pos = n <= 2500 ? n / 2500 * 2.5 : n <= 4000 ? 2.5 + (n - 2500) / 1500 * 1.5 : Math.min(10, 4 + (n - 4000) / 1000);
+  pin.hidden = false; pin.style.left = `calc(${pos / 10 * 100}% - 1px)`;
+  $('tierHint').textContent = tier < P.TIERS.length ? `${P.TIERS[tier].label} pricing applies.` : '10,000+ sq ft: custom quote. You can still reserve the time now.';
 }
 
 /* ---------- summary ---------- */

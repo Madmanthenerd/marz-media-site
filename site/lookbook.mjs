@@ -72,8 +72,8 @@ export default function lookbook(h) {
     OFFERS.referral.on && offerCard(byKey('86f154c6'), 'Referral', `${money(OFFERS.referral.amount)} off for every agent you send`, `When an agent you refer books their first shoot, your next shoot is ${money(OFFERS.referral.amount)} off. No limit.`, `<a class="lk-btn lk-btn-ghost" href="sms:${TEL}?&amp;body=${encodeURIComponent('Hi Alex, I have an agent to refer:')}" data-ev="lookbook_referral">Text Alex a referral</a>`, ''),
   ].filter(Boolean).join('');
 
-  const PKG_SIZE = { essential: 'Up to 2,499 sq ft', pro: '2,500–3,999 sq ft', signature: '4,000–5,999 sq ft' };
-  const packages = P.PACKAGES.map((p) => `<article class="lk-pkg${p.mostBooked ? ' hot' : ''}"><header><h3>${p.name}</h3>${p.mostBooked ? '<span class="lk-pill">Most booked</span>' : ''}</header><p class="lk-price">${money(p.price)}</p><p class="lk-size">${PKG_SIZE[p.id]}</p><ul>${p.includes.map((x) => `<li>${x}</li>`).join('')}</ul><a class="lk-btn ${p.mostBooked ? 'lk-btn-light' : 'lk-btn-ghost'}" href="book.html?package=${p.id}" data-ev="lookbook_book_${p.id}">Book ${p.name}</a></article>`).join('');
+  const PKG_SIZE = Object.fromEntries(P.PACKAGES.map((p) => [p.id, p.size.replace('Homes up', 'Up')]));
+  const packages = P.PACKAGES.map((p) => `<article class="lk-pkg${p.mostBooked || p.luxury ? ' hot' : ''}"><header><h3>${p.name}</h3>${p.mostBooked ? '<span class="lk-pill">Most booked</span>' : p.luxury ? '<span class="lk-pill">Estate</span>' : ''}</header><p class="lk-price">${money(p.price)}</p><p class="lk-size">${PKG_SIZE[p.id]}</p><ul>${p.includes.map((x) => `<li>${x}</li>`).join('')}</ul><a class="lk-btn ${p.mostBooked ? 'lk-btn-light' : 'lk-btn-ghost'}" href="book.html?package=${p.id}" data-ev="lookbook_book_${p.id}">Book ${p.name}</a></article>`).join('');
 
   const alexImg = PERSON.image.replace('w_1000,h_1500', 'w_600,h_750');
   const dm = 'https://ig.me/m/marzmediaphotography';

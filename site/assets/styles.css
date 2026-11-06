@@ -182,6 +182,13 @@ html.no-js .rv,html.reduce .rv{opacity:1;transform:none}
 .tier li::before{content:"";flex:none;width:14px;height:1px;background:currentColor;margin-top:12px;opacity:.5}
 .tier .btn{margin-top:auto;justify-content:center}
 .tier.feature .btn{background:var(--white);color:var(--ink)}
+.estate-tiers{margin-top:40px}
+@media (min-width:860px){.estate-tiers{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tier.lux{background:transparent;color:var(--on-dark);border-color:rgba(255,255,255,.22)}
+.tier.lux .badge{color:#9DB7E8}
+.tier.lux .size,.tier.lux li{color:var(--on-dark-muted)}
+.tier.lux .was{font-size:13px;color:var(--on-dark-muted);text-decoration:line-through;text-decoration-color:rgba(255,255,255,.45)}
+.pkg.lux .tag{color:var(--ink)}
 .rate{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;margin-top:24px}
 .rate-wrap{overflow-x:auto}
 .rate th,.rate td{text-align:left;padding:16px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
@@ -265,10 +272,10 @@ html.no-js .rv,html.reduce .rv{opacity:1;transform:none}
 .step-h h2{font-size:clamp(26px,3vw,34px);font-weight:300}
 .hint{color:var(--muted);font-size:14px;margin:6px 0 0}
 .ruler{margin-top:14px}
-.bands{display:grid;grid-template-columns:2.5fr 1.5fr 2fr 1fr;height:32px;border-radius:var(--r);overflow:hidden;position:relative}
+.bands{display:grid;grid-template-columns:2.5fr 1.5fr 2fr 2fr 2fr;height:32px;border-radius:var(--r);overflow:hidden;position:relative}
 .band{background:var(--paper);border-right:1px solid var(--white);font-size:11px;font-weight:600;color:var(--muted);display:flex;align-items:center;justify-content:center;letter-spacing:.08em;text-transform:uppercase;transition:background .25s,color .25s}
 .band.on{background:var(--navy);color:var(--white)}
-.ticks{display:grid;grid-template-columns:2.5fr 1.5fr 2fr 1fr;font-size:11px;color:var(--muted);margin-top:5px;font-variant-numeric:tabular-nums}
+.ticks{display:grid;grid-template-columns:2.5fr 1.5fr 2fr 2fr 2fr;font-size:11px;color:var(--muted);margin-top:5px;font-variant-numeric:tabular-nums}
 .pin{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--ink);transition:left .3s var(--ease)}
 .seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:999px;padding:4px;gap:4px;margin-bottom:20px}
 .seg button{border:0;background:transparent;border-radius:999px;padding:12px 8px;cursor:pointer;font:600 14px var(--body);color:var(--muted);transition:all .25s var(--ease)}
