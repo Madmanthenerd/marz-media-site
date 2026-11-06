@@ -11,77 +11,7 @@ const OFFERS = {
   referral: { on: true, amount: 50 }, // $ off the referrer's next shoot when a referred agent books
 };
 
-export default function lookbook(h) {
-  const { rows, byKey, src, alt, cap, P, money, head, reel, REELS, PERSON, PHONE, TEL, IG, CDN, VER } = h;
-  const isKitchen = (r) => /kitchen/.test(r.subject);
-  const by = (album) => rows.filter((r) => r.album === album);
-  const keys = (list) => list.map(byKey).filter(Boolean);
-
-  const droneVal = P.ITEMS.droneAddon.prices[1];
-  const stageVal = 3 * P.ITEMS.staging.price;
-  const welcomeVal = droneVal + stageVal;
-  const reelFrom = P.CONTENT.plans[0].price;
-  const plan6 = P.CONTENT.plans.find((p) => p.id === 'monthly6');
-
-  // Curated by eye from every photo in Wix Media (Nov 2026). Each list is ordered strongest first.
-  const ESTATES = [['21a8a82f', 'wide'], ['a8a0a0b0', ''], ['19939799', ''], ['bda0a794', 'wide'], ['a638be84', ''], ['efd40c7b', ''], ['6645f7fa', 'wide']]
-    .map(([k, cls]) => ({ r: byKey(k), cls })).filter((x) => x.r);
-  const CHAPTERS = [
-    { id: 'twilight', name: 'Twilight', line: 'The sunset hero shot that stops the scroll.',
-      spec: ['Shot at sunset', `${money(P.ITEMS.twilight.price)} add-on`, 'Included in every package'],
-      items: keys(['cc71b813', 'ef45c99d', 'a814aadb', '93427d51', 'b7613ce2', '553bba15', '9a2194a6', '11a5dea3', 'b07a7f6b', 'fcf19c80', '0619538d']) },
-    { id: 'kitchens', name: 'Kitchens', line: 'The room that sells the house, shot straight, bright and true to color.',
-      spec: ['HDR photography', `from ${money(P.ITEMS.hdr.prices[0])}`, 'Next business day'],
-      items: keys(['ab868a02', 'df663b61', 'd14f18eb', 'e90869f9', '10c339fc', '9429220a', 'f0abc8bc', 'd66c1505', '9058c210', 'e353cc81', '3eedf93f']) },
-    { id: 'living', name: 'Living spaces', line: 'Volume, light and flow. Every room reads bigger than the floor plan.',
-      spec: ['Wide, level, natural', 'Two-story rooms', 'Media and game rooms'],
-      items: keys(['d50bf4c3', '79a5de5c', '05b78c56', '321a60e4', '1329ddc0', '11686483', '7f35d8ea', '04832219', '105c1dd5', '48e50cc5', 'aa7fc1c6', '60bdfb37']) },
-    { id: 'rooms', name: 'Dining & suites', line: 'Dining rooms, breakfast nooks and primary suites buyers fall for.',
-      spec: ['Styled, not staged', 'Window-balanced light', 'Every room covered'],
-      items: keys(['559dd9c5', 'f2615a7f', '3178e462', 'eaf43773', 'd35b2fd2', '8a4946c6', '5c06080f', 'f1966f59', '2dfc0740', 'afdd41a5']) },
-    { id: 'drone', name: 'Drone', line: 'The lot, the pool, the neighborhood. Buyers see all of it.',
-      spec: ['FAA Part 107 certified', `from ${money(P.ITEMS.aerialPhoto.price)}`, `${money(P.ITEMS.droneAddon.prices[0])} on any package`],
-      items: keys(['6c3e7370', '8f1ad366', 'a626fa4a', '3ba4e1ea', '779497c5', '498e4e97', 'a7c39049', '07a28447', 'adced197']) },
-    { id: 'outdoor', name: 'Exteriors & outdoor living', line: 'Curb appeal and the backyard buyers picture themselves in.',
-      spec: ['HDR exteriors', 'Pools and patios', 'Same visit'],
-      items: keys(['66f29cfc', '1224ba40', 'c538e548', '51bb564e', '3ee3861a', '93e3b725', '987d71ba', '45f910f0']) },
-    { id: 'design', name: 'Interior design', line: 'Styled, editorial frames for designers, builders and stagers.',
-      spec: ['Detail and vignettes', `from ${money(P.INTERIORS.packages[0].price)}`, 'Portfolio-ready'],
-      items: keys(['8acce589', 'fa326e57', 'd6c48fa6', '13788d42', 'c86552ca', 'a4f01b83', '438b9fef', '0c03f521', '36a6c42b', '8e5979b3', '1e5dad77']) },
-    { id: 'commercial', name: 'Commercial', line: 'Office, retail and multifamily, with aerials in every package.',
-      spec: ['Drone included', `from ${money(P.COMMERCIAL.packages[0].price)}`, 'Quote in a day'],
-      items: by('commercial') },
-  ].filter((c) => c.items.length);
-
-  const H = byKey('e97ae12a'); // twilight pool: the hero
-  const OG = `https://static.wixstatic.com/media/${H.id}/v1/fill/w_1200,h_630,al_c,q_85,enc_auto/marz-media-lookbook.jpg`;
-  const shot = (r, i) => {
-    const W = r.h > r.w ? 640 : 1100, Hh = Math.round(W * r.h / r.w);
-    return `<figure tabindex="0"><img src="${src(r, W)}" alt="${alt(r, i)}" width="${W}" height="${Hh}" loading="${i < 2 ? 'eager' : 'lazy'}" decoding="async"><figcaption>${cap(r.subject)}</figcaption></figure>`;
-  };
-  const chapter = (c, n) => `<section class="lk-ch" id="${c.id}" aria-labelledby="${c.id}-h">
-<div class="lk-wrap lk-ch-head"><p class="lk-idx">${String(n + 1).padStart(2, '0')} / ${String(CHAPTERS.length).padStart(2, '0')}</p><h2 id="${c.id}-h">${c.name}</h2><p class="lk-line">${c.line}</p><ul class="lk-spec">${c.spec.map((s) => `<li>${s}</li>`).join('')}</ul><p class="lk-hint">${c.items.length} photos · swipe →</p></div>
-<div class="lk-strip" data-lb aria-label="${c.name} photos, swipe to see more">${c.items.map(shot).join('')}<a class="lk-more" href="portfolio.html" data-ev="lookbook_full_portfolio">See the full portfolio <span aria-hidden="true">→</span></a></div>
-</section>`;
-
-  const offerCard = (img, tag, title, body, foot, ev) => `<article class="lk-offer"><img src="${src(img, 900)}" alt="" width="900" height="${Math.round(900 * img.h / img.w)}" loading="lazy"><div class="lk-offer-in"><span class="lk-tag">${tag}</span><h3>${title}</h3><p>${body}</p>${foot}</div></article>`;
-  const codeChip = `<div class="lk-code"><span>Code</span><strong id="lk-code">${OFFERS.code}</strong><button type="button" class="lk-copy" data-copy="${OFFERS.code}" data-ev="lookbook_copy_code">Copy</button></div>`;
-  const offers = [
-    OFFERS.welcome.on && offerCard(byKey('3ba4e1ea'), `New clients · ${money(welcomeVal)} value`, 'Free drone + 3 staged photos', `Book your first listing package and I’ll add drone coverage (${money(droneVal)}) and virtual staging on three rooms (${money(stageVal)}) at no charge. Mention the code when you book.`, codeChip + `<a class="lk-btn lk-btn-light" href="book.html?package=pro" data-ev="lookbook_book_offer">Book with the offer <span aria-hidden="true">→</span></a>`, ''),
-    offerCard(byKey('cc71b813'), `Most booked plan`, `${plan6.reels} reels a month, ${money(plan6.price)}`, `Vertical content for your brand, listings and market updates. Drone included on every shoot. Single reels from ${money(reelFrom)}.`, `<a class="lk-btn lk-btn-light" href="book.html?type=content&amp;plan=monthly6" data-ev="lookbook_book_content">Start a content plan <span aria-hidden="true">→</span></a>`, ''),
-    OFFERS.referral.on && offerCard(byKey('86f154c6'), 'Referral', `${money(OFFERS.referral.amount)} off for every agent you send`, `When an agent you refer books their first shoot, your next shoot is ${money(OFFERS.referral.amount)} off. No limit.`, `<a class="lk-btn lk-btn-ghost" href="sms:${TEL}?&amp;body=${encodeURIComponent('Hi Alex, I have an agent to refer:')}" data-ev="lookbook_referral">Text Alex a referral</a>`, ''),
-  ].filter(Boolean).join('');
-
-  const PKG_SIZE = Object.fromEntries(P.PACKAGES.map((p) => [p.id, p.size.replace('Homes up', 'Up')]));
-  const LUX = P.PACKAGES.filter((p) => p.luxury);
-  const estatePkgs = `<div class="lk-wrap"><div class="lk-estpk"><div class="lk-estpk-head"><p class="lk-idx">Estate collection</p><h3>Built for 6,000–9,999 sq ft.</h3><p>Photos with detail shots, cinematic video and reels, drone and aerial video, a full twilight set and floor plans. One booking.</p></div>${LUX.map((p) => `<a class="lk-estpk-card" href="book.html?package=${p.id}" data-ev="lookbook_estate_${p.id}"><span class="lk-estpk-nm">${p.name}</span><span class="lk-estpk-pr">${money(p.price)}</span><span class="lk-estpk-sz">${p.size}</span><s>${money(P.separatePrice(p))} booked separately</s><span class="lk-estpk-go">Book ${p.name} <span aria-hidden="true">→</span></span></a>`).join('')}<a class="lk-estpk-more" href="#pricing" data-ev="lookbook_estate_details">See everything included ↓</a></div></div>`;
-  const ORDER = [...LUX, ...P.PACKAGES.filter((p) => !p.luxury)];
-  const packages = ORDER.map((p) => `<article class="lk-pkg${p.mostBooked || p.luxury ? ' hot' : ''}"><header><h3>${p.name}</h3>${p.mostBooked ? '<span class="lk-pill">Most booked</span>' : p.luxury ? '<span class="lk-pill">Estate</span>' : ''}</header><p class="lk-price">${money(p.price)}</p><p class="lk-size">${PKG_SIZE[p.id]}</p>${p.luxury ? `<p class="lk-was">${money(P.separatePrice(p))} booked separately</p>` : ''}<ul>${p.includes.map((x) => `<li>${x}</li>`).join('')}</ul><a class="lk-btn ${p.mostBooked || p.luxury ? 'lk-btn-light' : 'lk-btn-ghost'}" href="book.html?package=${p.id}" data-ev="lookbook_book_${p.id}">Book ${p.name}</a></article>`).join('');
-
-  const alexImg = PERSON.image.replace('w_1000,h_1500', 'w_600,h_750');
-  const dm = 'https://ig.me/m/marzmediaphotography';
-
-  const css = `<style>
+export const LK_CSS = `<style>
 /* Lookbook: night-time editorial, twilight is the thesis. Tokens extend styles.css (--night, --navy, --on-dark). */
 .lk{--lk-bg:var(--night);--lk-panel:#0E1320;--lk-line:rgba(238,241,246,.14);--lk-fg:var(--on-dark);--lk-dim:var(--on-dark-muted);--lk-glow:#9DB4E0;color-scheme:dark}
 body.lk{background:var(--lk-bg);color:var(--lk-fg);padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
@@ -233,6 +163,78 @@ body.lk::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-in
 .lk-toast.show{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){.lk-hero>img{animation:none}.lk-strip img{transition:none}}
 </style>`;
+
+export default function lookbook(h) {
+  const { rows, byKey, src, alt, cap, P, money, head, reel, REELS, PERSON, PHONE, TEL, IG, CDN, VER } = h;
+  const isKitchen = (r) => /kitchen/.test(r.subject);
+  const by = (album) => rows.filter((r) => r.album === album);
+  const keys = (list) => list.map(byKey).filter(Boolean);
+
+  const droneVal = P.ITEMS.droneAddon.prices[1];
+  const stageVal = 3 * P.ITEMS.staging.price;
+  const welcomeVal = droneVal + stageVal;
+  const reelFrom = P.CONTENT.plans[0].price;
+  const plan6 = P.CONTENT.plans.find((p) => p.id === 'monthly6');
+
+  // Curated by eye from every photo in Wix Media (Nov 2026). Each list is ordered strongest first.
+  const ESTATES = [['21a8a82f', 'wide'], ['a8a0a0b0', ''], ['19939799', ''], ['bda0a794', 'wide'], ['a638be84', ''], ['efd40c7b', ''], ['6645f7fa', 'wide']]
+    .map(([k, cls]) => ({ r: byKey(k), cls })).filter((x) => x.r);
+  const CHAPTERS = [
+    { id: 'twilight', name: 'Twilight', line: 'The sunset hero shot that stops the scroll.',
+      spec: ['Shot at sunset', `${money(P.ITEMS.twilight.price)} add-on`, 'Included in every package'],
+      items: keys(['cc71b813', 'ef45c99d', 'a814aadb', '93427d51', 'b7613ce2', '553bba15', '9a2194a6', '11a5dea3', 'b07a7f6b', 'fcf19c80', '0619538d']) },
+    { id: 'kitchens', name: 'Kitchens', line: 'The room that sells the house, shot straight, bright and true to color.',
+      spec: ['HDR photography', `from ${money(P.ITEMS.hdr.prices[0])}`, 'Next business day'],
+      items: keys(['ab868a02', 'df663b61', 'd14f18eb', 'e90869f9', '10c339fc', '9429220a', 'f0abc8bc', 'd66c1505', '9058c210', 'e353cc81', '3eedf93f']) },
+    { id: 'living', name: 'Living spaces', line: 'Volume, light and flow. Every room reads bigger than the floor plan.',
+      spec: ['Wide, level, natural', 'Two-story rooms', 'Media and game rooms'],
+      items: keys(['d50bf4c3', '79a5de5c', '05b78c56', '321a60e4', '1329ddc0', '11686483', '7f35d8ea', '04832219', '105c1dd5', '48e50cc5', 'aa7fc1c6', '60bdfb37']) },
+    { id: 'rooms', name: 'Dining & suites', line: 'Dining rooms, breakfast nooks and primary suites buyers fall for.',
+      spec: ['Styled, not staged', 'Window-balanced light', 'Every room covered'],
+      items: keys(['559dd9c5', 'f2615a7f', '3178e462', 'eaf43773', 'd35b2fd2', '8a4946c6', '5c06080f', 'f1966f59', '2dfc0740', 'afdd41a5']) },
+    { id: 'drone', name: 'Drone', line: 'The lot, the pool, the neighborhood. Buyers see all of it.',
+      spec: ['FAA Part 107 certified', `from ${money(P.ITEMS.aerialPhoto.price)}`, `${money(P.ITEMS.droneAddon.prices[0])} on any package`],
+      items: keys(['6c3e7370', '8f1ad366', 'a626fa4a', '3ba4e1ea', '779497c5', '498e4e97', 'a7c39049', '07a28447', 'adced197']) },
+    { id: 'outdoor', name: 'Exteriors & outdoor living', line: 'Curb appeal and the backyard buyers picture themselves in.',
+      spec: ['HDR exteriors', 'Pools and patios', 'Same visit'],
+      items: keys(['66f29cfc', '1224ba40', 'c538e548', '51bb564e', '3ee3861a', '93e3b725', '987d71ba', '45f910f0']) },
+    { id: 'design', name: 'Interior design', line: 'Styled, editorial frames for designers, builders and stagers.',
+      spec: ['Detail and vignettes', `from ${money(P.INTERIORS.packages[0].price)}`, 'Portfolio-ready'],
+      items: keys(['8acce589', 'fa326e57', 'd6c48fa6', '13788d42', 'c86552ca', 'a4f01b83', '438b9fef', '0c03f521', '36a6c42b', '8e5979b3', '1e5dad77']) },
+    { id: 'commercial', name: 'Commercial', line: 'Office, retail and multifamily, with aerials in every package.',
+      spec: ['Drone included', `from ${money(P.COMMERCIAL.packages[0].price)}`, 'Quote in a day'],
+      items: by('commercial') },
+  ].filter((c) => c.items.length);
+
+  const H = byKey('e97ae12a'); // twilight pool: the hero
+  const OG = `https://static.wixstatic.com/media/${H.id}/v1/fill/w_1200,h_630,al_c,q_85,enc_auto/marz-media-lookbook.jpg`;
+  const shot = (r, i) => {
+    const W = r.h > r.w ? 640 : 1100, Hh = Math.round(W * r.h / r.w);
+    return `<figure tabindex="0"><img src="${src(r, W)}" alt="${alt(r, i)}" width="${W}" height="${Hh}" loading="${i < 2 ? 'eager' : 'lazy'}" decoding="async"><figcaption>${cap(r.subject)}</figcaption></figure>`;
+  };
+  const chapter = (c, n) => `<section class="lk-ch" id="${c.id}" aria-labelledby="${c.id}-h">
+<div class="lk-wrap lk-ch-head"><p class="lk-idx">${String(n + 1).padStart(2, '0')} / ${String(CHAPTERS.length).padStart(2, '0')}</p><h2 id="${c.id}-h">${c.name}</h2><p class="lk-line">${c.line}</p><ul class="lk-spec">${c.spec.map((s) => `<li>${s}</li>`).join('')}</ul><p class="lk-hint">${c.items.length} photos · swipe →</p></div>
+<div class="lk-strip" data-lb aria-label="${c.name} photos, swipe to see more">${c.items.map(shot).join('')}<a class="lk-more" href="portfolio.html" data-ev="lookbook_full_portfolio">See the full portfolio <span aria-hidden="true">→</span></a></div>
+</section>`;
+
+  const offerCard = (img, tag, title, body, foot, ev) => `<article class="lk-offer"><img src="${src(img, 900)}" alt="" width="900" height="${Math.round(900 * img.h / img.w)}" loading="lazy"><div class="lk-offer-in"><span class="lk-tag">${tag}</span><h3>${title}</h3><p>${body}</p>${foot}</div></article>`;
+  const codeChip = `<div class="lk-code"><span>Code</span><strong id="lk-code">${OFFERS.code}</strong><button type="button" class="lk-copy" data-copy="${OFFERS.code}" data-ev="lookbook_copy_code">Copy</button></div>`;
+  const offers = [
+    OFFERS.welcome.on && offerCard(byKey('3ba4e1ea'), `New clients · ${money(welcomeVal)} value`, 'Free drone + 3 staged photos', `Book your first listing package and I’ll add drone coverage (${money(droneVal)}) and virtual staging on three rooms (${money(stageVal)}) at no charge. Mention the code when you book.`, codeChip + `<a class="lk-btn lk-btn-light" href="book.html?package=pro" data-ev="lookbook_book_offer">Book with the offer <span aria-hidden="true">→</span></a>`, ''),
+    offerCard(byKey('cc71b813'), `Most booked plan`, `${plan6.reels} reels a month, ${money(plan6.price)}`, `Vertical content for your brand, listings and market updates. Drone included on every shoot. Single reels from ${money(reelFrom)}.`, `<a class="lk-btn lk-btn-light" href="book.html?type=content&amp;plan=monthly6" data-ev="lookbook_book_content">Start a content plan <span aria-hidden="true">→</span></a>`, ''),
+    OFFERS.referral.on && offerCard(byKey('86f154c6'), 'Referral', `${money(OFFERS.referral.amount)} off for every agent you send`, `When an agent you refer books their first shoot, your next shoot is ${money(OFFERS.referral.amount)} off. No limit.`, `<a class="lk-btn lk-btn-ghost" href="sms:${TEL}?&amp;body=${encodeURIComponent('Hi Alex, I have an agent to refer:')}" data-ev="lookbook_referral">Text Alex a referral</a>`, ''),
+  ].filter(Boolean).join('');
+
+  const PKG_SIZE = Object.fromEntries(P.PACKAGES.map((p) => [p.id, p.size.replace('Homes up', 'Up')]));
+  const LUX = P.PACKAGES.filter((p) => p.luxury);
+  const estatePkgs = `<div class="lk-wrap"><div class="lk-estpk"><div class="lk-estpk-head"><p class="lk-idx">Estate collection</p><h3>Built for 6,000–9,999 sq ft.</h3><p>Photos with detail shots, cinematic video and reels, drone and aerial video, a full twilight set and floor plans. One booking.</p></div>${LUX.map((p) => `<a class="lk-estpk-card" href="book.html?package=${p.id}" data-ev="lookbook_estate_${p.id}"><span class="lk-estpk-nm">${p.name}</span><span class="lk-estpk-pr">${money(p.price)}</span><span class="lk-estpk-sz">${p.size}</span><s>${money(P.separatePrice(p))} booked separately</s><span class="lk-estpk-go">Book ${p.name} <span aria-hidden="true">→</span></span></a>`).join('')}<a class="lk-estpk-more" href="#pricing" data-ev="lookbook_estate_details">See everything included ↓</a></div></div>`;
+  const ORDER = [...LUX, ...P.PACKAGES.filter((p) => !p.luxury)];
+  const packages = ORDER.map((p) => `<article class="lk-pkg${p.mostBooked || p.luxury ? ' hot' : ''}"><header><h3>${p.name}</h3>${p.mostBooked ? '<span class="lk-pill">Most booked</span>' : p.luxury ? '<span class="lk-pill">Estate</span>' : ''}</header><p class="lk-price">${money(p.price)}</p><p class="lk-size">${PKG_SIZE[p.id]}</p>${p.luxury ? `<p class="lk-was">${money(P.separatePrice(p))} booked separately</p>` : ''}<ul>${p.includes.map((x) => `<li>${x}</li>`).join('')}</ul><a class="lk-btn ${p.mostBooked || p.luxury ? 'lk-btn-light' : 'lk-btn-ghost'}" href="book.html?package=${p.id}" data-ev="lookbook_book_${p.id}">Book ${p.name}</a></article>`).join('');
+
+  const alexImg = PERSON.image.replace('w_1000,h_1500', 'w_600,h_750');
+  const dm = 'https://ig.me/m/marzmediaphotography';
+
+  const css = LK_CSS;
 
   const estates = `<section class="lk-estates" id="estates" aria-labelledby="estates-h"><div class="lk-wrap lk-ch-head"><p class="lk-idx">Featured</p><h2 id="estates-h">Million-dollar <em>homes.</em></h2><p class="lk-line">Big rooms, big views, big first impressions. This is the standard on every shoot, whatever the price point.</p></div>
 <div class="lk-est" data-lb>${ESTATES.map(({ r, cls }, i) => { const W = cls ? 2000 : 1200; return `<figure class="${cls}" tabindex="0"><img src="${src(r, W)}" alt="${alt(r, i)}" width="${W}" height="${Math.round(W * r.h / r.w)}" loading="${i < 2 ? 'eager' : 'lazy'}" decoding="async"><figcaption>${cap(r.subject)}</figcaption></figure>`; }).join('')}</div>${estatePkgs}</section>`;

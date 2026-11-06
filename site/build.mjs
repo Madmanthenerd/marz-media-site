@@ -513,6 +513,8 @@ pages['404.html'] = head({ file: '404.html', title: 'Page not found | Marz Media
 
 // LOOKBOOK: outreach page sent in IG/Facebook DMs (noindex, not in nav or sitemap). Content in site/lookbook.mjs.
 pages['lookbook.html'] = (await import('./lookbook.mjs')).default({ rows, byKey, src, alt, cap, P, money, head, reel, REELS, PERSON, PHONE, TEL, IG, CDN, VER });
+// BUILDERS: lookbook for home builders and community developers (noindex, not in nav or sitemap). Content in site/builders.mjs.
+pages['builders.html'] = (await import('./builders.mjs')).default({ rows, byKey, src, alt, cap, P, money, head, reel, REELS, PERSON, PHONE, TEL, IG, CDN, VER });
 
 /* ---------- write ---------- */
 fs.rmSync(OUT, { recursive: true, force: true });
@@ -524,7 +526,7 @@ const cleanUrls = (h) => h
   .replace(/(https:\/\/www\.marzmediaphotography\.com)\/([a-z0-9-]+)\.html/g, '$1/$2');
 for (const [f, html] of Object.entries(pages)) fs.writeFileSync(path.join(OUT, f), cleanUrls(html.replace(/\n\s*/g, '\n')));
 if (LOCAL) fs.writeFileSync(path.join(OUT, '_redirects'), Object.keys(pages).filter((f) => f !== 'index.html' && f !== '404.html').map((f) => `/${f.replace(/\.html$/, '')}  /${f}  200`).join('\n') + '\n');
-const urls = Object.keys(pages).filter((f) => f !== '404.html' && f !== 'quote-thanks.html' && f !== 'lookbook.html');
+const urls = Object.keys(pages).filter((f) => f !== '404.html' && f !== 'quote-thanks.html' && f !== 'lookbook.html' && f !== 'builders.html');
 fs.writeFileSync(path.join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls.map((f) => `<url><loc>${ORIGIN}/${f === 'index.html' ? '' : f.replace(/\.html$/, '')}</loc>${f === 'portfolio.html' ? rows.map((r) => `<image:image><image:loc>${src(r, 1600).replace(/&/g, '&amp;')}</image:loc></image:image>`).join('') : ''}</url>`).join('\n')}\n</urlset>\n`);
 fs.writeFileSync(path.join(OUT, 'llms.txt'), `# Marz Media Photography
 

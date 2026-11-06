@@ -94,6 +94,30 @@
     types: ['Office', 'Retail', 'Restaurant', 'Industrial or flex', 'Multifamily', 'Land', 'Medical', 'Other'],
   };
 
+  // Home builders (quote-based, sent from the /builders lookbook). Approved Nov 6, 2026.
+  // Each price: [1–4 homes a month, 5+ homes a month]. Plans lock the volume rate.
+  const BUILDERS = {
+    sizes: ['Up to 2,500 sq ft', '2,500–3,999 sq ft', '4,000+ sq ft'],
+    spec: { name: 'Spec home', includes: ['25–30 HDR photos', 'Drone', 'Floor plan'], prices: [[295, 275], [370, 350], [445, 425]] },
+    model: { name: 'Model home', includes: ['40–50 HDR photos', 'Video, horizontal + vertical', 'Matterport 3D tour', 'Floor plan', 'Drone'], prices: [[650, 550], [725, 625], [800, 700]] },
+    addons: [
+      ['Matterport 3D tour on a spec home', [100, 75]],
+      ['Virtual staging', [15, 15], 'per photo'],
+      ['Twilight exteriors, 5 images', [100, 100]],
+      ['Video licensed for TV or streaming ads', [150, 150]],
+    ],
+    community: [
+      ['Community aerials', 250, '15–20 drone photos'],
+      ['Community aerials + flyover video', 350, ''],
+      ['Amenity center shoot', 450, '25 photos + aerials'],
+      ['Construction progress', 150, 'monthly drone visit'],
+    ],
+    plans: [
+      { id: 'spec', name: 'Spec Plan', price: 1375, includes: ['5 spec homes a month', 'Volume rate locked in', 'Priority scheduling'] },
+      { id: 'community', name: 'Community Plan', price: 2750, value: 3080, mostBooked: true, includes: ['8 spec homes a month', '1 model home', '2 social reels', 'Priority scheduling'] },
+    ],
+  };
+
   // Cancellation fees (billed manually): cancelled on the day of the shoot, or after Alex has arrived.
   const POLICY = { cancelSameDay: 75, cancelOnSite: 100 };
 
@@ -202,7 +226,7 @@
       pick(ITEMS.droneAddon.prices, t) + ITEMS.aerialVideo.price + ITEMS.twilight.price + ITEMS.floorplan.price;
   }
 
-  const api = { TIERS, PACKAGES, PACKAGE_MAX, packageFor, separatePrice, ITEMS, CONTENT, INTERIORS, COMMERCIAL, POLICY, SCHEDULE, TAX_RATE, SAMEDAY_LATEST, tierFor, quote };
+  const api = { TIERS, PACKAGES, PACKAGE_MAX, packageFor, separatePrice, ITEMS, CONTENT, INTERIORS, COMMERCIAL, BUILDERS, POLICY, SCHEDULE, TAX_RATE, SAMEDAY_LATEST, tierFor, quote };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MarzPricing = api;
 })(typeof window !== 'undefined' ? window : globalThis);
