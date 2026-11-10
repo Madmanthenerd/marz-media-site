@@ -4,7 +4,11 @@
   "private": true,
   "description": "Marz Media Photography — site + booking backend",
   "dependencies": {
+    "@fontsource/fraunces": "^5.1.0",
+    "@fontsource/manrope": "^5.1.0",
+    "@resvg/resvg-js": "^2.6.2",
     "googleapis": "^140.0.0",
+    "satori": "^0.12.2",
     "stripe": "^16.0.0"
   }
 }

@@ -123,11 +123,13 @@ const BIZ = {
 };
 const ld = (o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`;
 
+// Per-page share-image info collected by head(); branded cards are rendered at write time (site/og.mjs).
+const OGMETA = {};
 function head({ file, title, desc, image, extra = '' }) {
   const url = ORIGIN + '/' + (file === 'index.html' ? '' : file.replace(/\.html$/, ''));
   return `<!doctype html><html lang="en" class="no-js"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${LIVE ? `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA}"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA}');</script>` : ''}
 <title>${title}</title><meta name="description" content="${desc}">${LIVE ? '' : '<meta name="robots" content="noindex,nofollow">'}
-<link rel="canonical" href="${url}"><meta property="og:type" content="website"><meta property="og:site_name" content="Marz Media Photography"><meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:url" content="${url}"><meta property="og:image" content="${image}"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#07090E">
+<link rel="canonical" href="${url}"><meta property="og:type" content="website"><meta property="og:site_name" content="Marz Media Photography"><meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:url" content="${url}">${(OGMETA[file] = { title, image }, '')}<meta property="og:image" content="__OG__${file}__"><meta property="og:image:width" content="__OGW__${file}__"><meta property="og:image:height" content="__OGH__${file}__"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#07090E">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2307090E'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='34' fill='%23fff' text-anchor='middle'%3EM%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preconnect" href="https://static.wixstatic.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Manrope:wght@400;500;600;700&display=swap">
@@ -527,7 +529,29 @@ const cleanUrls = (h) => h
   .replace(/href="index\.html(?=["#?])/g, 'href="/')
   .replace(/(href=")([a-z0-9-]+)\.html(?=["#?])/g, '$1/$2')
   .replace(/(https:\/\/www\.marzmediaphotography\.com)\/([a-z0-9-]+)\.html/g, '$1/$2');
-for (const [f, html] of Object.entries(pages)) fs.writeFileSync(path.join(OUT, f), cleanUrls(html.replace(/\n\s*/g, '\n')));
+// Branded share cards: headline from the page title, page photo behind it. Falls back to the plain photo.
+const OG_SKIP = new Set(['404.html', 'quote-thanks.html']);
+const ogDone = {};
+try {
+  const { renderOg } = await import('./og.mjs');
+  const files = Object.keys(OGMETA).filter((f) => !OG_SKIP.has(f));
+  for (let i = 0; i < files.length; i += 6) {
+    await Promise.all(files.slice(i, i + 6).map(async (f) => {
+      const m = OGMETA[f];
+      const h1 = ((pages[f] || '').match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1];
+      const headline = (h1 ? h1.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&rsquo;|’/g, '\u2019').trim() : m.title.split(' | ')[0]);
+      const eyebrow = 'Houston real estate photography & video';
+      const name = f.replace(/\.html$/, '');
+      try { await renderOg({ title: headline, eyebrow, image: m.image, out: path.join(OUT, 'og', name + '.png') }); ogDone[f] = `${ORIGIN}/og/${name}.png`; } catch (e) { console.warn('og skipped', f, e.message); }
+    }));
+  }
+} catch (e) { console.warn('og cards skipped:', e.message); }
+const ogFill = (f, html) => html
+  .replace(`__OG__${f}__`, ogDone[f] || (OGMETA[f] || {}).image || '')
+  .replace(`<meta property="og:image:width" content="__OGW__${f}__">`, ogDone[f] ? '<meta property="og:image:width" content="1200">' : '')
+  .replace(`<meta property="og:image:height" content="__OGH__${f}__">`, ogDone[f] ? '<meta property="og:image:height" content="630">' : '');
+console.log('share cards:', Object.keys(ogDone).length);
+for (const [f, html] of Object.entries(pages)) fs.writeFileSync(path.join(OUT, f), cleanUrls(ogFill(f, html).replace(/\n\s*/g, '\n')));
 if (LOCAL) fs.writeFileSync(path.join(OUT, '_redirects'), Object.keys(pages).filter((f) => f !== 'index.html' && f !== '404.html').map((f) => `/${f.replace(/\.html$/, '')}  /${f}  200`).join('\n') + '\n');
 const urls = Object.keys(pages).filter((f) => f !== '404.html' && f !== 'quote-thanks.html' && f !== 'lookbook.html' && f !== 'builders.html');
 fs.writeFileSync(path.join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls.map((f) => `<url><loc>${ORIGIN}/${f === 'index.html' ? '' : f.replace(/\.html$/, '')}</loc>${f === 'portfolio.html' ? rows.map((r) => `<image:image><image:loc>${src(r, 1600).replace(/&/g, '&amp;')}</image:loc></image:image>`).join('') : ''}</url>`).join('\n')}\n</urlset>\n`);
