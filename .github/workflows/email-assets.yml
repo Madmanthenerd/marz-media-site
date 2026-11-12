@@ -1,0 +1,30 @@
+name: email-assets
+on:
+  push:
+    branches: [email-assets]
+    paths: [.github/workflows/email-assets.yml]
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download email photos from Wix Media
+        run: |
+          mkdir -p email-assets
+          B=https://static.wixstatic.com/media
+          curl -sfL -o email-assets/hero.jpg  "$B/3f0f07_e97ae12af33a41ff868a5e0a65df0454~mv2.png/v1/fill/w_1200,h_800,al_c,q_80,enc_jpg/hero.jpg"
+          curl -sfL -o email-assets/twilight-front.jpg "$B/3f0f07_a814aadb8a6841d3ac48137d8207d617~mv2.jpeg/v1/fill/w_1200,h_800,al_c,q_80,enc_jpg/front.jpg"
+          curl -sfL -o email-assets/kitchen.jpg "$B/3f0f07_19939799c61344a88a1abb2c774484dc~mv2.jpg/v1/fill/w_600,h_400,al_c,q_78,enc_jpg/k.jpg"
+          curl -sfL -o email-assets/family.jpg  "$B/3f0f07_a8a0a0b0a54041b98c83862670be34ef~mv2.jpg/v1/fill/w_600,h_400,al_c,q_78,enc_jpg/f.jpg"
+          curl -sfL -o email-assets/drone.jpg   "$B/3f0f07_6c3e737034c142039be3df361444733f~mv2.jpg/v1/fill/w_600,h_400,al_c,q_78,enc_jpg/d.jpg"
+          curl -sfL -o email-assets/stair.jpg   "$B/3f0f07_bda0a7947bfc487fae1dc3f685124563~mv2.jpg/v1/fill/w_600,h_400,al_c,q_78,enc_jpg/s.jpg"
+          ls -l email-assets
+      - name: Commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add email-assets
+          git commit -m "Email photos pulled from Wix Media"
+          git push
