@@ -2,7 +2,7 @@ name: email-assets
 on:
   push:
     branches: [email-assets]
-    paths: [email-assets/urls.tsv, .github/workflows/email-assets.yml]
+    paths: [email-assets/full.tsv]
 permissions:
   contents: write
 jobs:
@@ -15,12 +15,17 @@ jobs:
         run: |
           mkdir -p email-assets/thumbs
           : > email-assets/status.tsv
+          exit 0
           while IFS=$'\t' read -r key url; do
             code=$(curl -s -L -o /tmp/img -w "%{http_code}" "$url")
             echo -e "$key\t$code" >> email-assets/status.tsv
             if [ "$code" = "200" ]; then python3 -c "from PIL import Image,ImageOps;import sys;ImageOps.fit(Image.open('/tmp/img').convert('RGB'),(240,160)).save(sys.argv[1],quality=72)" "email-assets/thumbs/$key.jpg" || true; fi
           done < email-assets/urls.tsv
           cut -f2 email-assets/status.tsv | sort | uniq -c
+      - name: Full-size photos for previews
+        run: |
+          mkdir -p email-assets/full
+          while IFS=$'\t' read -r n url; do curl -s -L -o "email-assets/full/$n.jpg" "$url"; done < email-assets/full.tsv
       - name: Commit
         run: |
           git config user.name "github-actions"
