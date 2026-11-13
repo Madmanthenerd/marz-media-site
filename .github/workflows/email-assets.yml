@@ -2,29 +2,28 @@ name: email-assets
 on:
   push:
     branches: [email-assets]
-    paths: [.github/workflows/email-assets.yml]
+    paths: [email-assets/urls.tsv]
 permissions:
   contents: write
 jobs:
-  fetch:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download email photos from Wix Media
+      - name: Check every URL and make thumbnails
         run: |
-          mkdir -p email-assets
-          B=https://static.wixstatic.com/media
-          curl -sfL -o email-assets/hero.jpg  "$B/3f0f07_e97ae12af33a41ff868a5e0a65df0454~mv2.png/v1/fill/w_1200,h_800,al_c,q_80,enc_jpg/hero.jpg"
-          curl -sfL -o email-assets/twilight-front.jpg "$B/3f0f07_a814aadb8a6841d3ac48137d8207d617~mv2.jpeg/v1/fill/w_1200,h_800,al_c,q_80,enc_jpg/front.jpg"
-          curl -sfL -o email-assets/kitchen.jpg "$B/3f0f07_19939799c61344a88a1abb2c774484dc~mv2.jpg/v1/fill/w_600,h_400,al_c,q_78,enc_jpg/k.jpg"
-          curl -sfL -o email-assets/family.jpg  "$B/3f0f07_a8a0a0b0a54041b98c83862670be34ef~mv2.jpg/v1/fill/w_600,h_400,al_c,q_78,enc_jpg/f.jpg"
-          curl -sfL -o email-assets/drone.jpg   "$B/3f0f07_6c3e737034c142039be3df361444733f~mv2.jpg/v1/fill/w_600,h_400,al_c,q_78,enc_jpg/d.jpg"
-          curl -sfL -o email-assets/stair.jpg   "$B/3f0f07_bda0a7947bfc487fae1dc3f685124563~mv2.jpg/v1/fill/w_600,h_400,al_c,q_78,enc_jpg/s.jpg"
-          ls -l email-assets
+          mkdir -p email-assets/thumbs
+          : > email-assets/status.tsv
+          while IFS=$'\t' read -r key url; do
+            code=$(curl -s -L -o /tmp/img -w "%{http_code}" "$url")
+            echo -e "$key\t$code" >> email-assets/status.tsv
+            if [ "$code" = "200" ]; then convert /tmp/img -resize 240x160^ -gravity center -extent 240x160 -quality 70 "email-assets/thumbs/$key.jpg" || true; fi
+          done < email-assets/urls.tsv
+          cut -f2 email-assets/status.tsv | sort | uniq -c
       - name: Commit
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git add email-assets
-          git commit -m "Email photos pulled from Wix Media"
+          git commit -m "URL check + thumbnails"
           git push
