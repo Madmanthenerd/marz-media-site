@@ -34,12 +34,12 @@
   // Each item: price (flat) or prices (by sq ft tier), shoot minutes (flat or by tier),
   // and where it can be booked: 'alacarte', 'package', or both.
   const ITEMS = {
-    hdr:         { name: 'HDR Photography',     prices: [165, 210, 260, 325, 395], minutes: [75, 105, 135, 165, 195], primary: true, modes: ['alacarte'] },
+    hdr:         { name: 'HDR Photography',     prices: [150, 195, 260, 325, 395], minutes: [75, 105, 135, 165, 195], primary: true, modes: ['alacarte'] },
     video:       { name: 'Cinematic Video',     prices: [225, 275, 325, 375, 425], minutes: [60, 75, 90, 105, 120],  primary: true, modes: ['alacarte'] },
     tour3d:      { name: '3D Virtual Tour',     prices: [225, 275, 325, 375, 425], minutes: [45, 60, 75, 90, 105],    primary: true, modes: ['alacarte', 'package'] },
     aerialPhoto: { name: 'Aerial Photography',  price: 115, minutes: 20, primary: true, modes: ['alacarte'], note: 'Drone photos only, no ground photos' },
     aerialVideo: { name: 'Aerial Video',        price: 50,  minutes: 15, requires: 'aerialPhoto', modes: ['alacarte'], note: 'Add-on to aerial photography' },
-    droneAddon:  { name: 'Drone Coverage',      prices: [35, 50, 50, 50], minutes: 20, modes: ['package', 'alacarte'], requiresAny: ['hdr', 'video', 'tour3d'], note: 'Aerial photos added to your shoot' },
+    droneAddon:  { name: 'Drone Coverage',      prices: [30, 50, 50, 50], minutes: 20, modes: ['package', 'alacarte'], requiresAny: ['hdr', 'video', 'tour3d'], note: 'Aerial photos added to your shoot' },
     floorplan:   { name: 'Floor Plans',         price: 50,  minutes: 15, modes: ['alacarte', 'package'] },
     twilight:    { name: 'Twilight Photography', price: 75, minutes: 0,  modes: ['alacarte'], note: 'Captured at sunset' },
     sameday:     { name: 'Same-Day Delivery',   price: 75,  minutes: 0,  modes: ['alacarte', 'package'], note: 'Requires an 8–9 AM start' },

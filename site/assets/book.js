@@ -417,7 +417,7 @@ document.addEventListener('change', (e) => {
   const set = st.items[c.dataset.m];
   const k = c.dataset.k, ground = (s) => ['hdr', 'video', 'tour3d'].some((g) => s.has(g));
   if (c.checked) set.add(k); else { set.delete(k); if (k === 'aerialPhoto') set.delete('aerialVideo'); }
-  // Drone with a ground shoot is the $35–$50 add-on; the $115 Aerial Photography is for drone-only orders.
+  // Drone with a ground shoot is the $30–$50 add-on; the $115 Aerial Photography is for drone-only orders.
   if (c.dataset.m === 'alacarte' && ground(set) && set.has('aerialPhoto') && !set.has('aerialVideo')) { set.delete('aerialPhoto'); set.add('droneAddon'); }
   if (c.dataset.m === 'alacarte' && !ground(set)) set.delete('droneAddon');
   update();

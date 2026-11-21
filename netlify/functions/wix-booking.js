@@ -75,7 +75,7 @@ function priceFromService(name) {
 
 // Bookings made or edited in the Wix dashboard carry no website ORDER line, so build the invoice from
 // what Wix sends: the service price plus each add-on, e.g.
-// "Drone / Aerial Coverage ($35.00), Floor Plans ($50.00), Virtual Staging (per photo) x3 ($15.00)".
+// "Drone / Aerial Coverage ($30.00), Floor Plans ($50.00), Virtual Staging (per photo) x3 ($15.00)".
 function addOnLines(text) {
   const out = [];
   const re = /([^,]+?)\s*(?:x\s*(\d+)\s*)?\(\$([\d,]+(?:\.\d+)?)\)/g;
