@@ -46,7 +46,7 @@ export default function builders(h) {
   const steps = [
     ['Send the addresses', 'Email or text the homes that are ready. Models, spec homes or a whole phase.'],
     ['Batched by community', 'Homes in the same community are shot on the same visit, so nothing waits.'],
-    ['Delivered fast', 'Photos the next business day. Video and Matterport tours in 24–72 hours.'],
+    ['Delivered fast', 'Photos the next day, weekends included. Video and Matterport tours in 24–72 hours.'],
     ['Organized for your team', 'One folder per community, sized for your website, HAR, Zillow and print.'],
   ];
 
@@ -92,10 +92,10 @@ ev('builders_view');})();</script>`;
 <section class="lk-hero"><img src="${src(H, 2000)}" alt="${alt(H, 0)}" width="2000" height="${Math.round(2000 * H.h / H.w)}" fetchpriority="high"><div class="lk-wrap">
 <p class="lk-kicker">For Houston home builders</p>
 <h1>Every model. Every spec home. <em>One vendor.</em></h1>
-<p class="lk-lede">Photos, video, Matterport tours, floor plans and drone for builders and communities across Greater Houston. Shot and edited by me, Alex Marzette. Photos the next business day.</p>
+<p class="lk-lede">Photos, video, Matterport tours, floor plans and drone for builders and communities across Greater Houston. Shot and edited by me, Alex Marzette. Photos the next day, weekends included.</p>
 <div class="lk-actions"><a class="lk-btn lk-btn-light" href="#models" data-ev="builders_see_work">See the work <span aria-hidden="true">↓</span></a><a class="lk-btn lk-btn-ghost" href="#pricing" data-ev="builders_see_pricing">Builder pricing</a></div>
 </div></section>
-<section class="lk-stats" aria-label="At a glance"><div class="lk-wrap"><ul><li><b>Builder-tested</b><span>models and spec homes for production builders</span></li><li><b>Next day</b><span>photos, next business day</span></li><li><b>All-in-one</b><span>photo, video, 3D, plans, drone</span></li><li><b>Part 107</b><span>FAA-certified, insured drone</span></li></ul></div></section>
+<section class="lk-stats" aria-label="At a glance"><div class="lk-wrap"><ul><li><b>Builder-tested</b><span>models and spec homes for production builders</span></li><li><b>Next day</b><span>photos, weekends included</span></li><li><b>All-in-one</b><span>photo, video, 3D, plans, drone</span></li><li><b>Part 107</b><span>FAA-certified, insured drone</span></li></ul></div></section>
 ${nav}
 ${CHAPTERS.map(chapter).join('')}
 <section class="lk-reels" id="reels" aria-labelledby="reels-h"><div class="lk-wrap lk-ch-head"><p class="lk-idx">Video</p><h2 id="reels-h">Model home video.</h2><p class="lk-line">Cinematic walkthroughs and vertical reels for your site, social and ads. Tap to play.</p><ul class="lk-spec"><li>Vertical + horizontal</li><li>24–72 hours</li><li>Included with every model</li></ul></div>

@@ -254,7 +254,7 @@ if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es
 d.querySelectorAll('.lk-ch,#estates,#reels,#offers,#pricing').forEach(function(s){io.observe(s)});}
 ev('lookbook_view');})();</script>`;
 
-  const page = head({ file: 'lookbook.html', title: 'Alex Marzette | Marz Media Lookbook', desc: `Twilight, drone, interiors and cinematic reels from across Houston. Shot and edited by Alex Marzette. Photos the next business day.`, image: OG, extra: css })
+  const page = head({ file: 'lookbook.html', title: 'Alex Marzette | Marz Media Lookbook', desc: `Twilight, drone, interiors and cinematic reels from across Houston. Shot and edited by Alex Marzette. Photos the next day, weekends included.`, image: OG, extra: css })
     .replace('<link rel="canonical"', '<meta name="robots" content="noindex"><link rel="x-canonical"')
     +
 `<body class="lk"><header class="lk-top"><div class="lk-wrap"><a class="lk-brand" href="/" data-ev="lookbook_home">Marz<span>Media</span></a><a class="lk-btn lk-btn-light lk-btn-sm" href="book.html" data-ev="lookbook_book_top">Book a shoot</a></div></header>
@@ -262,10 +262,10 @@ ev('lookbook_view');})();</script>`;
 <section class="lk-hero"><img src="${src(H, 2000)}" alt="${alt(H, 0)}" width="2000" height="${Math.round(2000 * H.h / H.w)}" fetchpriority="high"><div class="lk-wrap">
 <p class="lk-kicker">The Marz Media lookbook</p>
 <h1>Your listing, at its <em>best hour.</em></h1>
-<p class="lk-lede">Photography, cinematic video, drone and 3D tours for agents, builders and designers. Shot and edited by me, Alex Marzette. Photos the next business day.</p>
+<p class="lk-lede">Photography, cinematic video, drone and 3D tours for agents, builders and designers. Shot and edited by me, Alex Marzette. Photos the next day, weekends included.</p>
 <div class="lk-actions"><a class="lk-btn lk-btn-light" href="#twilight" data-ev="lookbook_see_work">See the work <span aria-hidden="true">↓</span></a>${OFFERS.welcome.on ? `<a class="lk-btn lk-btn-ghost" href="#offers" data-ev="lookbook_see_offer">New-client offer</a>` : ''}</div>
 </div></section>
-<section class="lk-stats" aria-label="At a glance"><div class="lk-wrap"><ul><li><b>4+ yrs</b><span>shooting Houston real estate</span></li><li><b>25+</b><span>shoots a month</span></li><li><b>Next day</b><span>photos, next business day</span></li><li><b>Part 107</b><span>FAA-certified, insured drone</span></li></ul></div></section>
+<section class="lk-stats" aria-label="At a glance"><div class="lk-wrap"><ul><li><b>4+ yrs</b><span>shooting Houston real estate</span></li><li><b>25+</b><span>shoots a month</span></li><li><b>Next day</b><span>photos, weekends included</span></li><li><b>Part 107</b><span>FAA-certified, insured drone</span></li></ul></div></section>
 ${nav}
 ${estates}
 ${CHAPTERS.map(chapter).join('')}

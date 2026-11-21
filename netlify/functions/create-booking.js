@@ -72,7 +72,7 @@ function clientEmailHTML({ b, q, when, invoiceUrl, dueDays }) {
       <div style="height:18px;"></div>
       ${pay}
       ${q.includesTwilight ? '<p style="margin:0 0 16px;">Your order includes twilight photos. I capture those around sunset and will confirm that timing with you.</p>' : ''}
-      <p style="margin:0 0 16px;"><strong>Delivery:</strong> photos the next business day, video in 24–72 hours.</p>
+      <p style="margin:0 0 16px;"><strong>Delivery:</strong> photos the next day (weekends included), video in 24–72 hours.</p>
       <h2 style="font-family:Georgia,serif;font-weight:400;font-size:19px;margin:24px 0 8px;">Getting the home ready</h2>
       <ul style="margin:0;padding-left:18px;color:#3A404A;font-size:14px;">${PREP.map((p) => `<li style="margin:3px 0;">${p}</li>`).join('')}</ul>
       <p style="margin:24px 0 0;">Need to change something? Reply to this email or call 346-533-4026.</p>

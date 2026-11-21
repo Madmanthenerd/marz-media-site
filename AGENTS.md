@@ -37,7 +37,7 @@ Every push to `main` on GitHub rebuilds and publishes the site in about a minute
 ## House rules (from Alex)
 - No client-facing copy about payment timing ("nothing due today", deposits) or speed claims
   ("book in 2 minutes").
-- Photo turnaround: next business day. Video: 24–72 hours.
+- Photo turnaround: next day, weekends included (never "business day"). Video: 24–72 hours.
 - Same-day delivery requires an 8–9 AM start. 5% tax on every order.
 - Brand palette: white, black, navy, grey. Keep it modern and luxury, mobile-first.
 - Never put property addresses or locations on portfolio photos.
